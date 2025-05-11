@@ -52,12 +52,12 @@ const Pricing = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-16">
       {/* Title Section */}
-      <h2 className="font-['Helvetica_Neue'] font-bold text-[28px] sm:text-[32px] md:text-[40px] leading-[38px] md:leading-[53.23px] tracking-[-1.45px] text-center">
+      <h2 className="font-helvetica-neue font-bold text-[28px] sm:text-[32px] md:text-[40px] leading-[38px] md:leading-[53.23px] tracking-[-1.45px] text-center">
         Choose Your Pricing Plan
       </h2>
       
       {/* Subtitle */}
-      <p className="font-['Helvetica_Neue'] font-normal text-[14px] sm:text-[16px] leading-[120%] sm:leading-[100%] text-center capitalize mt-3 sm:mt-4 max-w-2xl mx-auto px-2">
+      <p className="font-helvetica-neue font-normal text-[14px] sm:text-[16px] leading-[120%] sm:leading-[100%] text-center capitalize mt-3 sm:mt-4 max-w-2xl mx-auto px-2">
         We charge a small monthly fee to maintain the technology &
         software to keep your pet safe
       </p>
@@ -93,12 +93,12 @@ const Pricing = () => {
             </div>
 
             {/* Card Title */}
-            <h3 className="font-['Helvetica_Neue'] font-bold text-[18px] sm:text-[21.29px] leading-[100%] tracking-[-0.53px] capitalize">
+            <h3 className="font-helvetica-neue font-bold text-[18px] sm:text-[21.29px] leading-[100%] tracking-[-0.53px] capitalize">
               {plan.title}
             </h3>
 
             {/* Card Subtitle */}
-            <p className="font-['Helvetica_Neue'] font-normal text-[12px] sm:text-[13.55px] leading-[115%] tracking-[-3%] capitalize text-[#666666] mt-2">
+            <p className="font-helvetica-neue font-normal text-[12px] sm:text-[13.55px] leading-[115%] tracking-[-3%] capitalize text-[#666666] mt-2">
               {plan.subtitle}
             </p>
 
@@ -107,7 +107,7 @@ const Pricing = () => {
               {plan.features.map((feature, index) => (
                 <li key={index} className="flex items-center gap-2">
                   <img src={plan.tickIcon} alt="tick" width={16} height={16} className="w-4 h-4 sm:w-[16px] sm:h-[16px] flex-shrink-0" />
-                  <span className="font-['Helvetica_Neue'] text-xs sm:text-sm">{feature}</span>
+                  <span className="font-helvetica-neue text-xs sm:text-sm">{feature}</span>
                 </li>
               ))}
             </ul>
@@ -115,11 +115,11 @@ const Pricing = () => {
             {/* Price */}
             <div className="mt-6 sm:mt-8">
               <div>
-                <p className="font-['Helvetica_Neue'] font-bold text-[22px] sm:text-[27.1px] leading-[100%] text-[#2D2D2D]">
+                <p className="font-helvetica-neue font-bold text-[22px] sm:text-[27.1px] leading-[100%] text-[#2D2D2D]">
                   {plan.price}
                 </p>
                 <div className="flex items-center justify-between ">
-                  <p className="font-['Helvetica_Neue'] font-bold text-[14px] sm:text-[15.48px] leading-[24px] sm:leading-[27.1px]">
+                  <p className="font-helvetica-neue font-bold text-[14px] sm:text-[15.48px] leading-[24px] sm:leading-[27.1px]">
                     ORDER YOUR TAG TODAY!
                   </p>
                   <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#343D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="cursor-pointer">

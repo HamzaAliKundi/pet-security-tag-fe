@@ -17,7 +17,7 @@ const Message = () => {
 
       {/* Title - Positioned over the bottom of the image */}
       <div className="relative z-10 -mt-24 md:-mt-32 max-w-7xl mx-auto mb-12 md:mb-12">
-        <h2 className="font-['Helvetica_Neue'] font-bold text-3xl md:text-5xl leading-tight text-center text-white">
+        <h2 className="font-helvetica-neue font-bold text-3xl md:text-5xl leading-tight text-center text-white">
           Immediately receive a text message when your<br className="hidden md:block" />
           pets tag is scanned
         </h2>
@@ -25,7 +25,7 @@ const Message = () => {
 
       {/* Bullet Points */}
       <div className="flex justify-center mt-12 md:mt-8 px-6">
-        <ul className="list-disc space-y-1 font-['Helvetica_Neue'] text-lg md:text-2xl leading-relaxed text-white">
+        <ul className="list-disc space-y-1 font-helvetica-neue text-lg md:text-2xl leading-relaxed text-white">
           <li>Activate your tag in seconds by scanning it with your phone</li>
           <li>Receive instant, accurate notifications when your pet is found</li>
           <li>We charge a small monthly fee to maintain the technology to keep your pet safe</li>

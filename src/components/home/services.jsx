@@ -26,7 +26,7 @@ const Services = () => {
     <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-16">
       {/* Notice Banner */}
       <div className="w-full max-w-[957px] mx-auto bg-[#4CB2E2] rounded-[8px] px-4 sm:px-8 md:px-12 py-4 sm:py-6">
-        <p className="font-['Helvetica_Neue'] font-medium text-[14px] sm:text-[16px] md:text-[20px] text-white text-center sm:text-left">
+        <p className="font-helvetica-neue font-medium text-[14px] sm:text-[16px] md:text-[20px] text-white text-center sm:text-left">
          <span className='font-bold'> Notice: </span> if you are age 65 and over you can have any package for free - add link to explain how it works and
           <a href="#how-it-works" className="underline ml-1 hover:text-blue-100">
           Order Tag
@@ -50,12 +50,12 @@ const Services = () => {
             </div>
 
             {/* Title */}
-            <h3 className="font-['Helvetica_Neue'] font-bold text-[18px] sm:text-[20px] md:text-[22px] leading-[24px] sm:leading-[28px] md:leading-[30px] text-center capitalize mb-2 sm:mb-3 md:mb-4">
+            <h3 className="font-helvetica-neue font-bold text-[18px] sm:text-[20px] md:text-[22px] leading-[24px] sm:leading-[28px] md:leading-[30px] text-center capitalize mb-2 sm:mb-3 md:mb-4">
               {service.title}
             </h3>
 
             {/* Description */}
-            <p className="font-['Helvetica_Neue'] font-normal text-[14px] sm:text-[15px] md:text-[16px] leading-[20px] sm:leading-[22px] md:leading-[25px] text-center capitalize">
+            <p className="font-helvetica-neue font-normal text-[14px] sm:text-[15px] md:text-[16px] leading-[20px] sm:leading-[22px] md:leading-[25px] text-center capitalize">
               {service.description}
             </p>
           </div>

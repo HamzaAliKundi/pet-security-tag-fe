@@ -6,12 +6,12 @@ const Hero = () => {
       {/* Left Side */}
       <div className="w-full flex justify-end md:max-w-[600px]">
         <div>
-        <h1 className="font-['Helvetica_Neue'] font-bold text-[50px] md:text-[99px] leading-[50px] md:leading-[91px] tracking-[-0.04em]">
+        <h1 className="font-helvetica-neue font-bold text-[50px] md:text-[99px] leading-[50px] md:leading-[91px] tracking-[-0.04em]">
           The Fastest<br />
           <span className="text-[#FDD30F]"> <span className="text-black">Way To</span> Find</span><br />
           <span className="text-[#FDD30F]">Your Pet</span>
         </h1>
-        <p className="mt-4 text-gray-500 max-w-md font-['Helvetica_Neue'] font-bold text-sm md:text-base leading-[136%] tracking-[0.01em] capitalize">
+        <p className="mt-4 text-gray-500 max-w-md font-helvetica-neue font-bold text-sm md:text-base leading-[136%] tracking-[0.01em] capitalize">
           Age 65+ Get Our Complete Service For Free! If You're 65 Or Older, You Can Get A Free Account With All Our Services. Simply Send Us Your Proof Of ID Via Email And We'll Guide You Through The Quick Activation Process. We're Here To Make Pet Safety Accessible For Our Senior Community.
         </p>
  
