@@ -75,7 +75,7 @@ const Footer = () => {
           {Object.entries(footerLinks).map(([key, section], index) => (
             <div 
               key={key} 
-              className={`flex flex-col items-start ${index === 0 ? 'ml-4 sm:ml-8' : ''}`}
+              className={`flex flex-col items-start ${index === 0 ? 'ml-4 ml-0 md:ml-8' : ''}`}
             >
               <h3 className="font-helvetica-neue font-bold text-[16px] leading-[24px] mb-6">
                 {section.title}
