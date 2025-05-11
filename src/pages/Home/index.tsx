@@ -3,7 +3,7 @@ import Hero from '../../components/home/hero';
 import Message from '../../components/home/message';
 import Digital from '../../components/home/digital';
 import Pricing from '../../components/home/pricing';
-
+import Services from '../../components/home/services';
 const HomePage = () => {
   return (
     <div>
@@ -11,6 +11,7 @@ const HomePage = () => {
       <Message />
       <Digital />
       <Pricing />
+      <Services />
     </div>
   )
 }
