@@ -4,6 +4,8 @@ import Message from '../../components/home/message';
 import Digital from '../../components/home/digital';
 import Pricing from '../../components/home/pricing';
 import Services from '../../components/home/services';
+import GetMoreInfo from '../../components/home/getMoreOnfo';
+
 const HomePage = () => {
   return (
     <div>
@@ -12,6 +14,7 @@ const HomePage = () => {
       <Digital />
       <Pricing />
       <Services />
+      <GetMoreInfo />
     </div>
   )
 }

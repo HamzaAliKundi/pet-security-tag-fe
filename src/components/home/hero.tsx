@@ -24,7 +24,7 @@ const Hero = () => {
           </a>
           <a
             href="#"
-            className="bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-2 md:py-3 px-4 md:px-6 rounded-full text-center shadow-md transition text-sm md:text-base"
+            className="bg-gradient-to-br from-[#FFD700] to-[#B89D0B] hover:opacity-90 text-black font-bold py-2 md:py-3 px-4 md:px-6 rounded-full text-center shadow-md transition text-sm md:text-base"
           >
             ORDER YOUR TAG TODAY!
           </a>

@@ -33,11 +33,11 @@ const Message = () => {
       </div>
 
       {/* Buttons */}
-      <div className="flex justify-center mt-12 md:mt-12 px-6 flex flex-row gap-2">
-        <button className="w-[355px] h-[74px] bg-[#FDD30F] text-black font-bold rounded-[100px] px-6 hover:bg-[#e5be0d] transition-colors text-sm md:text-base">
+      <div className="flex justify-center mt-12 md:mt-12 px-6 flex-row gap-[8px]">
+        <button className="w-[355px] h-[74px] text-black font-bold rounded-[100px] px-[24px] hover:opacity-90 transition-colors text-sm md:text-base bg-gradient-to-br from-[#FFD700] to-[#B89D0B]">
           SHOP NOW
         </button>
-        <button className="w-[355px] h-[74px] bg-black text-white font-bold rounded-[100px] px-6 hover:bg-gray-900 transition-colors text-sm md:text-base">
+        <button className="w-[355px] h-[74px] bg-black text-white font-bold rounded-[100px] px-[24px] hover:bg-gray-900 transition-colors text-sm md:text-base">
           LEARN MORE
         </button>
       </div>
