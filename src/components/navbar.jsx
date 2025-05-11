@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { Link } from 'react-router-dom';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -30,7 +30,7 @@ const Navbar = () => {
         </div>
 
         {/* Right: Login button (hidden on mobile) */}
-        <button className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#FDD30F] hover:bg-[#3da1d1] transition-all hidden md:block">LOGIN NOW</button>
+        <Link to="/login" className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#FDD30F] hover:bg-[#3da1d1] transition-all hidden md:block">LOGIN NOW</Link>
 
         {/* Hamburger menu button (mobile only) */}
         <button
@@ -56,7 +56,7 @@ const Navbar = () => {
             <a href="#" className="text-black font-normal">PET TAG</a>
             <a href="#" className="text-black font-normal">CONTACT US</a>
             <button className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#4CB2E2] hover:bg-[#3da1d1] transition-all">GET YOUR PET TAG</button>
-            <button className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#FDD30F] hover:bg-[#3da1d1] transition-all">LOGIN NOW</button>
+            <Link to="/login" className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#FDD30F] hover:bg-[#3da1d1] transition-all">LOGIN NOW</Link>
           </div>
         </div>
       )}
