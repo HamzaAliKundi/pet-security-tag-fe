@@ -9,7 +9,7 @@ import ServicesInfo from '../../components/home/servicesInfo';
 import Customers from '../../components/home/customer';
 import GetStarted from '../../components/home/getStarted';
 import Order from '../../components/home/order';
-import Faqs from '../../components/home/faqs';
+import Faqs from '../../components/common/faqs';
 
 const HomePage = () => {
   return (

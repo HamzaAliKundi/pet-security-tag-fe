@@ -23,10 +23,10 @@ const Navbar = () => {
 
         {/* Center: Navigation links (hidden on mobile) */}
         <div className="hidden md:flex items-center space-x-8">
-          <a href="#" className="font-bold text-black">HOME</a>
-          <a href="#" className="text-black font-normal">FAQS</a>
-          <a href="#" className="text-black font-normal">PET TAG</a>
-          <a href="#" className="text-black font-normal">CONTACT US</a>
+          <Link to="/" className="font-bold text-black">HOME</Link>
+          <Link to="/faqs" className="text-black font-normal">FAQS</Link>
+          <Link to="/pet-tag" className="text-black font-normal">PET TAG</Link>
+          <Link to="/contact" className="text-black font-normal">CONTACT US</Link>
         </div>
 
         {/* Right: Login button (hidden on mobile) */}
@@ -51,10 +51,10 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden absolute top-20 left-0 w-full bg-white shadow-lg z-50 animate-fade-in">
           <div className="flex flex-col items-center py-4 space-y-4">
-            <a href="#" className="font-bold text-black">HOME</a>
-            <a href="#" className="text-black font-normal">FAQS</a>
-            <a href="#" className="text-black font-normal">PET TAG</a>
-            <a href="#" className="text-black font-normal">CONTACT US</a>
+            <Link to="/" className="font-bold text-black">HOME</Link>
+            <Link to="/faqs" className="text-black font-normal">FAQS</Link>
+            <Link to="/pet-tag" className="text-black font-normal">PET TAG</Link>
+            <Link to="/contact" className="text-black font-normal">CONTACT US</Link>
             <button className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#4CB2E2] hover:bg-[#3da1d1] transition-all">GET YOUR PET TAG</button>
             <Link to="/login" className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#FDD30F] hover:bg-[#3da1d1] transition-all">LOGIN NOW</Link>
           </div>
