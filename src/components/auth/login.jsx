@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
-      <div className="w-full max-w-[650px] space-y-6">
+      <div className="w-full max-w-[650px] space-y-4">
         {/* Header */}
         <div className="text-start space-y-4">
           <h1 className="font-helvetica-neue font-medium text-[32px] leading-[100%] text-[#05131D] capitalize">
@@ -17,7 +17,7 @@ const Login = () => {
         </div>
 
         {/* Login Form */}
-        <div className="bg-white rounded-lg p-8 space-y-6">
+        <div className="bg-white rounded-lg px-2 m:px-8 py-4 md:py-8 space-y-4">
           <h2 className="font-helvetica-neue font-medium text-2xl leading-[100%] text-center capitalize">
             Login
           </h2>
@@ -59,7 +59,7 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-4 !mt-10">
             <p className="font-helvetica-neue font-[500] text-base leading-[100%] tracking-[0%] text-center capitalize">
               Don't have an account?
             </p>
