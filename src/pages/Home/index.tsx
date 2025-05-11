@@ -8,6 +8,7 @@ import Message from './../../components/home/message';
 import ServicesInfo from '../../components/home/servicesInfo';
 import Customers from '../../components/home/customer';
 import GetStarted from '../../components/home/getStarted';
+import Order from '../../components/home/order';
 
 const HomePage = () => {
   return (
@@ -21,6 +22,7 @@ const HomePage = () => {
       <ServicesInfo />
       <Customers />
       <GetStarted />
+      <Order />
     </div>
   )
 }

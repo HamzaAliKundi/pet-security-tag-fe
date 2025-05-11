@@ -4,10 +4,12 @@ import Navbar from "./components/navbar";
 import HomePage from './pages/Home/index';
 import Login from "./components/auth/login";
 import Signup from "./components/auth/signup";
+import Footer from "./components/footer";
 
 const AppRoutes = () => {
   const location = useLocation();
   const showNavbar = !['/login', '/signup'].includes(location.pathname);
+  const showFooter = !['/login', '/signup'].includes(location.pathname);
 
   return (
     <>
@@ -18,6 +20,7 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
+      {showFooter && <Footer />}
     </>
   );
 }
