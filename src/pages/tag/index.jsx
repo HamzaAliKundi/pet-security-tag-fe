@@ -4,7 +4,7 @@ import Customers from './../../components/common/customer';
 import ServicesInfo from '../../components/common/servicesInfo';
 import Gps from '../../components/tag/gps';
 import GetStarted from '../../components/common/getStarted';
-import Search from '../../components/tag/search';
+import Search from '../../components/common/search';
 import Faqs from '../../components/common/faqs';
 import SmartTag from '../../components/tag/smatTag';
 const PetTagPage = () => {
