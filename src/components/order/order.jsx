@@ -10,7 +10,7 @@ const Order = () => {
     return (
         <div className="max-w-7xl mx-auto px-4 py-16">
             {/* Main Title */}
-            <h1 className="font-helvetica-neue font-medium text-[48px] leading-[100%] text-black text-center capitalize mb-16 max-w-[482px] mx-auto">
+            <h1 className="font-helvetica-neue font-medium text-[28px] sm:text-[36px] md:text-[48px] leading-[110%] md:leading-[100%] text-black text-center capitalize mb-8 sm:mb-12 md:mb-16 max-w-[300px] sm:max-w-[400px] md:max-w-[482px] mx-auto">
                 Order Your PetSecure
                 <br />
                 Tag Today!
@@ -19,7 +19,7 @@ const Order = () => {
             <div className="flex flex-col lg:flex-row justify-between items-start gap-16">
                 {/* Left Section - Image */}
                 <div className="w-full lg:w-[437px] flex flex-col items-center gap-6">
-                    <h2 className="font-helvetica-neue font-bold text-[40px] leading-[100%] text-black text-center uppercase h-[120px]">
+                    <h2 className="font-helvetica-neue font-bold text-[28px] sm:text-[36px] md:text-[40px] leading-[110%] md:leading-[100%] text-black text-center uppercase h-[90px] sm:h-[100px] md:h-[120px]">
                         ORDER YOUR SMART
                         <br />
                         TAG TODAY
