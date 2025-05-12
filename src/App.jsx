@@ -6,6 +6,7 @@ import Login from "./components/auth/login";
 import Signup from "./components/auth/signup";
 import Footer from "./components/footer";
 import ContactUsPage from "./pages/contact";
+import FaqsPage from "./pages/faqs";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -19,6 +20,7 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/contact" element={<ContactUsPage />} />
+        <Route path="/faqs" element={<FaqsPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>

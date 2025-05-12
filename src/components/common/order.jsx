@@ -2,7 +2,7 @@ import React from 'react'
 
 const Order = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-16 mt-32">
+    <div className="max-w-7xl mx-auto px-4 py-16 mt-0 md:mt-32">
       <div className="relative w-full lg:w-[1200px] h-[473px] overflow-visible">
         {/* Blue Background Box */}
         <div className="absolute inset-0 bg-[#4CB2E2]/25 rounded-[16px]"></div>
