@@ -7,6 +7,7 @@ import Signup from "./components/auth/signup";
 import Footer from "./components/footer";
 import ContactUsPage from "./pages/contact";
 import FaqsPage from "./pages/faqs";
+import PetTagPage from "./pages/tag";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -21,6 +22,7 @@ const AppRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/contact" element={<ContactUsPage />} />
         <Route path="/faqs" element={<FaqsPage />} />
+        <Route path="/pet-tag" element={<PetTagPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>

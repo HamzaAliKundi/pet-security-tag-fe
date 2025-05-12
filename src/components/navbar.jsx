@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path;
+
+  const handleLinkClick = () => {
+    if (isMenuOpen) setIsMenuOpen(false);
+  };
 
   return (
-    <nav className="w-full h-20 bg-white shadow-sm flex items-center  left-0 z-50">
+    <nav className="w-full h-20 bg-white shadow-sm flex items-center left-0 z-50">
       <div className="max-w-[1440px] w-full mx-auto px-5 flex items-center justify-between">
         {/* Left: Logo and GET YOUR PET TAG button */}
         <div className="flex items-center space-x-8">
@@ -23,10 +31,10 @@ const Navbar = () => {
 
         {/* Center: Navigation links (hidden on mobile) */}
         <div className="hidden md:flex items-center space-x-8">
-          <Link to="/" className="font-bold text-black">HOME</Link>
-          <Link to="/faqs" className="text-black font-normal">FAQS</Link>
-          <Link to="/pet-tag" className="text-black font-normal">PET TAG</Link>
-          <Link to="/contact" className="text-black font-normal">CONTACT US</Link>
+          <Link to="/" className={`${isActive('/') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>HOME</Link>
+          <Link to="/faqs" className={`${isActive('/faqs') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>FAQS</Link>
+          <Link to="/pet-tag" className={`${isActive('/pet-tag') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>PET TAG</Link>
+          <Link to="/contact" className={`${isActive('/contact') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>CONTACT US</Link>
         </div>
 
         {/* Right: Login button (hidden on mobile) */}
@@ -51,10 +59,10 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden absolute top-20 left-0 w-full bg-white shadow-lg z-50 animate-fade-in">
           <div className="flex flex-col items-center py-4 space-y-4">
-            <Link to="/" className="font-bold text-black">HOME</Link>
-            <Link to="/faqs" className="text-black font-normal">FAQS</Link>
-            <Link to="/pet-tag" className="text-black font-normal">PET TAG</Link>
-            <Link to="/contact" className="text-black font-normal">CONTACT US</Link>
+            <Link to="/" className={`${isActive('/') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>HOME</Link>
+            <Link to="/faqs" className={`${isActive('/faqs') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>FAQS</Link>
+            <Link to="/pet-tag" className={`${isActive('/pet-tag') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>PET TAG</Link>
+            <Link to="/contact" className={`${isActive('/contact') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>CONTACT US</Link>
             <button className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#4CB2E2] hover:bg-[#3da1d1] transition-all">GET YOUR PET TAG</button>
             <Link to="/login" className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#FDD30F] hover:bg-[#3da1d1] transition-all">LOGIN NOW</Link>
           </div>
@@ -65,3 +73,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+  

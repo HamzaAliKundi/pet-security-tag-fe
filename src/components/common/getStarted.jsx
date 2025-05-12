@@ -50,7 +50,7 @@ const GetStarted = () => {
               </div>
 
               {/* Title */}
-              <h3 className="font-helvetica-neue font-bold text-[24px] leading-[31.99px] capitalize mb-3">
+              <h3 className="font-helvetica-neue font-bold text-[#283646] text-[24px] leading-[31.99px] capitalize mb-3">
                 {step.title}
               </h3>
 

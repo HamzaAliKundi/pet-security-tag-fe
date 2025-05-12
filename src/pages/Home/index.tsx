@@ -5,11 +5,11 @@ import Services from '../../components/home/services';
 import Digital from '../../components/home/digital';
 import Pricing from './../../components/home/pricing';
 import Message from './../../components/home/message';
-import ServicesInfo from '../../components/home/servicesInfo';
-import Customers from '../../components/home/customer';
-import GetStarted from '../../components/home/getStarted';
+import ServicesInfo from '../../components/common/servicesInfo';
+import Customers from '../../components/common/customer';
 import Order from '../../components/common/order';
 import Faqs from '../../components/common/faqs';
+import GetStarted from '../../components/common/getStarted';
 
 const HomePage = () => {
   return (
