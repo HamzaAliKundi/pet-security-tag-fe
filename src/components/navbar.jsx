@@ -35,6 +35,7 @@ const Navbar = () => {
           <Link to="/faqs" className={`${isActive('/faqs') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>FAQS</Link>
           <Link to="/pet-tag" className={`${isActive('/pet-tag') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>PET TAG</Link>
           <Link to="/contact" className={`${isActive('/contact') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>CONTACT US</Link>
+          <Link to="/blog" className={`${isActive('/blog') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>BLOG</Link>
         </div>
 
         {/* Right: Login button (hidden on mobile) */}
@@ -63,6 +64,7 @@ const Navbar = () => {
             <Link to="/faqs" className={`${isActive('/faqs') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>FAQS</Link>
             <Link to="/pet-tag" className={`${isActive('/pet-tag') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>PET TAG</Link>
             <Link to="/contact" className={`${isActive('/contact') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>CONTACT US</Link>
+            <Link to="/blog " className={`${isActive('/blog') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>BLOG</Link>
             <button className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#4CB2E2] hover:bg-[#3da1d1] transition-all">GET YOUR PET TAG</button>
             <Link to="/login" className="bg-[#4CB2E2] text-white font-bold px-8 py-2 rounded-full border-2 border-[#FDD30F] hover:bg-[#3da1d1] transition-all">LOGIN NOW</Link>
           </div>
