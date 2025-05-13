@@ -8,7 +8,7 @@ const Footer = () => {
       links: [
         { name: 'Order Your Tag', path: '/order' },
         { name: 'Pricing', path: '#pricing' },
-        { name: 'Blog', path: '/blog' },
+        // { name: 'Blog', path: '/blog' },
         { name: 'Refer A Friend', path: '#refer-a-friend' }
       ]
     },
