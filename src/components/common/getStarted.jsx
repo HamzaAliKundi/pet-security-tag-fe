@@ -15,7 +15,7 @@ const GetStarted = () => {
     {
       number: '03',
       title: 'Choose Subscription',
-      description: 'For continuous pet protection, choose between our £1.99/ month subscription or a convenient yearly payment. The yearly plan comes with a discount of 25%, ensuring constant protection for your furry friend at a reduced rate.'
+      description: 'For continuous pet protection, choose between our £1.45/ month subscription or a convenient yearly payment. The yearly plan comes with a discount of 25%, ensuring constant protection for your furry friend at a reduced rate.'
     },
     {
       number: '04',
