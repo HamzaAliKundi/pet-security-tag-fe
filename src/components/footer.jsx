@@ -4,7 +4,7 @@ const Footer = () => {
   const footerLinks = {
     menu: {
       title: 'Menu',
-      links: ['Order Your Tag', 'Blog', 'Pricing', 'Refer A Friend']
+      links: ['Order Your Tag', 'Pricing', 'Refer A Friend']
     },
     company: {
       title: 'Company',
