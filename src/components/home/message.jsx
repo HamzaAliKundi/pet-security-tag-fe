@@ -18,7 +18,7 @@ const Message = () => {
       {/* Title - Positioned over the bottom of the image */}
       <div className="relative z-10 -mt-24 md:-mt-32 max-w-7xl mx-auto mb-12 md:mb-12">
         <h2 className="font-helvetica-neue font-bold text-3xl md:text-5xl leading-tight text-center text-white">
-          Immediately receive a text message when your<br className="hidden md:block" />
+          Immediately receive a text message when your<br className="hidden md:block" /> {" "}
           pets tag is scanned
         </h2>
       </div>

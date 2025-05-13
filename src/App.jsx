@@ -10,6 +10,8 @@ import FaqsPage from "./pages/faqs";
 import PetTagPage from "./pages/tag";
 import BlogPage from "./pages/blog";
 import OrderPage from "./pages/order";
+import ProfilePage from "./pages/profile";
+import BlogDetail from "./pages/blog-detail";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -26,7 +28,9 @@ const AppRoutes = () => {
         <Route path="/faqs" element={<FaqsPage />} />
         <Route path="/pet-tag" element={<PetTagPage />} />
         <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog-detail/:id" element={<BlogDetail />} />
         <Route path="/order" element={<OrderPage />} />
+        <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>

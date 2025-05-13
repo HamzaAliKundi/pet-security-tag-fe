@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Blog = () => {
   const blogPosts = [
@@ -113,7 +114,7 @@ const Blog = () => {
                     {post.description.length > 80 ? (
                       <>
                         {post.description.substring(0, 80)} 
-                        <span className="text-black cursor-pointer ml-1"> <u> Read more </u> </span>
+                        <Link to={`/blog-detail/${post.id}`} className="text-black cursor-pointer ml-1" onClick={() => window.scrollTo(0, 0)}> <u> Read more </u> </Link>
                       </>
                     ) : post.description}
                   </>
