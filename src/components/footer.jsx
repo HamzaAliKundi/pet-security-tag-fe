@@ -1,18 +1,32 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Footer = () => {
   const footerLinks = {
     menu: {
       title: 'Menu',
-      links: ['Order Your Tag', 'Pricing', 'Refer A Friend']
+      links: [
+        { name: 'Order Your Tag', path: '/order' },
+        { name: 'Pricing', path: '#pricing' },
+        { name: 'Blog', path: '/blog' },
+        { name: 'Refer A Friend', path: '#refer-a-friend' }
+      ]
     },
     company: {
       title: 'Company',
-      links: ['About Us', 'Contact Us', 'Support']
+      links: [
+        { name: 'About Us', path: '#about-us' },
+        { name: 'Contact Us', path: '/contact' },
+        { name: 'Support', path: '#support' }
+      ]
     },
     support: {
       title: 'Support',
-      links: ['Shipping Policy', 'Cancellation Policy', 'Privacy Policy']
+      links: [
+        { name: 'Shipping Policy', path: '#shipping-policy' },
+        { name: 'Cancellation Policy', path: '#cancellation-policy' },
+        { name: 'Privacy Policy', path: '#privacy-policy' }
+      ]
     }
   }
 
@@ -22,6 +36,10 @@ const Footer = () => {
     { name: 'TikTok', icon: '/home/tiktok.svg' },
     { name: 'YouTube', icon: '/home/youtube.svg' }
   ]
+
+  const handleLinkClick = () => {
+    window.scrollTo(0, 0)
+  }
 
   return (
     <footer className="max-w-7xl mx-auto px-4 py-16">
@@ -82,13 +100,23 @@ const Footer = () => {
               </h3>
               <ul className="space-y-2">
                 {section.links.map((link) => (
-                  <li key={link}>
-                    <a 
-                      href={`#${link.toLowerCase().replace(/\s+/g, '-')}`}
-                      className="font-helvetica-neue font-normal text-[16px] leading-[24px] text-[#6E6E6E] hover:text-[#333333] transition-colors"
-                    >
-                      {link}
-                    </a>
+                  <li key={link.name}>
+                    {link.path.startsWith('/') ? (
+                      <Link 
+                        to={link.path}
+                        className="font-helvetica-neue font-normal text-[16px] leading-[24px] text-[#6E6E6E] hover:text-[#333333] transition-colors"
+                        onClick={handleLinkClick}
+                      >
+                        {link.name}
+                      </Link>
+                    ) : (
+                      <a 
+                        href={link.path}
+                        className="font-helvetica-neue font-normal text-[16px] leading-[24px] text-[#6E6E6E] hover:text-[#333333] transition-colors"
+                      >
+                        {link.name}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
