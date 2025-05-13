@@ -16,7 +16,7 @@ const Digital = () => {
           </div>
 
           <h2 className="font-helvetica-neue font-bold text-[28px] md:text-[40px] leading-[38px] md:leading-[53px] tracking-[-1.45px] text-[#0F2137] capitalize mb-6">
-            At Digital Tails, you'll never<br className="hidden md:block" />
+            At Digital Tails, you'll never<br className="hidden md:block" />{" "}
             struggle to reach us
           </h2>
 
