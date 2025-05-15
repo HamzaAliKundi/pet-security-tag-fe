@@ -14,7 +14,7 @@ const Banner = () => {
         }}
       >
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/70"></div>
+        <div className="absolute inset-0 bg-black/70 md:bg-black/0"></div>
       </div>
 
       {/* Content Container */}
