@@ -7,14 +7,14 @@ const Banner = () => {
       <div 
         className="absolute inset-0 w-full h-full"
         style={{
-          backgroundImage: 'url(/contact/banner.svg)',
+          backgroundImage: 'url(/blog-detail/banner.svg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}
       >
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="absolute inset-0 bg-black/70"></div>
       </div>
 
       {/* Content Container */}
