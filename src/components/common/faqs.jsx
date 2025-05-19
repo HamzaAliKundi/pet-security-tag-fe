@@ -9,9 +9,9 @@ const Faqs = () => {
             answer: 'PetSecure Tag is a smart pet identification system that uses QR technology to help locate lost pets quickly and efficiently.'
         },
         {
-            question: 'Is Having A Pet Tag A Legal Requirement In The UK?',
-            answer: "Yes, it is a legal requirement in the UK to have a pet tag on a dog in public."
-        },
+    question: 'Is Having A Pet Tag A Legal Requirement In The UK?',
+    answer: "Yes, it is a legal requirement in the UK to have a pet tag on a dog in public.<br><br>According to the Control of Dogs Order 1992, all dogs must wear a collar and ID tag when out in public, which must detail their owner’s name and address. This dog ID tags UK law applies whether your dog is on a lead or not. Contravention of this order is an offence and risks a fine of up to £2000.<br><br>If your dog is involved in an altercation, an accident, or runs off, a dog ID tag is the quickest way for someone to contact you about your dog."
+},
         {
             question: 'Can I Use PetSecure Tag Alongside Microchipping?',
             answer: 'Yes, PetSecure Tag works perfectly alongside microchipping, providing an additional layer of security for your pet.'
