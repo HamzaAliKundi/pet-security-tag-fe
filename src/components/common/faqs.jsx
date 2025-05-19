@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 const Faqs = () => {
-    const [openFaq, setOpenFaq] = useState(-1) // First FAQ open by default
+    const [openFaq, setOpenFaq] = useState(1)
 
     const faqData = [
         {
@@ -9,9 +9,9 @@ const Faqs = () => {
             answer: 'PetSecure Tag is a smart pet identification system that uses QR technology to help locate lost pets quickly and efficiently.'
         },
         {
-    question: 'Is Having A Pet Tag A Legal Requirement In The UK?',
-    answer: "Yes, it is a legal requirement in the UK to have a pet tag on a dog in public.<br><br>According to the Control of Dogs Order 1992, all dogs must wear a collar and ID tag when out in public, which must detail their owner’s name and address. This dog ID tags UK law applies whether your dog is on a lead or not. Contravention of this order is an offence and risks a fine of up to £2000.<br><br>If your dog is involved in an altercation, an accident, or runs off, a dog ID tag is the quickest way for someone to contact you about your dog."
-},
+            question: 'Is Having A Pet Tag A Legal Requirement In The UK?',
+            answer: "Yes, it is a legal requirement in the UK to have a pet tag on a dog in public.<br><br>According to the Control of Dogs Order 1992, all dogs must wear a collar and ID tag when out in public, which must detail their owner's name and address. This dog ID tags UK law applies whether your dog is on a lead or not. Contravention of this order is an offence and risks a fine of up to £2000.<br><br>If your dog is involved in an altercation, an accident, or runs off, a dog ID tag is the quickest way for someone to contact you about your dog."
+        },
         {
             question: 'Can I Use PetSecure Tag Alongside Microchipping?',
             answer: 'Yes, PetSecure Tag works perfectly alongside microchipping, providing an additional layer of security for your pet.'
@@ -59,7 +59,7 @@ const Faqs = () => {
                                 <h3 className={`font-helvetica-neue ${openFaq === index
                                         ? 'font-bold text-white'
                                         : 'font-normal text-[#2D2D2D]'
-                                    } text-[22px] leading-[100%] capitalize pr-2`}
+                                    } text-[18px] sm:text-[22px] leading-[100%] capitalize pr-2`}
                                 >
                                     {faq.question}
                                 </h3>
@@ -96,9 +96,10 @@ const Faqs = () => {
 
                             {/* Answer */}
                             {openFaq === index && (
-                                <p className="font-helvetica-neue font-normal text-[16px] leading-[23.5px] text-white capitalize mt-4">
-                                    {faq.answer}
-                                </p>
+                                <p 
+                                    className="font-helvetica-neue font-normal text-[14px] sm:text-[16px] leading-[23.5px] text-white capitalize mt-4"
+                                    dangerouslySetInnerHTML={{ __html: faq.answer }}
+                                />
                             )}
                         </div>
                     ))}

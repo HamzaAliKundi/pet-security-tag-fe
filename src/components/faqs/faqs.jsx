@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 const Faqs = () => {
-  const [openFaq, setOpenFaq] = useState(-1)
+  const [openFaq, setOpenFaq] = useState(1)
 
   const faqData = [
     {
@@ -9,8 +9,8 @@ const Faqs = () => {
       answer: 'PetSecure Tag is a smart pet identification system that uses QR technology to help locate lost pets quickly and efficiently.'
     },
     {
-      question: 'Is having a pet tag a legal requirement in the UK?',
-      answer: "Yes, it is a legal requirement in the UK to have a pet tag on a dog in public."
+      question: 'Is Having A Pet Tag A Legal Requirement In The UK?',
+      answer: "Yes, it is a legal requirement in the UK to have a pet tag on a dog in public.<br><br>According to the Control of Dogs Order 1992, all dogs must wear a collar and ID tag when out in public, which must detail their owner's name and address. This dog ID tags UK law applies whether your dog is on a lead or not. Contravention of this order is an offence and risks a fine of up to £2000.<br><br>If your dog is involved in an altercation, an accident, or runs off, a dog ID tag is the quickest way for someone to contact you about your dog."
     },
     {
       question: 'Can I use PetSecure Tag alongside Microchipping?',
@@ -54,14 +54,15 @@ const Faqs = () => {
     }
   ]
   return (
-    <div className="max-w-7xl mx-auto px-4 py-16 overflow-x-hidden">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 py-16">
       <div className="flex justify-center items-center mb-12">
-        <h1 className="font-helvetica-neue font-bold text-[40px] leading-[53.23px] text-[#0F2137] tracking-[-1.45px] text-center">
-        PetSecure Tag Important Faqs        </h1>
+        <h1 className="font-helvetica-neue font-bold text-[28px] sm:text-[40px] leading-[1.2] text-[#0F2137] tracking-[-1.45px] text-center px-2">
+          PetSecure Tag Important Faqs
+        </h1>
       </div>
       <div className="flex flex-col lg:flex-row justify-between">
         {/* Left Section */}
-        <div className="lg:w-1/ 3">
+        <div className="lg:w-1/3 px-2">
           {/* FAQ Badge */}
           <div className="inline-flex items-center h-[34px] px-[8px] rounded-[30px] bg-[#4CB2E2] border border-[#FDD30F] mb-6">
             <span className="text-white font-bold text-sm">FAQ's</span>
@@ -75,7 +76,7 @@ const Faqs = () => {
         </div>
 
         {/* Right Section - FAQs */}
-        <div className="lg:w-[700px] space-y-6 mt-10 lg:mt-0 w-full">
+        <div className="lg:w-[700px] space-y-6 mt-10 lg:mt-0 w-full px-2">
           {faqData.map((faq, index) => (
             <div
               key={index}
@@ -90,7 +91,7 @@ const Faqs = () => {
                 <h3 className={`font-helvetica-neue ${openFaq === index
                   ? 'font-bold text-white'
                   : 'font-normal text-[#2D2D2D]'
-                  } text-[22px] leading-[100%] capitalize pr-2 ${openFaq !== index ? 'font-helvetica-neue font-normal text-[22px] leading-[100%] tracking-[0%]' : ''}`}
+                  } text-[18px] sm:text-[22px] leading-[100%] capitalize pr-2 ${openFaq !== index ? 'font-helvetica-neue font-normal text-[18px] sm:text-[22px] leading-[100%] tracking-[0%]' : ''}`}
                 >
                   {faq.question}
                 </h3>
@@ -107,9 +108,10 @@ const Faqs = () => {
 
               {/* Answer */}
               {openFaq === index && (
-                <p className="font-helvetica-neue font-normal text-[16px] leading-[23.5px] text-white capitalize mt-4">
-                  {faq.answer}
-                </p>
+                <p 
+                  className="font-helvetica-neue font-normal text-[14px] sm:text-[16px] leading-[23.5px] text-white capitalize mt-4"
+                  dangerouslySetInnerHTML={{ __html: faq.answer }}
+                />
               )}
             </div>
           ))}
