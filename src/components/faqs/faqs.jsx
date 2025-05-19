@@ -10,7 +10,7 @@ const Faqs = () => {
     },
     {
       question: 'Is having a pet tag a legal requirement in the UK?',
-      answer: "Yes, in the UK, having a pet tag with the owner's contact information is a legal requirement for all dogs."
+      answer: "Yes, it is a legal requirement in the UK to have a pet tag on a dog in public."
     },
     {
       question: 'Can I use PetSecure Tag alongside Microchipping?',
