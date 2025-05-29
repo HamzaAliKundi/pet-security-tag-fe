@@ -20,7 +20,7 @@ const Form = () => {
       <div className="max-w-[834px] mx-auto bg-[#CAE8F7]/70 rounded-2xl p-8 sm:p-12">
         {/* Form Title */}
         <h2 className="font-helvetica-neue font-normal text-[20px] sm:text-[24px] leading-[100%] tracking-[-0.02em] text-center text-black mb-12 max-w-[650px] mx-auto">
-          Want to collaborate with Digital Tails? Fill out the form below and we'll get back to you as soon as possible.
+        If you have any questions or concerns, feel free to reach out to us. We’ll get back to you as soon as possible.
         </h2>
 
         {/* Form */}

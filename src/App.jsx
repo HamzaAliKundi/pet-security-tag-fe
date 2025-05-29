@@ -12,6 +12,7 @@ import BlogPage from "./pages/blog";
 import OrderPage from "./pages/order";
 import ProfilePage from "./pages/profile";
 import BlogDetail from "./pages/blog-detail";
+import GetInfo from "./components/get-info/get-info";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -31,6 +32,7 @@ const AppRoutes = () => {
         <Route path="/blog-detail/:id" element={<BlogDetail />} />
         <Route path="/order" element={<OrderPage />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
+        <Route path="/get-info" element={<GetInfo />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const GetMoreInfo = () => {
   return (
@@ -23,13 +24,14 @@ const GetMoreInfo = () => {
           </h2>
 
           {/* Button with Gradient using Tailwind */}
-          <button 
+          <Link
+            to="/get-info"
             className="w-full max-w-[268px] h-[46px] sm:h-[56px] rounded-full px-6 sm:px-8 py-3 sm:py-4 text-black font-helvetica-neue font-bold text-[12px] sm:text-[14px] leading-[100%] uppercase
             bg-gradient-to-br from-[#FFD700] to-[#B89D0B] hover:-translate-y-0.5 transition-transform duration-200
             shadow-lg hover:shadow-xl active:translate-y-0 active:shadow-md"
           >
             Get More Information
-          </button>
+          </Link>
         </div>
       </div>
     </div>

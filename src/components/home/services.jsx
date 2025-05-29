@@ -25,7 +25,7 @@ const Services = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-16">
       {/* Notice Banner */}
-      <div className="w-full max-w-[957px] mx-auto bg-[#4CB2E2] rounded-[8px] px-4 sm:px-8 md:px-12 py-4 sm:py-6">
+      {/* <div className="w-full max-w-[957px] mx-auto bg-[#4CB2E2] rounded-[8px] px-4 sm:px-8 md:px-12 py-4 sm:py-6">
         <p className="font-helvetica-neue font-medium text-[14px] sm:text-[16px] md:text-[20px] text-white text-center sm:text-left">
          <span className='font-bold'> Notice: </span> if you are age 65 and over you can have any package for free - add link to explain how it works and
           <a href="#how-it-works" className="underline ml-1 hover:text-blue-100">
@@ -35,7 +35,7 @@ const Services = () => {
              option on same page
           </span>
         </p>
-      </div>
+      </div> */}
 
       {/* Services Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12 md:mt-16 justify-items-center">
