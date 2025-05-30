@@ -11,9 +11,9 @@ const Hero = () => {
           <span className="text-[#FDD30F]"> <span className="text-black">Way To</span> Find</span><br />
           <span className="text-[#FDD30F]">Your Pet</span>
         </h1>
-        <p className="mt-4 text-gray-500 max-w-md font-helvetica-neue font-bold text-sm md:text-base leading-[136%] tracking-[0.01em] capitalize">
+        {/* <p className="mt-4 text-gray-500 max-w-md font-helvetica-neue font-bold text-sm md:text-base leading-[136%] tracking-[0.01em] capitalize">
           Age 65+ Get Our Complete Service For Free! If You're 65 Or Older, You Can Get A Free Account With All Our Services. Simply Send Us Your Proof Of ID Via Email And We'll Guide You Through The Quick Activation Process. We're Here To Make Pet Safety Accessible For Our Senior Community.
-        </p>
+        </p> */}
  
         <div className="mt-8 flex flex-col gap-4">
           <a
