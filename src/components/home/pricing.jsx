@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const Pricing = () => {
   const [isYearly, setIsYearly] = useState(false)
@@ -122,9 +123,14 @@ const Pricing = () => {
                   <p className="font-helvetica-neue font-bold text-[14px] sm:text-[15.48px] leading-[24px] sm:leading-[27.1px]">
                     ORDER YOUR TAG TODAY!
                   </p>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#343D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="cursor-pointer">
+                  <Link
+                    to="/order"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#343D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="cursor-pointer">
                     <path d="M5 12h14M12 5l7 7-7 7"/>
                   </svg>
+                  </Link>
                 </div>
               </div>
             </div>
