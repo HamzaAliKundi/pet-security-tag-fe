@@ -18,12 +18,12 @@ const Navbar = () => {
         <div className="flex items-center space-x-8">
           {/* Logo */}
           <div className="flex flex-col justify-center">
-            <div className="flex items-center">
+            <Link to="/" className="flex items-center">
               {/* D with paw icon */}
               <span className="relative flex items-center mr-1">
                <img src="/resuable/logo.svg" alt="logo" />
               </span>
-            </div>
+            </Link>
           </div>
           {/* GET YOUR PET TAG button (hidden on mobile) */}
           <Link to="/order" className="bg-[#4CB2E2] text-white font-bold text-sm px-8 py-2 rounded-full border-2 border-[#4CB2E2] hover:bg-[#3da1d1] transition-all hidden lg:block">GET YOUR PET TAG</Link>

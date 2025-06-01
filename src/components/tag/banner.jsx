@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Banner = () => {
   return (
@@ -40,11 +41,15 @@ const Banner = () => {
             </div>
 
             {/* CTA Button */}
-            <button className="mt-4 sm:mt-8 w-full sm:w-[300px] md:w-[387px] h-[50px] sm:h-[74px] bg-[#4CB2E2] rounded-[100px] px-4 sm:px-6 flex items-center justify-center">
+            <Link
+              onClick={() => window.scrollTo(0, 0)}
+              to="/order"
+              className="mt-4 sm:mt-8 w-full sm:w-[300px] md:w-[387px] h-[50px] sm:h-[74px] bg-[#4CB2E2] rounded-[100px] px-4 sm:px-6 flex items-center justify-center"
+            >
               <span className="font-helvetica-neue font-bold text-lg sm:text-[24px] leading-[100%] text-white uppercase">
                 Order a FREE Tag →
               </span>
-            </button>
+            </Link>
           </div>
 
           {/* Right Section - Tag Image */}

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Hero = () => {
   return (
@@ -22,12 +23,12 @@ const Hero = () => {
           >
             FREE TAG, JUST PAY SHIPPING £2.99
           </a>
-          <a
-            href="#"
+          <Link
+            to="/order"
             className="bg-gradient-to-br from-[#FFD700] to-[#B89D0B] hover:opacity-90 text-black font-bold py-2 md:py-3 px-4 md:px-6 rounded-full text-center shadow-md transition text-sm md:text-base"
           >
             ORDER YOUR TAG TODAY!
-          </a>
+          </Link>
         </div>
         </div>
       </div>

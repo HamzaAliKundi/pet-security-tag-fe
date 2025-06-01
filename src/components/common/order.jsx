@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Order = () => {
   return (
@@ -21,16 +22,17 @@ const Order = () => {
           </p>
 
           {/* Button with Gradient */}
-          <button 
-            className="w-[200px] h-[56px] rounded-full px-6 text-black font-bold 
-            hover:-translate-y-0.5 active:translate-y-0 transition-transform duration-200
-            uppercase text-sm tracking-wide"
+          <Link
+            to="/order"
+            onClick={() => window.scrollTo(0, 0)}
+            className="w-[200px] h-[56px] rounded-full px-6 text-black font-bold hover:-translate-y-0.5 active:translate-y-0 transition-transform duration-200 uppercase text-sm tracking-wide flex items-center justify-center"
             style={{
-              background: 'radial-gradient(58.93% 58.93% at 50% 77.68%, #FFD700 0%, #B89D0B 100%)'
+              background: 'radial-gradient(58.93% 58.93% at 50% 77.68%, #FFD700 0%, #B89D0B 100%)',
             }}
           >
             Order Today
-          </button>
+          </Link>
+
         </div>
 
         {/* Dog Image - Positioned to extend above the container but aligned at bottom */}
