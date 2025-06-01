@@ -113,7 +113,7 @@ const Order = () => {
                                         </label>
                                     </div>
                                     <span className="font-helvetica-neue font-bold text-[27.1px] leading-[100%] text-[#2D2D2D] w-[100px] text-right">
-                                        1.49€
+                                        1.49£
                                     </span>
                                     <input
                                         type="radio"
@@ -132,7 +132,7 @@ const Order = () => {
                                         </label>
                                     </div>
                                     <span className="font-helvetica-neue font-bold text-[27.1px] leading-[100%] text-[#2D2D2D] w-[100px] text-right">
-                                        9.99€
+                                        9.99£
                                     </span>
                                     <input
                                         type="radio"
