@@ -11,7 +11,7 @@ const Pricing = () => {
       tickIcon: '/home/bronz-tick.svg',
       title: 'Bronze Package',
       subtitle: 'Save 25% On Yearly Packages',
-      price: isYearly ? '£29.99/y' : '£1.45/m',
+      price: isYearly ? '£8.95/y' : '£0.95/m',
       features: [
         'Online Pet Profile',
         'FREE Tag Replacement If Lost Or Damaged',
@@ -25,9 +25,9 @@ const Pricing = () => {
       tickIcon: '/home/silver-tick.svg',  
       title: 'Silver Package',
       subtitle: 'Save 25% On Yearly Packages',
-      price: isYearly ? '£39.99/y' : '£3.45/m',
+      price: isYearly ? '£39.95/y' : '£3.95/m',
       features: [
-        'Monthly £3.45 Yearly £39.99 Save 26 %',
+        'Monthly £3.95 Yearly £39.95 Save 26 %',
         "Everything That's Included In Bronze Package",
         'Location Text Alerts',
         'Notify Your Vets That Your Pet Is Missing'
@@ -39,9 +39,9 @@ const Pricing = () => {
       tickIcon: '/home/gold-tick.svg',
       title: 'Gold Package',
       subtitle: 'Join The Pack - Your Pet Gets A Free Gift!',
-      price: isYearly ? '£49.99/y' : '£5.45/m',
+      price: isYearly ? '£49.95/y' : '£4.95/m',
       features: [
-        '£5.45 Monthly Yearly £49.99',
+        '£4.95 Monthly Yearly £49.95',
         "Everything That's Included In Bronze & Silver Package",
         'Phone Support',
         'Free Pet Gift When You Join',
