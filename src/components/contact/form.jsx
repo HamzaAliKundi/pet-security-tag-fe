@@ -1,17 +1,85 @@
 import React, { useState } from 'react'
+import { useSubmitContactMutation } from '../../apis/contact'
+import { toast } from 'react-hot-toast'
 
 const Form = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     email: '',
     purpose: '',
     message: ''
   })
+  const [errors, setErrors] = useState({})
 
-  const handleSubmit = (e) => {
+  const [submitContact, { isLoading }] = useSubmitContactMutation()
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }))
+    }
+  }
+
+  const validateForm = () => {
+    const newErrors = {}
+    
+    if (!formData.fullName) {
+      newErrors.fullName = 'Full name is required'
+    }
+    
+    if (!formData.email) {
+      newErrors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email'
+    }
+    
+    if (!formData.purpose) {
+      newErrors.purpose = 'Purpose is required'
+    }
+    
+    if (!formData.message) {
+      newErrors.message = 'Message is required'
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = 'Message must be at least 10 characters long'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Handle form submission
-    console.log(formData)
+    
+    if (!validateForm()) {
+      toast.error('Please fill in all required fields correctly')
+      return
+    }
+
+    try {
+      const result = await submitContact(formData).unwrap()
+      toast.success('Message sent successfully!')
+      console.log('Contact submitted:', result)
+      
+      // Reset form
+      setFormData({
+        fullName: '',
+        email: '',
+        purpose: '',
+        message: ''
+      })
+      
+    } catch (error) {
+      console.error('Error submitting contact:', error)
+      toast.error(error?.data?.message || 'Failed to send message')
+    }
   }
 
   return (
@@ -28,21 +96,27 @@ const Form = () => {
           {/* Name Input */}
           <div className="space-y-2">
             <label 
-              htmlFor="name" 
+              htmlFor="fullName" 
               className="block font-helvetica-neue font-normal text-[16px] leading-[100%] tracking-[-0.02em] text-black"
             >
               First & Last Name
             </label>
             <input
               type="text"
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full h-[56px] rounded-[4px] border border-gray-200 px-4 py-3
+              id="fullName"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              className={`w-full h-[56px] rounded-[4px] border px-4 py-3
                 focus:outline-none focus:ring-2 focus:ring-[#4CB2E2] focus:border-transparent
-                font-helvetica-neue placeholder:text-gray-400"
+                font-helvetica-neue placeholder:text-gray-400 ${
+                  errors.fullName ? 'border-red-500' : 'border-gray-200'
+                }`}
               placeholder="Enter your full name"
             />
+            {errors.fullName && (
+              <span className="text-red-500 text-sm">{errors.fullName}</span>
+            )}
           </div>
 
           {/* Email Input */}
@@ -56,13 +130,19 @@ const Form = () => {
             <input
               type="email"
               id="email"
+              name="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full h-[56px] rounded-[4px] border border-gray-200 px-4 py-3
+              onChange={handleInputChange}
+              className={`w-full h-[56px] rounded-[4px] border px-4 py-3
                 focus:outline-none focus:ring-2 focus:ring-[#4CB2E2] focus:border-transparent
-                font-helvetica-neue placeholder:text-gray-400"
+                font-helvetica-neue placeholder:text-gray-400 ${
+                  errors.email ? 'border-red-500' : 'border-gray-200'
+                }`}
               placeholder="Enter your email address"
             />
+            {errors.email && (
+              <span className="text-red-500 text-sm">{errors.email}</span>
+            )}
           </div>
 
           {/* Purpose Input */}
@@ -76,13 +156,19 @@ const Form = () => {
             <input
               type="text"
               id="purpose"
+              name="purpose"
               value={formData.purpose}
-              onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
-              className="w-full h-[56px] rounded-[4px] border border-gray-200 px-4 py-3
+              onChange={handleInputChange}
+              className={`w-full h-[56px] rounded-[4px] border px-4 py-3
                 focus:outline-none focus:ring-2 focus:ring-[#4CB2E2] focus:border-transparent
-                font-helvetica-neue placeholder:text-gray-400"
+                font-helvetica-neue placeholder:text-gray-400 ${
+                  errors.purpose ? 'border-red-500' : 'border-gray-200'
+                }`}
               placeholder="Enter purpose of inquiry"
             />
+            {errors.purpose && (
+              <span className="text-red-500 text-sm">{errors.purpose}</span>
+            )}
           </div>
 
           {/* Message Input */}
@@ -95,26 +181,35 @@ const Form = () => {
             </label>
             <textarea
               id="message"
+              name="message"
               value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              className="w-full h-[160px] rounded-[4px] border border-gray-200 px-4 py-3
+              onChange={handleInputChange}
+              className={`w-full h-[160px] rounded-[4px] border px-4 py-3
                 focus:outline-none focus:ring-2 focus:ring-[#4CB2E2] focus:border-transparent
-                font-helvetica-neue placeholder:text-gray-400 resize-none"
+                font-helvetica-neue placeholder:text-gray-400 resize-none ${
+                  errors.message ? 'border-red-500' : 'border-gray-200'
+                }`}
               placeholder="How can we help you?"
             />
+            {errors.message && (
+              <span className="text-red-500 text-sm">{errors.message}</span>
+            )}
           </div>
 
           {/* Submit Button */}
           <button 
             type="submit"
-            className="w-full h-[56px] rounded-[8px] font-bold text-black
+            disabled={isLoading}
+            className={`w-full h-[56px] rounded-[8px] font-bold text-black
               hover:-translate-y-0.5 active:translate-y-0 transition-transform duration-200
-              shadow-lg hover:shadow-xl active:shadow-md"
+              shadow-lg hover:shadow-xl active:shadow-md ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             style={{
               background: 'radial-gradient(58.93% 58.93% at 50% 77.68%, #FFD700 0%, #B89D0B 100%)'
             }}
           >
-            Send Message
+            {isLoading ? 'Sending...' : 'Send Message'}
           </button>
         </form>
       </div>
