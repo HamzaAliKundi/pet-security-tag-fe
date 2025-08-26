@@ -29,10 +29,10 @@ const Order = () => {
 
     // Calculate savings percentage
     const calculateSavings = () => {
-        const monthlyYearly = 0.95 * 12 // £11.40
-        const yearlyPrice = 8.95
-        const savings = monthlyYearly - yearlyPrice // £2.45
-        const savingsPercentage = Math.round((savings / monthlyYearly) * 100)
+        // const monthlyYearly = 0.95 * 12 // £11.40
+        // const yearlyPrice = 8.95
+        // const savings = monthlyYearly - yearlyPrice // £2.45
+        // const savingsPercentage = Math.round((savings / monthlyYearly) * 100)
         return 20 // Force to show 20% as requested
     }
 
@@ -478,7 +478,7 @@ const Order = () => {
                             </div>
 
                             {/* Plan Selection */}
-                            <div className="flex flex-col gap-3 sm:gap-4 mt-6 sm:mt-8">
+                            {/* <div className="flex flex-col gap-3 sm:gap-4 mt-6 sm:mt-8">
                                 <div className="flex justify-between items-center w-full">
                                     <div className="flex items-center gap-2 flex-1">
                                         <label className="font-helvetica-neue font-bold text-[14px] sm:text-[16px] leading-[100%] capitalize">
@@ -514,7 +514,7 @@ const Order = () => {
                                         className="w-4 h-4 sm:w-5 sm:h-5"
                                     />
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
