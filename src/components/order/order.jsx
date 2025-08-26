@@ -1,8 +1,18 @@
 import React, { useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { useCreateOrderMutation } from '../../apis/orders'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 
-const Order = () => {
+// Initialize Stripe using environment variable
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISH_KEY || '')
+
+// Check if Stripe key is configured
+if (!import.meta.env.VITE_STRIPE_PUBLISH_KEY) {
+  console.warn('VITE_STRIPE_PUBLISH_KEY is not set in environment variables')
+}
+
+const OrderForm = () => {
     const [quantity, setQuantity] = useState(1)
     const [selectedPlan, setSelectedPlan] = useState('monthly')
     const [selectedTagColor, setSelectedTagColor] = useState('blue')
@@ -21,23 +31,32 @@ const Order = () => {
     })
     const [errors, setErrors] = useState({})
     const [showShippingForm, setShowShippingForm] = useState(false)
+    const [isProcessing, setIsProcessing] = useState(false)
 
     const [createOrder, { isLoading }] = useCreateOrderMutation()
+    const stripe = useStripe()
+    const elements = useElements()
 
     const handleIncrement = () => setQuantity(prev => prev + 1)
     const handleDecrement = () => setQuantity(prev => prev > 1 ? prev - 1 : 1)
 
     // Calculate savings percentage
     const calculateSavings = () => {
-        // const monthlyYearly = 0.95 * 12 // £11.40
-        // const yearlyPrice = 8.95
-        // const savings = monthlyYearly - yearlyPrice // £2.45
-        // const savingsPercentage = Math.round((savings / monthlyYearly) * 100)
         return 20 // Force to show 20% as requested
     }
 
     const savingsPercentage = calculateSavings()
 
+    // Calculate total cost including shipping
+    // const calculateTotalCost = () => {
+    //     const basePrice = selectedPlan === 'monthly' ? 0.95 : 8.95
+    //     const subtotal = basePrice * quantity
+    //     const shippingFee = 2.90
+    //     return (subtotal + shippingFee).toFixed(2)
+    // }
+
+    // const totalCost = calculateTotalCost()
+    const totalCost = 2.90
     // Tag color options
     const tagColors = [
         { id: 'blue', name: 'Blue', image: '/order/tag-blue.jpg' },
@@ -131,7 +150,38 @@ const Order = () => {
             return
         }
 
+        if (!stripe || !elements) {
+            toast.error('Stripe is not loaded')
+            return
+        }
+
+        setIsProcessing(true)
+
         try {
+            // Get the payment method from Stripe Elements
+            const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
+                type: 'card',
+                card: elements.getElement(CardElement),
+                billing_details: {
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    address: {
+                        line1: formData.shippingAddress.street,
+                        city: formData.shippingAddress.city,
+                        state: formData.shippingAddress.state,
+                        postal_code: formData.shippingAddress.zipCode,
+                        country: formData.shippingAddress.country,
+                    },
+                },
+            })
+
+            if (paymentMethodError) {
+                toast.error(paymentMethodError.message || 'Payment method creation failed')
+                setIsProcessing(false)
+                return
+            }
+
             const orderData = {
                 email: formData.email,
                 name: formData.name,
@@ -140,35 +190,58 @@ const Order = () => {
                 subscriptionType: selectedPlan,
                 tagColor: selectedTagColor,
                 phone: formData.phone,
-                shippingAddress: formData.shippingAddress
+                shippingAddress: formData.shippingAddress,
+                totalCostEuro: parseFloat(totalCost),
+                paymentMethodId: paymentMethod.id
             }
 
             const result = await createOrder(orderData).unwrap()
-            toast.success('Order created successfully!')
-            console.log('Order created:', result)
             
-            // Reset form
-            setFormData({
-                email: '',
-                name: '',
-                petName: '',
-                phone: '',
-                shippingAddress: {
-                    street: '',
-                    city: '',
-                    state: '',
-                    zipCode: '',
-                    country: ''
+            if (result.payment && result.payment.clientSecret) {
+                // Confirm the payment with Stripe
+                const { error: confirmError } = await stripe.confirmCardPayment(result.payment.clientSecret, {
+                    payment_method: paymentMethod.id,
+                })
+
+                if (confirmError) {
+                    toast.error(confirmError.message || 'Payment confirmation failed')
+                    setIsProcessing(false)
+                    return
                 }
-            })
-            setQuantity(1)
-            setSelectedPlan('monthly')
-            setSelectedTagColor('blue')
-            setShowShippingForm(false)
+
+                toast.success('Payment successful! Order created successfully!')
+                console.log('Order created:', result)
+                
+                // Reset form
+                setFormData({
+                    email: '',
+                    name: '',
+                    petName: '',
+                    phone: '',
+                    shippingAddress: {
+                        street: '',
+                        city: '',
+                        state: '',
+                        zipCode: '',
+                        country: ''
+                    }
+                })
+                setQuantity(1)
+                setSelectedPlan('monthly')
+                setSelectedTagColor('blue')
+                setShowShippingForm(false)
+                
+                // Clear Stripe Elements
+                elements.getElement(CardElement)?.clear()
+            } else {
+                toast.error('Payment intent creation failed')
+            }
             
         } catch (error) {
             console.error('Error creating order:', error)
             toast.error(error?.data?.message || 'Failed to create order')
+        } finally {
+            setIsProcessing(false)
         }
     }
 
@@ -250,6 +323,16 @@ const Order = () => {
                             <div className="flex justify-between text-green-600">
                                 <span className="font-helvetica-neue text-sm">Yearly Savings:</span>
                                 <span className="font-helvetica-neue font-bold text-sm">{savingsPercentage}%</span>
+                            </div>
+                            <div className="flex justify-between text-blue-600">
+                                <span className="font-helvetica-neue text-sm">Shipping Fee:</span>
+                                <span className="font-helvetica-neue font-bold text-sm">€2.90</span>
+                            </div>
+                            <div className="border-t pt-2">
+                                <div className="flex justify-between font-bold">
+                                    <span className="font-helvetica-neue text-sm">Total:</span>
+                                    <span className="font-helvetica-neue text-sm">€{totalCost}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -446,6 +529,34 @@ const Order = () => {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Stripe Card Element */}
+                            <div className="flex flex-col gap-2">
+                                <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                                    Card Details*
+                                </label>
+                                <div className="w-full h-[48px] sm:h-[56px] rounded-[4px] border border-[#D8DDE3] px-3 sm:px-4 py-2 sm:py-3 shadow-[0px_0px_4px_0px_#17191C0D]">
+                                    <CardElement
+                                        options={{
+                                            style: {
+                                                base: {
+                                                    fontSize: '16px',
+                                                    color: '#424770',
+                                                    '::placeholder': {
+                                                        color: '#aab7c4',
+                                                    },
+                                                },
+                                                invalid: {
+                                                    color: '#9e2146',
+                                                },
+                                            },
+                                        }}
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    Your card details are securely processed by Stripe
+                                </p>
+                            </div>
                         </>
                     )}
 
@@ -476,62 +587,31 @@ const Order = () => {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Plan Selection */}
-                            {/* <div className="flex flex-col gap-3 sm:gap-4 mt-6 sm:mt-8">
-                                <div className="flex justify-between items-center w-full">
-                                    <div className="flex items-center gap-2 flex-1">
-                                        <label className="font-helvetica-neue font-bold text-[14px] sm:text-[16px] leading-[100%] capitalize">
-                                            Monthly
-                                        </label>
-                                    </div>
-                                    <span className="font-helvetica-neue font-bold text-[18px] sm:text-[20px] leading-[100%] text-[#2D2D2D] mx-3 sm:mx-4">
-                                        £0.95
-                                    </span>
-                                    <input
-                                        type="radio"
-                                        id="monthly"
-                                        checked={selectedPlan === 'monthly'}
-                                        onChange={() => setSelectedPlan('monthly')}
-                                        className="w-4 h-4 sm:w-5 sm:h-5"
-                                    />
-                                </div>
-
-                                <div className="flex justify-between items-center w-full">
-                                    <div className="flex items-center gap-2 flex-1">
-                                        <label className="font-helvetica-neue font-bold text-[14px] sm:text-[16px] leading-[100%] capitalize">
-                                            Yearly - {savingsPercentage}% Saving
-                                        </label>
-                                    </div>
-                                    <span className="font-helvetica-neue font-bold text-[18px] sm:text-[20px] leading-[100%] text-[#2D2D2D] mx-3 sm:mx-4">
-                                        £8.95
-                                    </span>
-                                    <input
-                                        type="radio"
-                                        id="yearly"
-                                        checked={selectedPlan === 'yearly'}
-                                        onChange={() => setSelectedPlan('yearly')}
-                                        className="w-4 h-4 sm:w-5 sm:h-5"
-                                    />
-                                </div>
-                            </div> */}
                         </div>
                     </div>
 
                     {/* Payment Button */}
                     <button 
                         onClick={showShippingForm ? handleSubmit : handleGoToPayment}
-                        disabled={isLoading}
+                        disabled={isLoading || isProcessing || !stripe}
                         className={`w-full h-[48px] sm:h-[56px] rounded-[8px] px-4 sm:px-6 py-2 sm:py-2.5 mt-6 sm:mt-8
                                      bg-gradient-to-r from-[#FFD700] to-[#B89D0B]
                                      font-helvetica-neue font-bold text-[16px] sm:text-[18px] leading-[100%] text-black
-                                     ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'} transition-all duration-200`}
+                                     ${(isLoading || isProcessing || !stripe) ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'} transition-all duration-200`}
                     >
-                        {isLoading ? 'Creating Order...' : showShippingForm ? 'Place Order' : 'Go To Payment'}
+                        {isLoading || isProcessing ? 'Processing...' : showShippingForm ? 'Place Order' : 'Go To Payment'}
                     </button>
                 </div>
             </div>
         </div>
+    )
+}
+
+const Order = () => {
+    return (
+        <Elements stripe={stripePromise}>
+            <OrderForm />
+        </Elements>
     )
 }
 
