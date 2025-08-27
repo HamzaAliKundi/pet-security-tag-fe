@@ -48,15 +48,61 @@ const OrderForm = () => {
     const savingsPercentage = calculateSavings()
 
     // Calculate total cost including shipping
+    // Calculate total cost including shipping
     // const calculateTotalCost = () => {
-    //     const basePrice = selectedPlan === 'monthly' ? 0.95 : 8.95
-    //     const subtotal = basePrice * quantity
-    //     const shippingFee = 2.90
-    //     return (subtotal + shippingFee).toFixed(2)
+    //     // const basePrice = selectedPlan === 'monthly' ? 0.95 : 8.95
+    //     // const subtotal = basePrice * quantity
+    //     // const shippingFee = 2.90
+    //     // return (subtotal + shippingFee).toFixed(2)
     // }
 
-    // const totalCost = calculateTotalCost()
     const totalCost = 2.90
+
+    // Country code mapping function
+    const getCountryCode = (countryName) => {
+        const countryMap = {
+            'pakistan': 'PK',
+            'united states': 'US',
+            'united kingdom': 'GB',
+            'canada': 'CA',
+            'australia': 'AU',
+            'germany': 'DE',
+            'france': 'FR',
+            'italy': 'IT',
+            'spain': 'ES',
+            'netherlands': 'NL',
+            'belgium': 'BE',
+            'switzerland': 'CH',
+            'austria': 'AT',
+            'sweden': 'SE',
+            'norway': 'NO',
+            'denmark': 'DK',
+            'finland': 'FI',
+            'ireland': 'IE',
+            'new zealand': 'NZ',
+            'japan': 'JP',
+            'south korea': 'KR',
+            'singapore': 'SG',
+            'india': 'IN',
+            'china': 'CN',
+            'brazil': 'BR',
+            'mexico': 'MX',
+            'argentina': 'AR',
+            'chile': 'CL',
+            'colombia': 'CO',
+            'peru': 'PE',
+            'venezuela': 'VE',
+            'uruguay': 'UY',
+            'paraguay': 'PY',
+            'bolivia': 'BO',
+            'ecuador': 'EC',
+            'guyana': 'GY',
+            'suriname': 'SR',
+            'french guiana': 'GF'
+        }
+        return countryMap[countryName.toLowerCase()] || countryName
+    }
+
     // Tag color options
     const tagColors = [
         { id: 'blue', name: 'Blue', image: '/order/tag-blue.jpg' },
@@ -171,7 +217,7 @@ const OrderForm = () => {
                         city: formData.shippingAddress.city,
                         state: formData.shippingAddress.state,
                         postal_code: formData.shippingAddress.zipCode,
-                        country: formData.shippingAddress.country,
+                        country: getCountryCode(formData.shippingAddress.country),
                     },
                 },
             })
@@ -522,7 +568,7 @@ const OrderForm = () => {
                                                  shadow-[0px_0px_4px_0px_#17191C0D] ${
                                                    errors.country ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
-                                        placeholder="Enter country"
+                                        placeholder="Enter country name (e.g., Pakistan, United States)"
                                     />
                                     {errors.country && (
                                         <span className="text-red-500 text-sm">{errors.country}</span>
