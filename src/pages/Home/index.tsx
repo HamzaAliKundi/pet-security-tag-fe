@@ -19,7 +19,7 @@ const HomePage = () => {
       <Digital />
       <Pricing />
       <Services />
-      <GetMoreInfo />
+      {/* <GetMoreInfo /> */}
       <ServicesInfo />
       <Customers />
       <GetStarted />
