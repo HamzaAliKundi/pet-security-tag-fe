@@ -13,6 +13,7 @@ import OrderPage from "./pages/order";
 import ProfilePage from "./pages/profile";
 import BlogDetail from "./pages/blog-detail";
 import GetInfo from "./components/get-info/get-info";
+import QRScanner from "./components/qr/qrScanner";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -31,6 +32,7 @@ const AppRoutes = () => {
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog-detail/:id" element={<BlogDetail />} />
         <Route path="/order" element={<OrderPage />} />
+        <Route path="/qr/:code" element={<QRScanner />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/get-info" element={<GetInfo />} />
         <Route path="/login" element={<Login />} />
