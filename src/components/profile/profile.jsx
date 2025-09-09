@@ -1,6 +1,66 @@
-import React from 'react'
+import React from 'react';
+import { useGetPetProfileQuery } from '../../apis/petProfile';
 
 const Profile = ({ id }) => {
+  const { data: petData, isLoading, error } = useGetPetProfileQuery(id, { 
+    skip: !id 
+  });
+
+  const handleShareLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        
+        // You could send this to the pet owner or open it
+        alert(`Location shared: ${locationUrl}`);
+      });
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
+  };
+
+  const handleCallOwner = () => {
+    // In a real implementation, you'd have the owner's phone number
+    alert('This would initiate a call to the pet owner. Feature coming soon!');
+  };
+
+  const handleWhatsApp = () => {
+    // In a real implementation, you'd have the owner's WhatsApp
+    alert('This would open WhatsApp conversation with the pet owner. Feature coming soon!');
+  };
+
+  const handleShareLocationMessage = () => {
+    alert('This would share location via message. Feature coming soon!');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-[673px] mx-auto px-4 py-16">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading pet profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !petData) {
+    return (
+      <div className="max-w-[673px] mx-auto px-4 py-16">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Pet Not Found</h1>
+          <p className="text-gray-600">
+            This pet profile is not accessible or the subscription may have expired.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const pet = petData.pet;
+
   return (
     <div className="max-w-[673px] mx-auto px-4 py-16">
       {/* Title */}
@@ -24,23 +84,27 @@ const Profile = ({ id }) => {
       <div className="flex justify-between gap-4 mb-4">
         <div className="w-[328.5px] h-[34px] bg-[#DBEEFF] rounded-[8px] px-4 py-2 flex items-center justify-center">
           <span className="font-afacad font-medium text-[12px] leading-[18px] text-[#0897FF] text-center">
-            Domestic Short-hair X No
+            {pet.breed || 'Mixed Breed'}
           </span>
         </div>
         <div className="w-[328.5px] h-[34px] bg-[#DBEEFF] rounded-[8px] px-4 py-2 flex items-center justify-center">
           <span className="font-afacad font-medium text-[12px] leading-[18px] text-[#0897FF] text-center">
-            Female
+            {pet.age ? `${pet.age} years old` : 'Age unknown'}
           </span>
         </div>
       </div>
 
       {/* Share Location Buttons */}
       <div className="space-y-4 mb-4">
-        <button className="w-full h-[57px] bg-[#4CB2E2] rounded-[12px] text-white font-medium flex items-center justify-center gap-2">
+        <button 
+          onClick={handleShareLocation}
+          className="w-full h-[57px] bg-[#4CB2E2] rounded-[12px] text-white font-medium flex items-center justify-center gap-2"
+        >
           <img src="/profile/location.svg" alt="Location icon" />
           Share Location
         </button>
         <button 
+          onClick={handleCallOwner}
           className="w-full h-[57px] rounded-[12px] text-black font-medium flex items-center justify-center gap-2"
           style={{
             background: 'radial-gradient(58.93% 58.93% at 50% 77.68%, #FFD700 0%, #B89D0B 100%)'
@@ -59,21 +123,32 @@ const Profile = ({ id }) => {
       {/* Address Section */}
       <div className="w-full border border-gray-200 rounded-[8px] p-4 mb-8">
         <h2 className="font-afacad font-semibold text-[18px] leading-[25.2px] mb-4">
-          Addresses
+          Owner Information
         </h2>
         <div className="border-t border-gray-200 pt-4">
           <h3 className="font-afacad font-semibold text-[18px] leading-[25.2px] mb-2">
-            Owner
+            {pet.owner?.name || 'Pet Owner'}
           </h3>
-          <p className="font-afacad font-normal text-[16px] leading-[25.6px] text-[#666666]">***************oad</p>
-          <p className="font-afacad font-normal text-[16px] leading-[25.6px] text-[#666666]">Oldham</p>
-          <p className="font-afacad font-normal text-[16px] leading-[25.6px] text-[#666666]">Greater Manchester</p>
-          <p className="font-afacad font-normal text-[16px] leading-[25.6px] text-[#666666]">OL84LN</p>
+          <p className="font-afacad font-normal text-[16px] leading-[25.6px] text-[#666666]">
+            {pet.owner?.address?.street}
+          </p>
+          <p className="font-afacad font-normal text-[16px] leading-[25.6px] text-[#666666]">
+            {pet.owner?.address?.city}
+          </p>
+          <p className="font-afacad font-normal text-[16px] leading-[25.6px] text-[#666666]">
+            {pet.owner?.address?.state}
+          </p>
+          <p className="font-afacad font-normal text-[16px] leading-[25.6px] text-[#666666]">
+            {pet.owner?.address?.zipCode}
+          </p>
+          <p className="font-afacad font-normal text-[16px] leading-[25.6px] text-[#666666]">
+            {pet.owner?.address?.country}
+          </p>
         </div>
 
         <hr className='mt-4' />
         <p className="text-sm text-gray-500 mt-4 italic ">
-          The full address is hidden for privacy. Please contact the owner if you require it to return Ellie.
+          The full address is hidden for privacy. Please contact the owner if you require it to return {pet.petName}.
         </p>
       </div>
 
@@ -85,30 +160,34 @@ const Profile = ({ id }) => {
         <div className="space-y-4">
           <div>
             <h3 className="font-afacad font-semibold text-[16px]">Pet Name</h3>
-            <p className="text-gray-700">Braddy</p>
+            <p className="text-gray-700">{pet.petName}</p>
           </div>
           <div>
             <h3 className="font-afacad font-semibold text-[16px]">Notes</h3>
-            <p className="text-gray-700">None</p>
+            <p className="text-gray-700">{pet.notes || 'None'}</p>
           </div>
           <div>
             <h3 className="font-afacad font-semibold text-[16px]">Allergies</h3>
-            <p className="text-gray-700">None</p>
+            <p className="text-gray-700">{pet.allergies || 'None'}</p>
           </div>
           <div>
             <h3 className="font-afacad font-semibold text-[16px]">Medication</h3>
-            <p className="text-gray-700">None</p>
+            <p className="text-gray-700">{pet.medication || 'None'}</p>
           </div>
         </div>
       </div>
 
       {/* Bottom Action Buttons */}
       <div className="flex flex-col md:flex-row justify-between gap-4">
-        <button className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] bg-[#4CB2E2] text-white rounded-[100px] px-4 md:px-8 text-sm md:text-base">
+        <button 
+          onClick={handleWhatsApp}
+          className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] bg-[#4CB2E2] text-white rounded-[100px] px-4 md:px-8 text-sm md:text-base"
+        >
           <img src="/profile/wa.svg" alt="WhatsApp" className="w-5 h-5 md:w-6 md:h-6" />
           Whatsapp Conversation
         </button>
         <button 
+          onClick={handleShareLocationMessage}
           className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] rounded-[100px] px-4 md:px-8 text-black text-sm md:text-base mt-3 md:mt-0"
           style={{
             background: 'radial-gradient(58.93% 58.93% at 50% 77.68%, #FFD700 0%, #B89D0B 100%)'
