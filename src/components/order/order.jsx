@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { useCreateOrderMutation } from '../../apis/orders'
+import { useCreateOrderMutation, useConfirmPaymentMutation } from '../../apis/orders'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 
@@ -34,6 +34,7 @@ const OrderForm = () => {
     const [isProcessing, setIsProcessing] = useState(false)
 
     const [createOrder, { isLoading }] = useCreateOrderMutation()
+    const [confirmPayment] = useConfirmPaymentMutation()
     const stripe = useStripe()
     const elements = useElements()
 
@@ -245,7 +246,7 @@ const OrderForm = () => {
             
             if (result.payment && result.payment.clientSecret) {
                 // Confirm the payment with Stripe
-                const { error: confirmError } = await stripe.confirmCardPayment(result.payment.clientSecret, {
+                const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(result.payment.clientSecret, {
                     payment_method: paymentMethod.id,
                 })
 
@@ -255,8 +256,30 @@ const OrderForm = () => {
                     return
                 }
 
-                toast.success('Payment successful! Order created successfully!')
-                console.log('Order created:', result)
+                if (paymentIntent && paymentIntent.status === 'succeeded') {
+                    // Confirm payment with backend to create user account and assign QR code
+                    try {
+                        const confirmResult = await confirmPayment({
+                            orderId: result.order._id,
+                            paymentIntentId: paymentIntent.id
+                        }).unwrap()
+
+                        if (confirmResult.isNewUser) {
+                            toast.success('Payment successful! Your account has been created and you will receive login credentials via email!')
+                        } else {
+                            toast.success('Payment successful! Order created successfully!')
+                        }
+                        
+                        console.log('Order confirmed:', confirmResult)
+                    } catch (confirmError) {
+                        console.error('Backend payment confirmation failed:', confirmError)
+                        toast.error('Payment processed but account creation failed. Please contact support.')
+                    }
+                } else {
+                    toast.error('Payment not successful. Please try again.')
+                    setIsProcessing(false)
+                    return
+                }
                 
                 // Reset form
                 setFormData({
