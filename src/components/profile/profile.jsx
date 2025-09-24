@@ -71,12 +71,25 @@ const Profile = ({ id }) => {
       {/* Pet Image */}
       <div className="flex justify-center mb-8">
         <div className="w-[130px] h-[130px] rounded-full overflow-hidden">
-          <img 
-            src="/profile/profile.svg" 
-            alt="Pet" 
-            className="w-full h-full object-cover"
-            onError={(e) => e.target.src = "/fallback-pet-image.svg"}
-          />
+          {pet.image ? (
+            <img 
+              src={pet.image} 
+              alt={pet.petName} 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to placeholder if image fails to load
+                e.currentTarget.src = "/profile/profile.svg";
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+              <img 
+                src="/profile/profile.svg" 
+                alt="Pet placeholder" 
+                className="w-16 h-16 opacity-50"
+              />
+            </div>
+          )}
         </div>
       </div>
 
