@@ -360,11 +360,11 @@ const OrderForm = () => {
                         <div className="space-y-2">
                             <div className="flex justify-between">
                                 <span className="font-helvetica-neue text-sm">Monthly Plan:</span>
-                                <span className="font-helvetica-neue font-bold text-sm">£0.95/month</span>
+                                <span className="font-helvetica-neue font-bold text-sm">£2.75/month</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="font-helvetica-neue text-sm">Yearly Plan:</span>
-                                <span className="font-helvetica-neue font-bold text-sm">£8.95/year</span>
+                                <span className="font-helvetica-neue font-bold text-sm">£19.99/year</span>
                             </div>
                             <div className="flex justify-between text-green-600">
                                 <span className="font-helvetica-neue text-sm">Yearly Savings:</span>
@@ -372,12 +372,12 @@ const OrderForm = () => {
                             </div>
                             <div className="flex justify-between text-blue-600">
                                 <span className="font-helvetica-neue text-sm">Shipping Fee:</span>
-                                <span className="font-helvetica-neue font-bold text-sm">€2.90</span>
+                                <span className="font-helvetica-neue font-bold text-sm">£2.90</span>
                             </div>
                             <div className="border-t pt-2">
                                 <div className="flex justify-between font-bold">
                                     <span className="font-helvetica-neue text-sm">Total:</span>
-                                    <span className="font-helvetica-neue text-sm">€{totalCost}</span>
+                                    <span className="font-helvetica-neue text-sm">£{totalCost}</span>
                                 </div>
                             </div>
                         </div>
