@@ -33,6 +33,14 @@ export const ordersApi = createApi({
         body: statusData,
       }),
     }),
+
+    confirmPayment: builder.mutation({
+      query: ({ orderId, paymentIntentId }) => ({
+        url: `/user/orders/${orderId}/confirm-payment`,
+        method: "POST",
+        body: { paymentIntentId },
+      }),
+    }),
   }),
 });
 
@@ -41,4 +49,5 @@ export const {
   useGetOrderQuery,
   useUpdateOrderShippingMutation,
   useUpdateOrderStatusMutation,
+  useConfirmPaymentMutation,
 } = ordersApi; 
