@@ -1,23 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGetPetProfileQuery } from '../../apis/petProfile';
+import LocationShareModal from './LocationShareModal';
 
 const Profile = ({ id }) => {
   const { data: petData, isLoading, error } = useGetPetProfileQuery(id, { 
     skip: !id 
   });
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
   const handleShareLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
-        const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-        
-        // You could send this to the pet owner or open it
-        alert(`Location shared: ${locationUrl}`);
-      });
-    } else {
-      alert('Geolocation is not supported by this browser.');
-    }
+    setIsLocationModalOpen(true);
   };
 
   const handleCallOwner = () => {
@@ -210,6 +202,14 @@ const Profile = ({ id }) => {
           Share Location On Message
         </button>
       </div>
+
+      {/* Location Share Modal */}
+      <LocationShareModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        petId={id}
+        petName={pet?.petName || 'Pet'}
+      />
     </div>
   )
 }
