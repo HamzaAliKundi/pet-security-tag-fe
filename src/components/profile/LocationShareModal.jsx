@@ -69,7 +69,55 @@ const LocationShareModal = ({ isOpen, onClose, petId, petName }) => {
 
       console.log('📍 Location coordinates:', { latitude, longitude });
       console.log('🔗 Location URL:', locationUrl);
-      console.log('📤 Sending to backend...');
+
+      // Handle WhatsApp differently - open WhatsApp directly
+      if (method === 'whatsapp') {
+        console.log('💬 Opening WhatsApp...');
+        
+        // First, get the owner's phone number from backend
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            petId,
+            method: 'get-phone', // Special method to just get phone number
+            latitude,
+            longitude,
+            locationUrl,
+            petName
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (response.ok && result.phoneNumber) {
+          // Remove formatting from phone number (remove spaces, dashes, etc)
+          const cleanPhone = result.phoneNumber.replace(/[^0-9+]/g, '');
+          
+          // Create WhatsApp message
+          const whatsappMessage = `🐾 *Pet Found Alert!*\n\n*${petName}* has been found!\n\n📍 *GPS Location:* ${locationUrl}\n\nPlease contact the finder to arrange pickup. Thank you for using Digital Tails!`;
+          
+          // Open WhatsApp with pre-filled message
+          const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
+          
+          console.log('📱 Opening WhatsApp URL:', whatsappUrl);
+          window.open(whatsappUrl, '_blank');
+          
+          alert(`✅ Opening WhatsApp to share location with pet owner!`);
+          onClose();
+        } else {
+          alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
+        }
+        
+        setIsLoading(false);
+        setIsLocationRequested(false);
+        return;
+      }
+
+      // For SMS, send through backend
+      console.log('📤 Sending SMS through backend...');
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
         method: 'POST',
@@ -253,7 +301,7 @@ const LocationShareModal = ({ isOpen, onClose, petId, petName }) => {
             </button>
 
 
-            <button
+            {/* <button
               onClick={() => {
                 if (isLocationRequested) {
                   console.log('Location request already in progress, ignoring test...');
@@ -293,15 +341,15 @@ const LocationShareModal = ({ isOpen, onClose, petId, petName }) => {
               className="w-full h-10 bg-orange-500 text-white rounded-lg flex items-center justify-center gap-2 font-medium hover:bg-orange-600 transition-colors text-sm"
             >
               🔄 Refresh Page (Reset Permissions)
-            </button>
+            </button> */}
 
-            <button
+            {/* <button
               onClick={() => setShowManualLocation(true)}
               disabled={isLoading}
               className="w-full h-12 bg-gray-500 text-white rounded-lg flex items-center justify-center gap-3 font-medium hover:bg-gray-600 transition-colors"
             >
               📝 Enter Location Manually
-            </button>
+            </button> */}
           </div>
         ) : (
           <div className="space-y-4">
