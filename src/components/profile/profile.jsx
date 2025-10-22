@@ -17,13 +17,189 @@ const Profile = ({ id }) => {
     alert('This would initiate a call to the pet owner. Feature coming soon!');
   };
 
-  const handleWhatsApp = () => {
-    // In a real implementation, you'd have the owner's WhatsApp
-    alert('This would open WhatsApp conversation with the pet owner. Feature coming soon!');
+  const handleWhatsApp = async () => {
+    // Get GPS location and open WhatsApp
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    try {
+      console.log('🌍 Requesting location for WhatsApp...');
+      
+      // Get current location with better error handling
+      const position = await new Promise((resolve, reject) => {
+        let resolved = false;
+        
+        const successCallback = (pos) => {
+          if (!resolved) {
+            resolved = true;
+            console.log('✅ Location obtained:', pos.coords);
+            resolve(pos);
+          }
+        };
+        
+        const errorCallback = (error) => {
+          console.error('❌ Geolocation error:', error);
+          setTimeout(() => {
+            if (!resolved) {
+              resolved = true;
+              reject(error);
+            }
+          }, 100);
+        };
+        
+        navigator.geolocation.getCurrentPosition(
+          successCallback,
+          errorCallback,
+          {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 300000
+          }
+        );
+      });
+
+      const { latitude, longitude } = position.coords;
+      const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+      console.log('📍 Getting owner phone number...');
+
+      // Get owner's phone number from backend
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          petId: id,
+          method: 'get-phone',
+          latitude,
+          longitude,
+          locationUrl,
+          petName: pet?.petName
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok && result.phoneNumber) {
+        const cleanPhone = result.phoneNumber.replace(/[^0-9+]/g, '');
+        const whatsappMessage = `🐾 *Pet Found Alert!*\n\n*${pet?.petName}* has been found!\n\n📍 *GPS Location:* ${locationUrl}\n\nPlease contact the finder to arrange pickup. Thank you for using Digital Tails!`;
+        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
+        
+        console.log('💬 Opening WhatsApp...');
+        window.open(whatsappUrl, '_blank');
+      } else {
+        alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('❌ Error in WhatsApp share:', error);
+      
+      if (error && error.code) {
+        if (error.code === 1) {
+          alert('❌ Location permission denied. Please enable location access in your browser settings.');
+        } else if (error.code === 2) {
+          alert('❌ Location unavailable. Please check your device settings.');
+        } else if (error.code === 3) {
+          alert('❌ Location request timeout. Please try again.');
+        } else {
+          alert(`❌ Geolocation error: ${error.message || 'Unknown error'}`);
+        }
+      } else {
+        alert(`❌ Failed to share location: ${error.message || 'Please try again'}`);
+      }
+    }
   };
 
-  const handleShareLocationMessage = () => {
-    alert('This would share location via message. Feature coming soon!');
+  const handleShareLocationMessage = async () => {
+    // Share location via SMS
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    try {
+      console.log('🌍 Requesting location for SMS...');
+      
+      // Get current location with better error handling
+      const position = await new Promise((resolve, reject) => {
+        let resolved = false;
+        
+        const successCallback = (pos) => {
+          if (!resolved) {
+            resolved = true;
+            console.log('✅ Location obtained:', pos.coords);
+            resolve(pos);
+          }
+        };
+        
+        const errorCallback = (error) => {
+          console.error('❌ Geolocation error:', error);
+          setTimeout(() => {
+            if (!resolved) {
+              resolved = true;
+              reject(error);
+            }
+          }, 100);
+        };
+        
+        navigator.geolocation.getCurrentPosition(
+          successCallback,
+          errorCallback,
+          {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 300000
+          }
+        );
+      });
+
+      const { latitude, longitude } = position.coords;
+      const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+      console.log('📤 Sending SMS through backend...');
+
+      // Send SMS through backend
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          petId: id,
+          method: 'sms',
+          latitude,
+          longitude,
+          locationUrl,
+          petName: pet?.petName
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(`✅ Location shared successfully via SMS!`);
+      } else {
+        alert(`❌ Failed to share location: ${result.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('❌ Error in SMS share:', error);
+      
+      if (error && error.code) {
+        if (error.code === 1) {
+          alert('❌ Location permission denied. Please enable location access in your browser settings.');
+        } else if (error.code === 2) {
+          alert('❌ Location unavailable. Please check your device settings.');
+        } else if (error.code === 3) {
+          alert('❌ Location request timeout. Please try again.');
+        } else {
+          alert(`❌ Geolocation error: ${error.message || 'Unknown error'}`);
+        }
+      } else {
+        alert(`❌ Failed to share location: ${error.message || 'Please try again'}`);
+      }
+    }
   };
 
   if (isLoading) {
