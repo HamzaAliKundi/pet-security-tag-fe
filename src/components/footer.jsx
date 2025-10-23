@@ -31,10 +31,10 @@ const Footer = () => {
   }
 
   const socialIcons = [
-    { name: 'Instagram', icon: '/home/instagram.svg' },
-    { name: 'Facebook', icon: '/home/facebook.svg' },
-    { name: 'TikTok', icon: '/home/tiktok.svg' },
-    { name: 'YouTube', icon: '/home/youtube.svg' }
+    { name: 'Instagram', icon: '/home/instagram.svg', url: 'https://www.instagram.com/digitaltails_pet?igsh=MTJ1cXhvZHZ3cXZmeQ%3D%3D&utm_source=qr' },
+    { name: 'Facebook', icon: '/home/facebook.svg', url: 'https://www.facebook.com/share/1BbhyM3RVX/?mibextid=wwXIfr' },
+    { name: 'TikTok', icon: '/home/tiktok.svg', url: 'https://www.tiktok.com/@digitaltails_pet?_t=ZN-8zNzoaEkVyY&_r=1' },
+    { name: 'YouTube', icon: '/home/youtube.svg', url: 'https://youtube.com/@digitaltailspet?si=_WCRE3jvNgC95Ueo' }
   ]
 
   const handleLinkClick = () => {
@@ -74,8 +74,11 @@ const Footer = () => {
               {socialIcons.map((social) => (
                 <a 
                   key={social.name}
-                  href={`#${social.name.toLowerCase()}`}
-                  className="w-10 h-10 flex items-center justify-center"
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 flex items-center justify-center hover:opacity-80 transition-opacity"
+                  title={`Follow us on ${social.name}`}
                 >
                   <img 
                     src={social.icon} 
