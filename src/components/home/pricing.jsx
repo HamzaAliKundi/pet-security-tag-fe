@@ -1,51 +1,52 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 
 const Pricing = () => {
-  const [isYearly, setIsYearly] = useState(false)
-
   const pricingData = [
     {
-      type: 'bronze',
+      type: 'monthly',
       icon: '/home/bronz.svg',
       tickIcon: '/home/bronz-tick.svg',
-      title: 'Bronze Package',
-      subtitle: 'Save 25% On Yearly Packages',
-      price: isYearly ? '£8.95/y' : '£0.95/m',
+      title: 'Monthly Plan',
+      subtitle: 'Perfect for trying out our service',
+      price: '£2.75/month',
       features: [
         'Online Pet Profile',
         'FREE Tag Replacement If Lost Or Damaged',
         'Email Support',
-        "What's App Support"
+        "What's App Support",
+        'Location Text Alerts'
       ]
     },
     {
-      type: 'silver',
+      type: 'yearly',
       icon: '/home/silver.svg',
       tickIcon: '/home/silver-tick.svg',  
-      title: 'Silver Package',
-      subtitle: 'Save 25% On Yearly Packages',
-      price: isYearly ? '£39.95/y' : '£3.95/m',
+      title: 'Yearly Plan',
+      subtitle: 'Save 40% with annual billing',
+      price: '£19.99/year',
       features: [
-        'Monthly £3.95 Yearly £39.95 Save 26 %',
-        "Everything That's Included In Bronze Package",
+        'All Monthly Plan Features',
+        'Save £13 compared to monthly',
+        'Priority Email Support',
         'Location Text Alerts',
         'Notify Your Vets That Your Pet Is Missing'
       ]
     },
     {
-      type: 'gold',
+      type: 'lifetime',
       icon: '/home/gold.svg',
       tickIcon: '/home/gold-tick.svg',
-      title: 'Gold Package',
-      subtitle: 'Join The Pack - Your Pet Gets A Free Gift!',
-      price: isYearly ? '£49.95/y' : '£4.95/m',
+      title: 'Lifetime Plan',
+      subtitle: 'One-time payment, lifetime protection',
+      price: '£99',
       features: [
-        '£4.95 Monthly Yearly £49.95',
-        "Everything That's Included In Bronze & Silver Package",
+        'All Yearly Plan Features',
+        'Lifetime Access - No Recurring Fees',
         'Phone Support',
         'Free Pet Gift When You Join',
-        'Multiple Pets'
+        'Multiple Pets',
+        'Priority Support'
       ]
     }
   ]
@@ -59,27 +60,9 @@ const Pricing = () => {
       
       {/* Subtitle */}
       <p className="font-helvetica-neue font-normal text-[14px] sm:text-[16px] leading-[120%] sm:leading-[100%] text-center capitalize mt-3 sm:mt-4 max-w-2xl mx-auto px-2">
-        We charge a small monthly fee to maintain the technology &
+        We charge a small fee to maintain the technology &
         software to keep your pet safe
       </p>
-
-      {/* Toggle Button */}
-      <div className="flex justify-center mt-6 sm:mt-8">
-        <div className="w-[250px] sm:w-[292px] h-[50px] sm:h-[60px] bg-gray-100 rounded-md p-2 flex items-center">
-          <button 
-            className={`flex-1 h-[36px] sm:h-[44px] rounded-md transition-all text-sm sm:text-base ${!isYearly ? 'bg-white shadow-md' : ''}`}
-            onClick={() => setIsYearly(false) ? setIsYearly(false) : null}
-          >
-            Monthly Plan
-          </button>
-          <button 
-            className={`flex-1 h-[36px] sm:h-[44px] rounded-md transition-all text-sm sm:text-base ${isYearly ? 'bg-white shadow-md' : ''}`}
-            onClick={() => setIsYearly(true) ? setIsYearly(true) : null}
-          >
-            Yearly Plan
-          </button>
-        </div>
-      </div>
 
       {/* Pricing Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mt-10 sm:mt-12 md:mt-16 justify-items-center">
