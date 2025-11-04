@@ -31,9 +31,9 @@ const Footer = () => {
   }
 
   const socialIcons = [
-    { name: 'Instagram', icon: '/home/instagram.svg', url: 'https://www.instagram.com/digitaltails_pet?igsh=MTJ1cXhvZHZ3cXZmeQ%3D%3D&utm_source=qr' },
+    { name: 'Instagram', icon: '/home/instagram.svg', url: 'https://www.instagram.com/digital_tails?igsh=MTJ1cXhvZHZ3cXZmeQ%3D%3D&utm_source=qr' },
     { name: 'Facebook', icon: '/home/facebook.svg', url: 'https://www.facebook.com/share/1BbhyM3RVX/?mibextid=wwXIfr' },
-    { name: 'TikTok', icon: '/home/tiktok.svg', url: 'https://www.tiktok.com/@digitaltails_pet?_t=ZN-8zNzoaEkVyY&_r=1' },
+    { name: 'TikTok', icon: '/home/tiktok.svg', url: 'https://www.tiktok.com/@digitaltails?_r=1&_t=ZN-911DZNbSD4Q' },
     { name: 'YouTube', icon: '/home/youtube.svg', url: 'https://youtube.com/@digitaltailspet?si=_WCRE3jvNgC95Ueo' }
   ]
 

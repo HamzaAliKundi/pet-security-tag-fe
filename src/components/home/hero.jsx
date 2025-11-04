@@ -17,14 +17,16 @@ const Hero = () => {
         </p> */}
  
         <div className="mt-8 flex flex-col gap-4">
-          <a
-            href="#"
+          <Link
+            to="/order"
+            onClick={() => window.scrollTo(0, 0)}
             className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 md:py-3 px-4 md:px-6 rounded-full text-center shadow-md transition text-sm md:text-base"
           >
             FREE TAG, JUST PAY SHIPPING £2.99
-          </a>
-          <Link
+          </Link>
+          <Link 
             to="/order"
+            onClick={() => window.scrollTo(0, 0)}
             className="bg-gradient-to-br from-[#FFD700] to-[#B89D0B] hover:opacity-90 text-black font-bold py-2 md:py-3 px-4 md:px-6 rounded-full text-center shadow-md transition text-sm md:text-base"
           >
             ORDER YOUR TAG TODAY!
