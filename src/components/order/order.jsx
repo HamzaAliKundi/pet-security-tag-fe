@@ -341,15 +341,15 @@ const OrderForm = () => {
                     </h2>
 
                     {/* Tag Color Selection */}
-                    <div className="w-full">
+                    <div className="w-full overflow-visible">
                         <h3 className="font-helvetica-neue font-bold text-[18px] leading-[100%] capitalize mb-6 text-center">
                             Select Tag Color
                         </h3>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-3 gap-4 overflow-visible">
                             {tagColors.map((color) => (
                                 <div
                                     key={color.id}
-                                    className={`cursor-pointer rounded-lg p-4 transition-all duration-200 border-2 ${
+                                    className={`cursor-pointer rounded-lg p-4 transition-all duration-200 border-2 relative group overflow-visible ${
                                         selectedTagColor === color.id
                                             ? `${
                                                 color.id === 'blue' ? 'border-blue-500 bg-blue-50' :
@@ -360,12 +360,24 @@ const OrderForm = () => {
                                     }`}
                                     onClick={() => setSelectedTagColor(color.id)}
                                 >
-                                    <div className="w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                                    <div className="w-16 h-16 mx-auto mb-3 flex items-center justify-center relative overflow-visible">
                                         <img
                                             src={color.image}
                                             alt={`${color.name} tag`}
                                             className="w-full h-full object-contain"
                                         />
+                                        {/* Magnified preview on hover */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none z-[100] transform scale-75 group-hover:scale-100 origin-bottom">
+                                            <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 xl:w-80 xl:h-80 rounded-xl shadow-2xl border-4 border-white overflow-hidden bg-white">
+                                                <img
+                                                    src={color.image}
+                                                    alt={`${color.name} tag enlarged`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            {/* Arrow pointer */}
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[14px] border-r-[14px] border-t-[14px] border-transparent border-t-white"></div>
+                                        </div>
                                     </div>
                                     <p className="text-center font-helvetica-neue font-semibold text-sm capitalize">
                                         {color.name}
@@ -381,25 +393,10 @@ const OrderForm = () => {
                             Pricing Information
                         </h3>
                         <div className="space-y-2">
-                            <div className="flex justify-between">
-                                <span className="font-helvetica-neue text-sm">Monthly Plan:</span>
-                                <span className="font-helvetica-neue font-bold text-sm">£2.75/month</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="font-helvetica-neue text-sm">Yearly Plan:</span>
-                                <span className="font-helvetica-neue font-bold text-sm">£19.99/year</span>
-                            </div>
-                            <div className="flex justify-between text-green-600">
-                                <span className="font-helvetica-neue text-sm">Yearly Savings:</span>
-                                <span className="font-helvetica-neue font-bold text-sm">{savingsPercentage}%</span>
-                            </div>
-                            <div className="flex justify-between text-blue-600">
-                                <span className="font-helvetica-neue text-sm">Shipping Fee:</span>
-                                <span className="font-helvetica-neue font-bold text-sm">£2.90</span>
-                            </div>
+                           
                             <div className="border-t pt-2">
                                 <div className="flex justify-between font-bold">
-                                    <span className="font-helvetica-neue text-sm">Total:</span>
+                                    <span className="font-helvetica-neue text-sm">Shipping Fee:</span>
                                     <span className="font-helvetica-neue text-sm">£{totalCost}</span>
                                 </div>
                             </div>
