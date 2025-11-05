@@ -17,6 +17,7 @@ import QRScanner from "./components/qr/qrScanner";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsConditions from "./components/TermsConditions";
 import CookiePolicy from "./components/CookiePolicy";
+import RefundCancellationPolicy from "./components/RefundCancellationPolicy";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -41,6 +42,7 @@ const AppRoutes = () => {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/refund-cancellation-policy" element={<RefundCancellationPolicy />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>

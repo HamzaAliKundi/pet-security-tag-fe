@@ -24,7 +24,7 @@ const Footer = () => {
       title: 'Support',
       links: [
         // { name: 'Shipping Policy', path: '#shipping-policy' },
-        // { name: 'Cancellation Policy', path: '#cancellation-policy' },
+        { name: 'Refund & Cancellation Policy', path: '/refund-cancellation-policy' },
         { name: 'Privacy Policy', path: '/privacy-policy' },
         { name: 'Terms & Conditions', path: '/terms-conditions' },
         { name: 'Cookie Policy', path: '/cookie-policy' }
