@@ -17,15 +17,17 @@ const Footer = () => {
       links: [
         { name: 'About Us', path: '#about-us' },
         { name: 'Contact Us', path: '/contact' },
-        { name: 'Support', path: '#support' }
+        { name: 'Support', path: '/contact' }
       ]
     },
     support: {
       title: 'Support',
       links: [
-        { name: 'Shipping Policy', path: '#shipping-policy' },
-        { name: 'Cancellation Policy', path: '#cancellation-policy' },
-        { name: 'Privacy Policy', path: '#privacy-policy' }
+        // { name: 'Shipping Policy', path: '#shipping-policy' },
+        // { name: 'Cancellation Policy', path: '#cancellation-policy' },
+        { name: 'Privacy Policy', path: '/privacy-policy' },
+        { name: 'Terms & Conditions', path: '/terms-conditions' },
+        { name: 'Cookie Policy', path: '/cookie-policy' }
       ]
     }
   }

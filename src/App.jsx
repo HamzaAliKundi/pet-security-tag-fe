@@ -14,6 +14,9 @@ import ProfilePage from "./pages/profile";
 import BlogDetail from "./pages/blog-detail";
 import GetInfo from "./components/get-info/get-info";
 import QRScanner from "./components/qr/qrScanner";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import TermsConditions from "./components/TermsConditions";
+import CookiePolicy from "./components/CookiePolicy";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -35,6 +38,9 @@ const AppRoutes = () => {
         <Route path="/qr/:code" element={<QRScanner />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/get-info" element={<GetInfo />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-conditions" element={<TermsConditions />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
