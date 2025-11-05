@@ -23,7 +23,7 @@ const Footer = () => {
     support: {
       title: 'Support',
       links: [
-        // { name: 'Shipping Policy', path: '#shipping-policy' },
+        { name: 'Shipping Policy', path: '/shipping-policy' },
         { name: 'Refund & Cancellation Policy', path: '/refund-cancellation-policy' },
         { name: 'Privacy Policy', path: '/privacy-policy' },
         { name: 'Terms & Conditions', path: '/terms-conditions' },

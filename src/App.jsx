@@ -18,6 +18,7 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsConditions from "./components/TermsConditions";
 import CookiePolicy from "./components/CookiePolicy";
 import RefundCancellationPolicy from "./components/RefundCancellationPolicy";
+import ShippingPolicy from "./components/ShippingPolicy";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -43,6 +44,7 @@ const AppRoutes = () => {
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/refund-cancellation-policy" element={<RefundCancellationPolicy />} />
+        <Route path="/shipping-policy" element={<ShippingPolicy />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
