@@ -19,6 +19,7 @@ import TermsConditions from "./components/TermsConditions";
 import CookiePolicy from "./components/CookiePolicy";
 import RefundCancellationPolicy from "./components/RefundCancellationPolicy";
 import ShippingPolicy from "./components/ShippingPolicy";
+import AboutUs from "./components/AboutUs";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -40,6 +41,7 @@ const AppRoutes = () => {
         <Route path="/qr/:code" element={<QRScanner />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/get-info" element={<GetInfo />} />
+        <Route path="/about-us" element={<AboutUs />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
