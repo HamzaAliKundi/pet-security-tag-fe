@@ -84,6 +84,35 @@ const Form = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-16">
+      {/* Direct Contact Info */}
+      <div className="max-w-[834px] mx-auto mb-8 text-center space-y-2">
+        <p className="font-helvetica-neue font-semibold text-[18px] sm:text-[20px] text-black">
+          Prefer to reach out directly?
+        </p>
+        <div className="font-helvetica-neue text-[16px] sm:text-[18px] text-[#0F2137] space-y-1">
+          <p>
+            Email:{' '}
+            <a
+              href="mailto:info@digitaltails.com"
+              className="text-[#4CB2E2] hover:underline"
+            >
+              info@digitaltails.com
+            </a>
+          </p>
+          <p>
+            WhatsApp No:{' '}
+            <a
+              href="https://wa.me/447377518902"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#4CB2E2] hover:underline"
+            >
+              +44 7377 518902
+            </a>
+          </p>
+        </div>
+      </div>
+
       {/* Form Container */}
       <div className="max-w-[834px] mx-auto bg-[#CAE8F7]/70 rounded-2xl p-8 sm:p-12">
         {/* Form Title */}
