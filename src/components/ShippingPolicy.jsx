@@ -51,7 +51,7 @@ const ShippingPolicy = () => {
           </p>
           <ul className="list-none space-y-2 font-helvetica-neue font-normal text-base sm:text-lg leading-relaxed text-[#333333] mb-4">
             <li>UK orders are sent via Royal Mail</li>
-            <li>United States & Canada orders are sent by [carrier name]</li>
+            <li>United States &amp; Canada orders are sent via Spring Global Delivery Solutions</li>
           </ul>
           <p className="font-helvetica-neue font-normal text-base sm:text-lg leading-relaxed text-[#333333]">
             All orders are sent with tracking information, once your order has been shipped you will receive tracking info via email.
