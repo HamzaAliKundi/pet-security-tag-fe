@@ -387,7 +387,7 @@ const OrderForm = () => {
                             </div>
                             <div className="flex justify-between">
                                 <span className="font-helvetica-neue text-sm">Yearly Plan:</span>
-                                <span className="font-helvetica-neue font-bold text-sm">£19.99/year</span>
+                                <span className="font-helvetica-neue font-bold text-sm">£28.99/year</span>
                             </div>
                             <div className="flex justify-between text-green-600">
                                 <span className="font-helvetica-neue text-sm">Yearly Savings:</span>
