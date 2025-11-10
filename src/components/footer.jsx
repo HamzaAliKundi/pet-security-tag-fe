@@ -7,7 +7,7 @@ const Footer = () => {
       title: 'Menu',
       links: [
         { name: 'Order Your Tag', path: '/order' },
-        { name: 'Pricing', path: '#pricing' },
+        { name: 'Pricing', path: '/pricing' },
         // { name: 'Blog', path: '/blog' },
         { name: 'Refer A Friend', path: '#refer-a-friend' }
       ]
