@@ -37,11 +37,7 @@ const Banner = () => {
             tracking-[0.04em] capitalize 
             text-white/90 max-w-[500px]"
           >
-            Lorem ipsum dolor sit amet consectetur. Habitasse egestas 
-            scelerisque rutrum quis amet mi. Facilisis gravida 
-            scelerisque nisi adipiscing vitae adipiscing proin morbi ut. 
-            Cursus in dapibus vitae nullam a dolor ut sapien. Commodo 
-            sed pellentesque mauris in.
+            We’re always here to assist you! You can reach us by filling out the contact form below, calling our UK phone number directly, or if you’re a customer in the United States or Canada contacting us via WhatsApp calling or messaging is easier & (it’s free!). You can also email us anytime, and we’ll get back to you as soon as possible.
           </p>
         </div>
       </div>

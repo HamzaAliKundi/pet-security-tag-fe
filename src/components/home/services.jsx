@@ -6,19 +6,19 @@ const Services = () => {
       icon: '⚡',
       image: '/home/alert.svg',
       title: '⚡ instant location alerts',
-      description: "Stay informed about your pet's whereabouts instantly. when someone scans your pet's pawtag, you'll receive an immediate notification with their location. never worry about losing track of your furry friend again."
+      description: "Stay informed about your pet's whereabouts instantly. when someone scans your pet's Digitaltails, you'll receive an immediate notification with their location. never worry about losing track of your furry friend again."
     },
     {
       icon: '🌧️',
       image: '/home/alert.svg',
       title: '🌧️ durable design',
-      description: "Stay informed about your pet's whereabouts instantly. when someone scans your pet's pawtag, you'll receive an immediate notification with their location. never worry about losing track of your furry friend again."
+      description: "Stay informed about your pet's whereabouts instantly. when someone scans your pet's Digitaltails, you'll receive an immediate notification with their location. never worry about losing track of your furry friend again."
     },
     {
       icon: '📱',
       image: '/home/alert.svg',
       title: '📱 simple setup',
-      description: "Stay informed about your pet's whereabouts instantly. when someone scans your pet's pawtag, you'll receive an immediate notification with their location. never worry about losing track of your furry friend again."
+      description: "Stay informed about your pet's whereabouts instantly. when someone scans your pet's Digitaltails, you'll receive an immediate notification with their location. never worry about losing track of your furry friend again."
     }
   ]
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { useCreateOrderMutation, useConfirmPaymentMutation } from '../../apis/orders'
 import { loadStripe } from '@stripe/stripe-js'
@@ -11,6 +11,14 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISH_KEY || '')
 if (!import.meta.env.VITE_STRIPE_PUBLISH_KEY) {
   console.warn('VITE_STRIPE_PUBLISH_KEY is not set in environment variables')
 }
+
+const COUNTRY_TO_CURRENCY = {
+    GB: { code: 'GBP', symbol: '£', label: 'United Kingdom' },
+    US: { code: 'USD', symbol: '$', label: 'United States' },
+    CA: { code: 'CAD', symbol: '$', label: 'Canada' },
+}
+
+const BASE_PRICE_EUR = 2.90
 
 const OrderForm = () => {
     const [quantity, setQuantity] = useState(1)
@@ -30,6 +38,13 @@ const OrderForm = () => {
         }
     })
     const [errors, setErrors] = useState({})
+    const [localizedPrice, setLocalizedPrice] = useState({
+        amount: BASE_PRICE_EUR,
+        symbol: '€',
+        code: 'EUR',
+    })
+    const [priceMessage, setPriceMessage] = useState('')
+    const [isLocalizingPrice, setIsLocalizingPrice] = useState(false)
     const [showShippingForm, setShowShippingForm] = useState(false)
     const [isProcessing, setIsProcessing] = useState(false)
 
@@ -57,7 +72,94 @@ const OrderForm = () => {
     //     // return (subtotal + shippingFee).toFixed(2)
     // }
 
-    const totalCost = 2.90
+    const totalCost = BASE_PRICE_EUR
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || !navigator.geolocation) {
+            return
+        }
+
+        const geocodeKey = import.meta.env.VITE_OPENCAEGE_API_KEY
+        const exchangeKey = import.meta.env.VITE_EXCHANGE_RATE_API_KEY
+
+        if (!geocodeKey || !exchangeKey) {
+            console.warn('Geolocation or exchange rate API keys are missing.')
+            return
+        }
+
+        let isCancelled = false
+
+        const localizePrice = async (latitude, longitude) => {
+            try {
+                const geocodeUrl = `https://api.opencagedata.com/geocode/v1/json?key=${geocodeKey}&q=${encodeURIComponent(`${latitude},${longitude}`)}&no_annotations=1&limit=1`
+                const geoResponse = await fetch(geocodeUrl)
+                const geoData = await geoResponse.json()
+
+                const countryCodeRaw = geoData?.results?.[0]?.components?.['ISO_3166-1_alpha-2']
+                const countryCode = countryCodeRaw ? countryCodeRaw.toUpperCase() : null
+
+                if (!countryCode || !COUNTRY_TO_CURRENCY[countryCode]) {
+                    if (!isCancelled) {
+                        setPriceMessage('Showing price in EUR.')
+                    }
+                    return
+                }
+
+                const targetCurrency = COUNTRY_TO_CURRENCY[countryCode]
+
+                const exchangeUrl = `https://v6.exchangerate-api.com/v6/${exchangeKey}/latest/EUR`
+                const exchangeResponse = await fetch(exchangeUrl)
+                const exchangeData = await exchangeResponse.json()
+
+                const conversionRate = exchangeData?.conversion_rates?.[targetCurrency.code]
+
+                if (conversionRate && !isCancelled) {
+                    const convertedAmount = Number((BASE_PRICE_EUR * conversionRate).toFixed(2))
+                    setLocalizedPrice({
+                        amount: convertedAmount,
+                        symbol: targetCurrency.symbol,
+                        code: targetCurrency.code,
+                    })
+                    setPriceMessage(
+                        `Showing price in ${targetCurrency.code}. You'll be charged €${BASE_PRICE_EUR.toFixed(2)}.`
+                    )
+                }
+            } catch (error) {
+                console.error('Failed to localize price:', error)
+                if (!isCancelled) {
+                    setPriceMessage('Could not localize price. Showing EUR.')
+                }
+            } finally {
+                if (!isCancelled) {
+                    setIsLocalizingPrice(false)
+                }
+            }
+        }
+
+        setIsLocalizingPrice(true)
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords
+                localizePrice(latitude, longitude)
+            },
+            (error) => {
+                console.warn('Geolocation error:', error)
+                if (!isCancelled) {
+                    setPriceMessage('Location access denied. Showing EUR.')
+                    setIsLocalizingPrice(false)
+                }
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 10000,
+                maximumAge: 300000,
+            }
+        )
+
+        return () => {
+            isCancelled = true
+        }
+    }, [])
 
     // Country code mapping function
     const getCountryCode = (countryName) => {
@@ -341,15 +443,15 @@ const OrderForm = () => {
                     </h2>
 
                     {/* Tag Color Selection */}
-                    <div className="w-full">
+                    <div className="w-full overflow-visible">
                         <h3 className="font-helvetica-neue font-bold text-[18px] leading-[100%] capitalize mb-6 text-center">
                             Select Tag Color
                         </h3>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-3 gap-4 overflow-visible">
                             {tagColors.map((color) => (
                                 <div
                                     key={color.id}
-                                    className={`cursor-pointer rounded-lg p-4 transition-all duration-200 border-2 ${
+                                    className={`cursor-pointer rounded-lg p-4 transition-all duration-200 border-2 relative group overflow-visible ${
                                         selectedTagColor === color.id
                                             ? `${
                                                 color.id === 'blue' ? 'border-blue-500 bg-blue-50' :
@@ -360,12 +462,24 @@ const OrderForm = () => {
                                     }`}
                                     onClick={() => setSelectedTagColor(color.id)}
                                 >
-                                    <div className="w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                                    <div className="w-16 h-16 mx-auto mb-3 flex items-center justify-center relative overflow-visible">
                                         <img
                                             src={color.image}
                                             alt={`${color.name} tag`}
                                             className="w-full h-full object-contain"
                                         />
+                                        {/* Magnified preview on hover */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none z-[100] transform scale-75 group-hover:scale-100 origin-bottom">
+                                            <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 xl:w-80 xl:h-80 rounded-xl shadow-2xl border-4 border-white overflow-hidden bg-white">
+                                                <img
+                                                    src={color.image}
+                                                    alt={`${color.name} tag enlarged`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            {/* Arrow pointer */}
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[14px] border-r-[14px] border-t-[14px] border-transparent border-t-white"></div>
+                                        </div>
                                     </div>
                                     <p className="text-center font-helvetica-neue font-semibold text-sm capitalize">
                                         {color.name}
@@ -381,6 +495,7 @@ const OrderForm = () => {
                             Pricing Information
                         </h3>
                         <div className="space-y-2">
+
                             <div className="flex justify-between">
                                 <span className="font-helvetica-neue text-sm">Monthly Plan:</span>
                                 <span className="font-helvetica-neue font-bold text-sm">£2.75/month</span>
@@ -397,12 +512,21 @@ const OrderForm = () => {
                                 <span className="font-helvetica-neue text-sm">Shipping Fee:</span>
                                 <span className="font-helvetica-neue font-bold text-sm">£2.90</span>
                             </div>
+
                             <div className="border-t pt-2">
                                 <div className="flex justify-between font-bold">
-                                    <span className="font-helvetica-neue text-sm">Total:</span>
-                                    <span className="font-helvetica-neue text-sm">£{totalCost}</span>
+                                    <span className="font-helvetica-neue text-sm">Shipping Fee:</span>
+                                    <span className="font-helvetica-neue text-sm">
+                                        {localizedPrice.symbol}
+                                        {localizedPrice.amount.toFixed(2)} {localizedPrice.code}
+                                    </span>
                                 </div>
                             </div>
+                            {(isLocalizingPrice || priceMessage) && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                    {isLocalizingPrice ? 'Detecting local pricing…' : priceMessage}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
