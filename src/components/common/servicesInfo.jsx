@@ -8,7 +8,7 @@ const ServicesInfo = () => {
           Setting Up Your PawTag
         </h2>
         <p className="font-helvetica-neue text-[16px]  text-white text-center sm:text-left capitalize">
-          Once Your Tag Arrives, Scan It To Set Up Your Pet's Profile. For Just £2.75/month Or One Payment Of £19.99 Yearly, You Can Activate Your Tag And Access All The Features To Keep Your Pet Safe.
+          Once Your Tag Arrives, Scan It To Set Up Your Pet's Profile. For Just £2.75/month Or One Payment Of £28.99 Yearly, You Can Activate Your Tag And Access All The Features To Keep Your Pet Safe.
           Seniors Age 65+ Get Any Package For Free!
         </p>  
       </div>

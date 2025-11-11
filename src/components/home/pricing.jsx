@@ -23,11 +23,11 @@ const Pricing = () => {
       icon: '/home/silver.svg',
       tickIcon: '/home/silver-tick.svg',  
       title: 'Yearly Plan',
-      subtitle: 'Save 40% with annual billing',
-      price: '£19.99/year',
+      subtitle: 'Save with one easy annual payment',
+      price: '£28.99/year',
       features: [
         'All Monthly Plan Features',
-        'Save £13 compared to monthly',
+        'Save £4.01 compared to monthly',
         'Priority Email Support',
         'Location Text Alerts',
         'Notify Your Vets That Your Pet Is Missing'
@@ -39,7 +39,7 @@ const Pricing = () => {
       tickIcon: '/home/gold-tick.svg',
       title: 'Lifetime Plan',
       subtitle: 'One-time payment, lifetime protection',
-      price: '£99',
+      price: '£129.99',
       features: [
         'All Yearly Plan Features',
         'Lifetime Access - No Recurring Fees',
