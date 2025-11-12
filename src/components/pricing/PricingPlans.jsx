@@ -1,10 +1,13 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useLocalization } from '../../context/LocalizationContext'
+
+const BASE_CURRENCY_CODE = 'GBP'
 
 const commonFeatures = [
   {
     icon: '💧',
-    text: 'Waterproof Pet Tag — built to last through every adventure',
+    text: 'Waterproof Pet Tag, built to last through every adventure',
   },
   {
     icon: '🐾',
@@ -12,7 +15,7 @@ const commonFeatures = [
   },
   {
     icon: '🌐',
-    text: 'Online Pet Profile — access and update anytime, anywhere',
+    text: 'Online Pet Profile, access and update anytime, anywhere',
   },
   {
     icon: '🎁',
@@ -28,7 +31,7 @@ const commonFeatures = [
   },
   {
     icon: '💬',
-    text: 'Real Human Support — friendly, not AI-generated 🤖',
+    text: 'Real Human Support, friendly, not AI-generated 🤖',
   },
   {
     icon: '📞',
@@ -44,7 +47,7 @@ const commonFeatures = [
   },
   {
     icon: '❤️',
-    text: 'We Give Back — a percentage of all profits is donated to pet charities',
+    text: 'We Give Back, a percentage of all profits is donated to pet charities',
   },
   {
     icon: '🌟',
@@ -56,7 +59,7 @@ const plans = [
   {
     id: 'monthly',
     name: 'Monthly',
-    price: '£2.75',
+    amount: 2.75,
     cadence: 'per month',
     highlight: 'Flexible monthly billing',
     description: 'Perfect if you want to try Digital Tails without a long-term commitment.',
@@ -64,7 +67,7 @@ const plans = [
   {
     id: 'yearly',
     name: 'Yearly',
-    price: '£28.99',
+    amount: 28.99,
     cadence: 'per year',
     highlight: 'Save over 12% versus monthly',
     badge: 'Most Popular',
@@ -73,7 +76,7 @@ const plans = [
   {
     id: 'lifetime',
     name: 'Lifetime',
-    price: '£129.99',
+    amount: 129.99,
     cadence: 'one-time',
     highlight: 'Best long-term value',
     description: 'Pay once and enjoy peace of mind forever with all premium features included.',
@@ -81,6 +84,8 @@ const plans = [
 ]
 
 const PricingPlans = () => {
+  const { convertAmount, isLocalizing, message } = useLocalization()
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-16">
       <header className="text-center max-w-3xl mx-auto space-y-4">
@@ -95,51 +100,65 @@ const PricingPlans = () => {
           real human support, and a community that cares. Pick the option that fits
           your family, your pet’s protection never changes.
         </p>
+        {(isLocalizing || message) && (
+          <p className="font-helvetica-neue text-sm text-[#475467]">
+            {isLocalizing ? 'Detecting local pricing…' : message}
+          </p>
+        )}
       </header>
 
       {/* Plans */}
       <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-        {plans.map((plan) => (
-          <div
-            key={plan.id}
-            className={`border border-[#E4E7EC] rounded-2xl p-6 sm:p-8 flex flex-col gap-6 shadow-sm ${
-              plan.badge ? 'bg-[#F8FAFF] border-[#4CB2E2]' : 'bg-white'
-            }`}
-          >
-            {plan.badge && (
-              <span className="self-start bg-[#4CB2E2]/10 text-[#1B6EA7] text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full">
-                {plan.badge}
-              </span>
-            )}
+        {plans.map((plan) => {
+          const priceDisplay = convertAmount(plan.amount, BASE_CURRENCY_CODE)
+          const noteText = priceDisplay.isConverted
+            ? `Price shown in ${priceDisplay.code}. Final charge processed in GBP.`
+            : 'Price shown in GBP.'
 
-            <div className="space-y-2">
-              <h2 className="font-helvetica-neue font-bold text-[24px] text-[#101828]">{plan.name}</h2>
-              <p className="font-helvetica-neue text-sm text-[#475467]">{plan.description}</p>
-            </div>
-
-            <div>
-              <p className="font-helvetica-neue font-bold text-[40px] text-[#101828]">
-                {plan.price}
-              </p>
-              <p className="font-helvetica-neue text-sm text-[#475467] capitalize">
-                {plan.cadence} • {plan.highlight}
-              </p>
-            </div>
-
-            <Link
-              to="/order"
-              onClick={() => window.scrollTo(0, 0)}
-              className="inline-flex items-center justify-center h-[52px] rounded-full bg-[#4CB2E2] text-[#05131D] font-bold text-sm uppercase tracking-wider hover:bg-[#3da1d1] transition-colors shadow-md"
+          return (
+            <div
+              key={plan.id}
+              className={`border border-[#E4E7EC] rounded-2xl p-6 sm:p-8 flex flex-col gap-6 shadow-sm ${
+                plan.badge ? 'bg-[#F8FAFF] border-[#4CB2E2]' : 'bg-white'
+              }`}
             >
-              Order Your Tag
-            </Link>
+              {plan.badge && (
+                <span className="self-start bg-[#4CB2E2]/10 text-[#1B6EA7] text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full">
+                  {plan.badge}
+                </span>
+              )}
 
-            <p className="font-helvetica-neue text-xs text-[#667085]">
-              All prices shown in GBP. Live currency conversion is applied during checkout based on
-              your location.
-            </p>
-          </div>
-        ))}
+              <div className="space-y-2">
+                <h2 className="font-helvetica-neue font-bold text-[24px] text-[#101828]">
+                  {plan.name}
+                </h2>
+                <p className="font-helvetica-neue text-sm text-[#475467]">
+                  {plan.description}
+                </p>
+              </div>
+
+              <div>
+                <p className="font-helvetica-neue font-bold text-[40px] text-[#101828]">
+                  {priceDisplay.symbol}
+                  {priceDisplay.amount.toFixed(2)} {priceDisplay.code}
+                </p>
+                <p className="font-helvetica-neue text-sm text-[#475467] capitalize">
+                  {plan.cadence} • {plan.highlight}
+                </p>
+              </div>
+
+              <Link
+                to="/order"
+                onClick={() => window.scrollTo(0, 0)}
+                className="inline-flex items-center justify-center h-[52px] rounded-full bg-[#4CB2E2] text-[#05131D] font-bold text-sm uppercase tracking-wider hover:bg-[#3da1d1] transition-colors shadow-md"
+              >
+                Order Your Tag
+              </Link>
+
+              <p className="font-helvetica-neue text-xs text-[#667085]">{noteText}</p>
+            </div>
+          )
+        })}
       </div>
 
       {/* Common Features */}
