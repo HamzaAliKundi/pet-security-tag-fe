@@ -16,40 +16,40 @@ const SHIPPING_PRICES = {
   US: { amount: 9.19, currency: 'USD', symbol: '$' },
   CA: { amount: 15.09, currency: 'CAD', symbol: '$' },
   // European countries
-  GB: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  DE: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  FR: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  IT: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  ES: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  NL: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  BE: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  AT: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  CH: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  SE: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  NO: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  DK: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  FI: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  IE: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  PT: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  PL: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  GR: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  CZ: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  HU: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  RO: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  BG: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  HR: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  SK: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  SI: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  EE: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  LV: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  LT: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  LU: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  MT: { amount: 2.90, currency: 'EUR', symbol: '€' },
-  CY: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  GB: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  DE: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  FR: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  IT: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  ES: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  NL: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  BE: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  AT: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  CH: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  SE: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  NO: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  DK: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  FI: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  IE: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  PT: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  PL: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  GR: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  CZ: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  HU: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  RO: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  BG: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  HR: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  SK: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  SI: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  EE: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  LV: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  LT: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  LU: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  MT: { amount: 2.90, currency: 'GBP', symbol: '£' },
+  CY: { amount: 2.90, currency: 'GBP', symbol: '£' },
 }
 
-// Default shipping price (EUR)
-const DEFAULT_SHIPPING = { amount: 2.90, currency: 'EUR', symbol: '€' }
+// Default shipping price (GBP)
+const DEFAULT_SHIPPING = { amount: 2.90, currency: 'GBP', symbol: '£' }
 
 const LocalizationContext = createContext({
   targetCurrency: null,
@@ -70,7 +70,6 @@ export const LocalizationProvider = ({ children }) => {
   const [targetCurrency, setTargetCurrency] = useState(null)
   const [isLocalizing, setIsLocalizing] = useState(false)
   const [message, setMessage] = useState('')
-  const [rates, setRates] = useState({})
   const [userCountry, setUserCountry] = useState(null)
   const [shippingPrice, setShippingPrice] = useState(DEFAULT_SHIPPING)
 
@@ -106,27 +105,27 @@ export const LocalizationProvider = ({ children }) => {
             setTargetCurrency(currency)
             setMessage(`Showing prices in ${currency.code}.`)
           } else {
-            // For European countries not in COUNTRY_TO_CURRENCY, show EUR
+            // For European countries not in COUNTRY_TO_CURRENCY, show GBP
             if (SHIPPING_PRICES[countryCode]) {
-              setTargetCurrency({ code: 'EUR', symbol: '€', label: 'Europe' })
-              setMessage('Showing prices in EUR.')
+              setTargetCurrency({ code: 'GBP', symbol: '£', label: 'Europe' })
+              setMessage('Showing prices in GBP.')
             } else {
-              setTargetCurrency({ code: 'EUR', symbol: '€', label: 'Europe' })
-              setMessage('Showing prices in EUR.')
+              setTargetCurrency({ code: 'GBP', symbol: '£', label: 'Europe' })
+              setMessage('Showing prices in GBP.')
             }
           }
         } else {
           // Fallback to default
           setShippingPrice(DEFAULT_SHIPPING)
-          setTargetCurrency({ code: 'EUR', symbol: '€', label: 'Europe' })
-          setMessage('Showing prices in EUR.')
+          setTargetCurrency({ code: 'GBP', symbol: '£', label: 'Europe' })
+          setMessage('Showing prices in GBP.')
         }
       } catch (error) {
         console.error('Failed to detect country by IP:', error)
         if (!cancelled) {
           setShippingPrice(DEFAULT_SHIPPING)
-          setTargetCurrency({ code: 'EUR', symbol: '€', label: 'Europe' })
-          setMessage('Showing prices in EUR.')
+          setTargetCurrency({ code: 'GBP', symbol: '£', label: 'Europe' })
+          setMessage('Showing prices in GBP.')
         }
       } finally {
         if (!cancelled) {
@@ -165,22 +164,12 @@ export const LocalizationProvider = ({ children }) => {
       }
     }
 
-    const rate = rates?.[baseCurrency.code]?.[targetCurrency.code]
-
-    if (!rate) {
-      return {
-        amount: Number(numericAmount.toFixed(2)),
-        symbol: baseCurrency.symbol,
-        code: baseCurrency.code,
-        isConverted: false,
-      }
-    }
-
+    // Since we're using fixed prices, just return the base currency amount
     return {
-      amount: Number((numericAmount * rate).toFixed(2)),
-      symbol: targetCurrency.symbol,
-      code: targetCurrency.code,
-      isConverted: true,
+      amount: Number(numericAmount.toFixed(2)),
+      symbol: baseCurrency.symbol,
+      code: baseCurrency.code,
+      isConverted: false,
     }
   }
 

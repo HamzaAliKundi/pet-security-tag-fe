@@ -34,7 +34,7 @@ const Hero = () => {
           <Link 
             to="/order"
             onClick={() => window.scrollTo(0, 0)}
-            className="bg-gradient-to-br from-[#FFD700] to-[#B89D0B] hover:opacity-90 text-black font-bold py-2 md:py-3 px-4 md:px-6 rounded-full text-center shadow-md transition text-sm md:text-base"
+            className="bg-[#FDD30F] hover:bg-[#FFE135] text-black font-bold py-2 md:py-3 px-4 md:px-6 rounded-full text-center shadow-md transition-all duration-200 text-sm md:text-base"
           >
             ORDER YOUR TAG TODAY!
           </Link>

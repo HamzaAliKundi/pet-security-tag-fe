@@ -50,13 +50,13 @@ const OrderForm = () => {
     // Calculate total cost (tag is free, just shipping)
     // Backend expects EUR, so we convert based on the shipping price
     // Note: The actual charge will be in the user's currency, but backend needs EUR for processing
-    const totalCost = shippingPrice.currency === 'EUR' 
+    const totalCost = shippingPrice.currency === 'GBP' 
         ? shippingPrice.amount 
         : shippingPrice.currency === 'USD' 
-            ? 2.90 // Convert $9.19 USD to EUR equivalent (backend will handle actual charge)
+            ? 2.90 // Convert $9.19 USD to GBP equivalent (backend will handle actual charge)
             : shippingPrice.currency === 'CAD'
-                ? 2.90 // Convert CAD 15.09 to EUR equivalent (backend will handle actual charge)
-                : 2.90 // Default EUR
+                ? 2.90 // Convert CAD 15.09 to GBP equivalent (backend will handle actual charge)
+                : 2.90 // Default GBP
 
     // Calculate total cost including shipping
     // Calculate total cost including shipping

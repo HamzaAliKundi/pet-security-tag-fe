@@ -39,8 +39,7 @@ const Message = () => {
           to="/order"
           onClick={() => window.scrollTo(0, 0)}
           className="w-[355px] h-[74px] text-black font-bold rounded-[100px] px-[24px] 
-             hover:opacity-90 transition-colors text-sm md:text-base 
-             bg-gradient-to-br from-[#FFD700] to-[#B89D0B]
+             bg-[#FDD30F] hover:bg-[#FFE135] transition-all duration-200 text-sm md:text-base 
              flex items-center justify-center"
         >
           SHOP NOW
