@@ -11,16 +11,59 @@ const BASE_CURRENCIES = {
   GBP: { code: 'GBP', symbol: '£' },
 }
 
+// Shipping prices by country
+const SHIPPING_PRICES = {
+  US: { amount: 9.19, currency: 'USD', symbol: '$' },
+  CA: { amount: 15.09, currency: 'CAD', symbol: '$' },
+  // European countries
+  GB: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  DE: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  FR: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  IT: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  ES: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  NL: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  BE: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  AT: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  CH: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  SE: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  NO: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  DK: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  FI: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  IE: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  PT: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  PL: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  GR: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  CZ: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  HU: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  RO: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  BG: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  HR: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  SK: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  SI: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  EE: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  LV: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  LT: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  LU: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  MT: { amount: 2.90, currency: 'EUR', symbol: '€' },
+  CY: { amount: 2.90, currency: 'EUR', symbol: '€' },
+}
+
+// Default shipping price (EUR)
+const DEFAULT_SHIPPING = { amount: 2.90, currency: 'EUR', symbol: '€' }
+
 const LocalizationContext = createContext({
   targetCurrency: null,
   isLocalizing: false,
   message: '',
+  userCountry: null,
+  shippingPrice: DEFAULT_SHIPPING,
   convertAmount: (amount, baseCode) => ({
     amount,
     symbol: BASE_CURRENCIES[baseCode]?.symbol || '',
     code: baseCode,
     isConverted: false,
   }),
+  getShippingPrice: () => DEFAULT_SHIPPING,
 })
 
 export const LocalizationProvider = ({ children }) => {
@@ -28,86 +71,62 @@ export const LocalizationProvider = ({ children }) => {
   const [isLocalizing, setIsLocalizing] = useState(false)
   const [message, setMessage] = useState('')
   const [rates, setRates] = useState({})
+  const [userCountry, setUserCountry] = useState(null)
+  const [shippingPrice, setShippingPrice] = useState(DEFAULT_SHIPPING)
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !navigator.geolocation) {
-      return
-    }
-
-    const geocodeKey = import.meta.env.VITE_OPENCAEGE_API_KEY
-    const exchangeKey = import.meta.env.VITE_EXCHANGE_RATE_API_KEY
-
-    if (!geocodeKey || !exchangeKey) {
-      console.warn('Localization keys are missing. Skipping price localization.')
+    if (typeof window === 'undefined') {
       return
     }
 
     let cancelled = false
 
-    const handleLocalization = async (latitude, longitude) => {
+    const detectCountryByIP = async () => {
       try {
-        const geocodeUrl = `https://api.opencagedata.com/geocode/v1/json?key=${geocodeKey}&q=${encodeURIComponent(
-          `${latitude},${longitude}`
-        )}&no_annotations=1&limit=1`
+        setIsLocalizing(true)
+        
+        // Use ipapi.co for IP-based geolocation (free tier, no API key needed)
+        const response = await fetch('https://ipapi.co/json/')
+        const data = await response.json()
 
-        const geoResponse = await fetch(geocodeUrl)
-        const geoData = await geoResponse.json()
+        if (cancelled) return
 
-        const countryCodeRaw =
-          geoData?.results?.[0]?.components?.['ISO_3166-1_alpha-2']
-        const countryCode = countryCodeRaw ? countryCodeRaw.toUpperCase() : null
+        const countryCode = data?.country_code?.toUpperCase() || null
 
-        if (!countryCode || !COUNTRY_TO_CURRENCY[countryCode]) {
-          if (!cancelled) {
-            setTargetCurrency(null)
-            setRates({})
-            setMessage('Showing prices in GBP.')
-          }
-          return
-        }
+        if (countryCode) {
+          setUserCountry(countryCode)
+          
+          // Set shipping price based on country
+          const shipping = SHIPPING_PRICES[countryCode] || DEFAULT_SHIPPING
+          setShippingPrice(shipping)
 
-        const currency = COUNTRY_TO_CURRENCY[countryCode]
-
-        if (currency.code === 'GBP') {
-          if (!cancelled) {
+          // Set currency for display
+          if (COUNTRY_TO_CURRENCY[countryCode]) {
+            const currency = COUNTRY_TO_CURRENCY[countryCode]
             setTargetCurrency(currency)
-            setRates({})
-            setMessage('Showing prices in GBP.')
+            setMessage(`Showing prices in ${currency.code}.`)
+          } else {
+            // For European countries not in COUNTRY_TO_CURRENCY, show EUR
+            if (SHIPPING_PRICES[countryCode]) {
+              setTargetCurrency({ code: 'EUR', symbol: '€', label: 'Europe' })
+              setMessage('Showing prices in EUR.')
+            } else {
+              setTargetCurrency({ code: 'EUR', symbol: '€', label: 'Europe' })
+              setMessage('Showing prices in EUR.')
+            }
           }
-          return
-        }
-
-        const [eurResponse, gbpResponse] = await Promise.all([
-          fetch(`https://v6.exchangerate-api.com/v6/${exchangeKey}/latest/EUR`),
-          fetch(`https://v6.exchangerate-api.com/v6/${exchangeKey}/latest/GBP`),
-        ])
-
-        const eurData = await eurResponse.json()
-        const gbpData = await gbpResponse.json()
-
-        const eurRate = eurData?.conversion_rates?.[currency.code]
-        const gbpRate = gbpData?.conversion_rates?.[currency.code]
-
-        if (!eurRate || !gbpRate) {
-          throw new Error('Missing conversion rates for target currency.')
-        }
-
-        if (!cancelled) {
-          setTargetCurrency(currency)
-          setRates({
-            EUR: { [currency.code]: eurRate },
-            GBP: { [currency.code]: gbpRate },
-          })
-          setMessage(
-            `Prices shown in ${currency.code}. Final charges are processed in GBP.`
-          )
+        } else {
+          // Fallback to default
+          setShippingPrice(DEFAULT_SHIPPING)
+          setTargetCurrency({ code: 'EUR', symbol: '€', label: 'Europe' })
+          setMessage('Showing prices in EUR.')
         }
       } catch (error) {
-        console.error('Failed to localize pricing:', error)
+        console.error('Failed to detect country by IP:', error)
         if (!cancelled) {
-          setTargetCurrency(null)
-          setRates({})
-          setMessage('Could not localize pricing. Showing GBP.')
+          setShippingPrice(DEFAULT_SHIPPING)
+          setTargetCurrency({ code: 'EUR', symbol: '€', label: 'Europe' })
+          setMessage('Showing prices in EUR.')
         }
       } finally {
         if (!cancelled) {
@@ -116,28 +135,7 @@ export const LocalizationProvider = ({ children }) => {
       }
     }
 
-    setIsLocalizing(true)
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        handleLocalization(latitude, longitude)
-      },
-      (error) => {
-        console.warn('Geolocation error:', error)
-        if (!cancelled) {
-          setIsLocalizing(false)
-          setTargetCurrency(null)
-          setRates({})
-          setMessage('Location access denied. Showing GBP.')
-        }
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 300000,
-      }
-    )
+    detectCountryByIP()
 
     return () => {
       cancelled = true
@@ -186,13 +184,20 @@ export const LocalizationProvider = ({ children }) => {
     }
   }
 
+  const getShippingPrice = () => {
+    return shippingPrice
+  }
+
   return (
     <LocalizationContext.Provider
       value={{
         targetCurrency,
         isLocalizing,
         message,
+        userCountry,
+        shippingPrice,
         convertAmount,
+        getShippingPrice,
       }}
     >
       {children}

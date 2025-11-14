@@ -1,7 +1,14 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useLocalization } from '../../context/LocalizationContext'
 
 const Hero = () => {
+  const { shippingPrice, isLocalizing } = useLocalization()
+  
+  const shippingText = isLocalizing 
+    ? 'FREE TAG, JUST PAY SHIPPING...' 
+    : `FREE TAG, JUST PAY SHIPPING ${shippingPrice.symbol}${shippingPrice.amount.toFixed(2)}`
+
   return (
     <div className="flex flex-col md:flex-row justify-between max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
       {/* Left Side */}
@@ -22,7 +29,7 @@ const Hero = () => {
             onClick={() => window.scrollTo(0, 0)}
             className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 md:py-3 px-4 md:px-6 rounded-full text-center shadow-md transition text-sm md:text-base"
           >
-            FREE TAG, JUST PAY SHIPPING £2.99
+            {shippingText}
           </Link>
           <Link 
             to="/order"

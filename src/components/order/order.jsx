@@ -13,8 +13,6 @@ if (!import.meta.env.VITE_STRIPE_PUBLISH_KEY) {
   console.warn('VITE_STRIPE_PUBLISH_KEY is not set in environment variables')
 }
 
-const BASE_PRICE_EUR = 2.90
-
 const OrderForm = () => {
     const [quantity, setQuantity] = useState(1)
     const [selectedPlan, setSelectedPlan] = useState('monthly')
@@ -40,31 +38,25 @@ const OrderForm = () => {
     const [confirmPayment] = useConfirmPaymentMutation()
     const stripe = useStripe()
     const elements = useElements()
-    const { convertAmount, isLocalizing: isLocalizingPrice, message: localizationMessage } = useLocalization()
+    const { shippingPrice, isLocalizing: isLocalizingPrice } = useLocalization()
 
-    const shippingPrice = convertAmount(BASE_PRICE_EUR, 'EUR')
-    const fallbackShippingMessage = localizationMessage
-        ? localizationMessage.includes('Location access denied')
-            ? 'Location access denied. Showing price in EUR.'
-            : localizationMessage.includes('Showing prices in GBP')
-                ? 'Showing price in EUR.'
-                : localizationMessage
-        : 'Showing price in EUR.'
     const shippingMessage = isLocalizingPrice
         ? 'Detecting local pricing…'
-        : shippingPrice.isConverted
-            ? `Showing price in ${shippingPrice.code}. You'll be charged €${BASE_PRICE_EUR.toFixed(2)}.`
-            : fallbackShippingMessage
+        : `Shipping price shown in ${shippingPrice.currency}.`
 
     const handleIncrement = () => setQuantity(prev => prev + 1)
     const handleDecrement = () => setQuantity(prev => prev > 1 ? prev - 1 : 1)
 
-    // Calculate savings percentage
-    const calculateSavings = () => {
-        return 20 // Force to show 20% as requested
-    }
-
-    const savingsPercentage = calculateSavings()
+    // Calculate total cost (tag is free, just shipping)
+    // Backend expects EUR, so we convert based on the shipping price
+    // Note: The actual charge will be in the user's currency, but backend needs EUR for processing
+    const totalCost = shippingPrice.currency === 'EUR' 
+        ? shippingPrice.amount 
+        : shippingPrice.currency === 'USD' 
+            ? 2.90 // Convert $9.19 USD to EUR equivalent (backend will handle actual charge)
+            : shippingPrice.currency === 'CAD'
+                ? 2.90 // Convert CAD 15.09 to EUR equivalent (backend will handle actual charge)
+                : 2.90 // Default EUR
 
     // Calculate total cost including shipping
     // Calculate total cost including shipping
@@ -254,7 +246,7 @@ const OrderForm = () => {
                 tagColor: selectedTagColor,
                 phone: formData.phone,
                 shippingAddress: formData.shippingAddress,
-                totalCostEuro: parseFloat(totalCost),
+                totalCostEuro: totalCost,
                 paymentMethodId: paymentMethod.id
             }
 
@@ -432,7 +424,7 @@ const OrderForm = () => {
                                     <span className="font-helvetica-neue text-sm">Shipping Fee:</span>
                                     <span className="font-helvetica-neue text-sm">
                                         {shippingPrice.symbol}
-                                        {shippingPrice.amount.toFixed(2)} {shippingPrice.code}
+                                        {shippingPrice.amount.toFixed(2)} {shippingPrice.currency}
                                     </span>
                                 </div>
                             </div>
@@ -629,7 +621,7 @@ const OrderForm = () => {
                                                  shadow-[0px_0px_4px_0px_#17191C0D] ${
                                                    errors.country ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
-                                        placeholder="Enter country name (e.g., Pakistan, United States)"
+                                        placeholder="Enter country name (e.g., United States)"
                                     />
                                     {errors.country && (
                                         <span className="text-red-500 text-sm">{errors.country}</span>
