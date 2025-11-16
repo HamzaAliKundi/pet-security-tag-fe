@@ -17,6 +17,7 @@ const OrderForm = () => {
     const [quantity, setQuantity] = useState(1)
     const [selectedPlan, setSelectedPlan] = useState('monthly')
     const [selectedTagColor, setSelectedTagColor] = useState('blue')
+    const [countryCode, setCountryCode] = useState('+44')
     const [formData, setFormData] = useState({
         email: '',
         name: '',
@@ -213,6 +214,9 @@ const OrderForm = () => {
         setIsProcessing(true)
 
         try {
+            // Combine country code with phone number
+            const fullPhoneNumber = `${countryCode}${formData.phone}`
+
             // Get the payment method from Stripe Elements
             const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
                 type: 'card',
@@ -220,7 +224,7 @@ const OrderForm = () => {
                 billing_details: {
                     name: formData.name,
                     email: formData.email,
-                    phone: formData.phone,
+                    phone: fullPhoneNumber,
                     address: {
                         line1: formData.shippingAddress.street,
                         city: formData.shippingAddress.city,
@@ -244,7 +248,7 @@ const OrderForm = () => {
                 quantity: quantity,
                 subscriptionType: selectedPlan,
                 tagColor: selectedTagColor,
-                phone: formData.phone,
+                phone: fullPhoneNumber,
                 shippingAddress: formData.shippingAddress,
                 totalCostEuro: totalCost,
                 paymentMethodId: paymentMethod.id
@@ -306,6 +310,7 @@ const OrderForm = () => {
                 setQuantity(1)
                 setSelectedPlan('monthly')
                 setSelectedTagColor('blue')
+                setCountryCode('+44')
                 setShowShippingForm(false)
                 
                 // Clear Stripe Elements
@@ -510,17 +515,43 @@ const OrderForm = () => {
                                 <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
                                     Phone Number*
                                 </label>
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleInputChange}
-                                    className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                             shadow-[0px_0px_4px_0px_#17191C0D] ${
-                                               errors.phone ? 'border-red-500' : 'border-[#D8DDE3]'
-                                             }`}
-                                    placeholder="Enter phone number"
-                                />
+                                <div className="flex gap-2">
+                                    <select
+                                        value={countryCode}
+                                        onChange={(e) => setCountryCode(e.target.value)}
+                                        className={`rounded-[4px] border px-3 py-2 sm:py-3 font-helvetica-neue text-sm sm:text-base shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                            errors.phone ? 'border-red-500' : 'border-[#D8DDE3]'
+                                        }`}
+                                        style={{ width: '120px' }}
+                                    >
+                                        <option value="+44">+44 (UK)</option>
+                                        <option value="+1">+1 (US/CA)</option>
+                                        <option value="+92">+92 (PK)</option>
+                                        <option value="+91">+91 (IN)</option>
+                                        <option value="+86">+86 (CN)</option>
+                                        <option value="+81">+81 (JP)</option>
+                                        <option value="+33">+33 (FR)</option>
+                                        <option value="+49">+49 (DE)</option>
+                                        <option value="+39">+39 (IT)</option>
+                                        <option value="+34">+34 (ES)</option>
+                                        <option value="+7">+7 (RU)</option>
+                                        <option value="+61">+61 (AU)</option>
+                                        <option value="+27">+27 (ZA)</option>
+                                        <option value="+55">+55 (BR)</option>
+                                        <option value="+52">+52 (MX)</option>
+                                    </select>
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleInputChange}
+                                        className={`flex-1 h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
+                                                 shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                                   errors.phone ? 'border-red-500' : 'border-[#D8DDE3]'
+                                                 }`}
+                                        placeholder="Enter phone number"
+                                    />
+                                </div>
                                 {errors.phone && (
                                     <span className="text-red-500 text-sm">{errors.phone}</span>
                                 )}

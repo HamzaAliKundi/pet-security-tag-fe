@@ -2,8 +2,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { useLocalization } from '../../context/LocalizationContext'
 
-const BASE_CURRENCY_CODE = 'GBP'
-
 const commonFeatures = [
   {
     icon: '💧',
@@ -59,7 +57,6 @@ const plans = [
   {
     id: 'monthly',
     name: 'Monthly',
-    amount: 2.75,
     cadence: 'per month',
     highlight: 'Flexible monthly billing',
     description: 'Perfect if you want to try Digital Tails without a long-term commitment.',
@@ -67,7 +64,6 @@ const plans = [
   {
     id: 'yearly',
     name: 'Yearly',
-    amount: 28.99,
     cadence: 'per year',
     highlight: 'Save over 12% versus monthly',
     badge: 'Most Popular',
@@ -76,7 +72,6 @@ const plans = [
   {
     id: 'lifetime',
     name: 'Lifetime',
-    amount: 129.99,
     cadence: 'one-time',
     highlight: 'Best long-term value',
     description: 'Pay once and enjoy peace of mind forever with all premium features included.',
@@ -84,7 +79,7 @@ const plans = [
 ]
 
 const PricingPlans = () => {
-  const { convertAmount, isLocalizing, message } = useLocalization()
+  const { subscriptionPrices, isLocalizing, message } = useLocalization()
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-16">
@@ -110,10 +105,8 @@ const PricingPlans = () => {
       {/* Plans */}
       <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
         {plans.map((plan) => {
-          const priceDisplay = convertAmount(plan.amount, BASE_CURRENCY_CODE)
-          const noteText = priceDisplay.isConverted
-            ? `Price shown in ${priceDisplay.code}. Final charge processed in GBP.`
-            : 'Price shown in GBP.'
+          const priceInfo = subscriptionPrices[plan.id]
+          const noteText = `Price shown in ${priceInfo.currency}.`
 
           return (
             <div
@@ -139,8 +132,7 @@ const PricingPlans = () => {
 
               <div>
                 <p className="font-helvetica-neue font-bold text-[40px] text-[#101828]">
-                  {priceDisplay.symbol}
-                  {priceDisplay.amount.toFixed(2)} {priceDisplay.code}
+                  {isLocalizing ? '...' : `${priceInfo.symbol}${priceInfo.amount.toFixed(2)} ${priceInfo.currency}`}
                 </p>
                 <p className="font-helvetica-neue text-sm text-[#475467] capitalize">
                   {plan.cadence} • {plan.highlight}
