@@ -1,6 +1,9 @@
 import React from 'react'
+import { useLocalization } from '../../context/LocalizationContext'
 
 const GetStarted = () => {
+  const { subscriptionPrices, isLocalizing } = useLocalization()
+  
   const steps = [
     {
       number: '01',
@@ -15,7 +18,9 @@ const GetStarted = () => {
     {
       number: '03',
       title: 'Choose Subscription',
-      description: 'For continuous pet protection, choose between our £2.95/ month subscription or a convenient yearly plan set at £19.99. The yearly plan comes with a discount of 25%, ensuring constant protection for your furry friend at a reduced rate.'
+      description: isLocalizing 
+        ? 'Loading subscription options...'
+        : `For continuous pet protection, choose between our ${subscriptionPrices.monthly.symbol}${subscriptionPrices.monthly.amount.toFixed(2)}/ month subscription or a convenient yearly plan set at ${subscriptionPrices.yearly.symbol}${subscriptionPrices.yearly.amount.toFixed(2)}. The yearly plan comes with a discount, ensuring constant protection for your furry friend at a reduced rate.`
     },
     {
       number: '04',

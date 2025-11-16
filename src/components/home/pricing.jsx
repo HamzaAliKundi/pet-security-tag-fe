@@ -1,7 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useLocalization } from '../../context/LocalizationContext'
 
 const Pricing = () => {
+  const { subscriptionPrices, isLocalizing } = useLocalization()
+  
   const pricingData = [
     {
       type: 'monthly',
@@ -9,7 +12,8 @@ const Pricing = () => {
       tickIcon: '/home/bronz-tick.svg',
       title: 'Monthly Plan',
       subtitle: 'Perfect for trying out our service',
-      price: '£2.75/month',
+      price: subscriptionPrices.monthly,
+      cadence: '/month',
       features: [
         'Online Pet Profile',
         'FREE Tag Replacement If Lost Or Damaged',
@@ -24,7 +28,8 @@ const Pricing = () => {
       tickIcon: '/home/silver-tick.svg',  
       title: 'Yearly Plan',
       subtitle: 'Save with one easy annual payment',
-      price: '£28.99/year',
+      price: subscriptionPrices.yearly,
+      cadence: '/year',
       features: [
         'All Monthly Plan Features',
         'Save £4.01 compared to monthly',
@@ -39,7 +44,8 @@ const Pricing = () => {
       tickIcon: '/home/gold-tick.svg',
       title: 'Lifetime Plan',
       subtitle: 'One-time payment, lifetime protection',
-      price: '£129.99',
+      price: subscriptionPrices.lifetime,
+      cadence: '',
       features: [
         'All Yearly Plan Features',
         'Lifetime Access - No Recurring Fees',
@@ -100,7 +106,7 @@ const Pricing = () => {
             <div className="mt-6 sm:mt-8">
               <div>
                 <p className="font-helvetica-neue font-bold text-[22px] sm:text-[27.1px] leading-[100%] text-[#2D2D2D]">
-                  {plan.price}
+                  {isLocalizing ? '...' : `${plan.price.symbol}${plan.price.amount.toFixed(2)}${plan.cadence}`}
                 </p>
                 <div className="flex items-center justify-between ">
                   <p className="font-helvetica-neue font-bold text-[14px] sm:text-[15.48px] leading-[24px] sm:leading-[27.1px]">
