@@ -41,7 +41,7 @@ const Banner = () => {
           <div className="flex items-center gap-2">
             <img src="/faqs/subscription.svg" alt="No fees icon" className="max-w-[20px] max-h-[20px] md:max-w-[24px] md:max-h-[24px]" />
             <span className="font-helvetica-neue font-normal text-sm sm:text-base leading-[136%] tracking-normal capitalize text-white">
-              No Subscriptions Or Hidden Fees
+              Premium Features
             </span>
           </div>
         </div>
