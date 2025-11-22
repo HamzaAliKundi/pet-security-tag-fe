@@ -19,7 +19,7 @@ const Banner = () => {
             <h1 className="font-helvetica-neue font-bold text-5xl sm:text-6xl md:text-7xl lg:text-[99px] leading-tight sm:leading-[91px] tracking-[-4%] text-black">
               Get a Smart{' '}
               <span className="text-[#FDD30F]">
-                PetSecure
+                Digital Tails
                 <br />
                 Tag
               </span>{' '}
@@ -30,7 +30,7 @@ const Banner = () => {
 
             {/* Description */}
             <p className="font-helvetica-neue font-normal text-sm sm:text-base leading-[136%] text-[#0F2137] capitalize max-w-[500px] mt-2 sm:mt-4">
-              Petsecure Tag Uses Smart QR Technology To Ensure Your Pets' Safety. Instantly Receive Their Location When The Tag Is Scanned.
+              Digital Tails Tag Uses Smart QR Technology To Ensure Your Pets' Safety. Instantly Receive Their Location When The Tag Is Scanned.
             </p>
 
             {/* Price */}
@@ -56,7 +56,7 @@ const Banner = () => {
           <div className="w-full lg:w-[590px] h-[300px] sm:h-[400px] md:h-[500px] lg:h-[618px] flex items-center justify-center mt-8 lg:mt-0">
             <img 
               src="/faqs/tag.svg" 
-              alt="PetSecure Tag" 
+              alt="Digital Tails Tag" 
               className="w-full h-full object-contain"
             />
           </div>

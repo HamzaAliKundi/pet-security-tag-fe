@@ -5,16 +5,16 @@ const Faqs = () => {
 
   const faqData = [
     {
-      question: 'What is PetSecure Tag And How It Works?',
-      answer: 'PetSecure Tag is a smart pet identification system that uses QR technology to help locate lost pets quickly and efficiently.'
+      question: 'What is Digital Tails Tag And How It Works?',
+      answer: 'Digital Tails Tag is a smart pet identification system that uses QR technology to help locate lost pets quickly and efficiently.'
     },
     {
       question: 'Is Having A Pet Tag A Legal Requirement In The UK?',
       answer: "Yes, it is a legal requirement in the UK to have a pet tag on a dog in public.<br><br>According to the Control of Dogs Order 1992, all dogs must wear a collar and ID tag when out in public, which must detail their owner's name and address. This dog ID tags UK law applies whether your dog is on a lead or not. Contravention of this order is an offence and risks a fine of up to £2000.<br><br>If your dog is involved in an altercation, an accident, or runs off, a dog ID tag is the quickest way for someone to contact you about your dog."
     },
     {
-      question: 'Can I use PetSecure Tag alongside Microchipping?',
-      answer: 'Yes, PetSecure Tag works perfectly alongside microchipping, providing an additional layer of security for your pet.'
+      question: 'Can I use Digital Tails Tag alongside Microchipping?',
+      answer: 'Yes, Digital Tails Tag works perfectly alongside microchipping, providing an additional layer of security for your pet.'
     },
     {
       question: "How do I update my pet's information on the tag?",
@@ -33,20 +33,20 @@ const Faqs = () => {
       answer: 'The GPS alerts notify you when your pet leaves a designated safe area, allowing you to track their location in real-time.'
     },
     {
-      question: 'Do I Need An App To Use PetSecure Tag?',
+      question: 'Do I Need An App To Use Digital Tails Tag?',
       answer: "Yes, our free mobile app is required to set up your pet's profile and receive location alerts."
     },
     {
-      question: 'Are PetSecure Tag Waterproof?',
-      answer: 'Yes, PetSecure Tags are fully waterproof and designed to withstand all weather conditions and pet activities.'
+      question: 'Are Digital Tails Tag Waterproof?',
+      answer: 'Yes, Digital Tails Tags are fully waterproof and designed to withstand all weather conditions and pet activities.'
     },
     {
-      question: 'Is The PetSecure Tag Safe?',
+      question: 'Is The Digital Tails Tag Safe?',
       answer: 'Absolutely! The tag is made from pet-safe materials and designed to be comfortable for your pet to wear.'
     },
     {
       question: 'Which Pets Can Use A Pawtag?',
-      answer: 'PetSecure Tags can be used for dogs, cats, and other pets that wear collars.'
+      answer: 'Digital Tails Tags can be used for dogs, cats, and other pets that wear collars.'
     },
     {
       question: 'What Information Is Included In The Pet Profile?',
@@ -57,7 +57,7 @@ const Faqs = () => {
     <div className="max-w-7xl mx-auto px-2 sm:px-4 py-16">
       <div className="flex justify-center items-center mb-12">
         <h1 className="font-helvetica-neue font-bold text-[28px] sm:text-[40px] leading-[1.2] text-[#0F2137] tracking-[-1.45px] text-center px-2">
-          PetSecure Tag Important Faqs
+          Digital Tails Tag Important Faqs
         </h1>
       </div>
       <div className="flex flex-col lg:flex-row justify-between">

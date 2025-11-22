@@ -10,7 +10,7 @@ const Search = () => {
           <h2 className="font-helvetica-neue font-bold text-[32px] sm:text-[40px] md:text-[48px] leading-[100%] tracking-[-4%] capitalize text-center md:text-left">
             Find Your{' '}
             <br />
-            <span className="text-[#4CB2E2] block md:inline">PetSecure Tag</span>
+            <span className="text-[#4CB2E2] block md:inline">Digital Tails Tag</span>
           </h2>
 
           {/* Search Input Container */}

@@ -15,7 +15,7 @@ const SmartTag = () => {
         <div className="w-full max-w-[250px] sm:max-w-[320px] md:max-w-[385px] aspect-square bg-[#4CB2E2] rounded-[16px] sm:rounded-[20px] md:rounded-[24px] flex items-center justify-center p-4 sm:p-6 md:p-8">
           <img 
             src="/faqs/smart-tag.svg" 
-            alt="PetSecure Smart Tag" 
+            alt="Digital Tails Smart Tag" 
             className="w-full h-full object-contain"
             onError={(e) => e.target.src = "/fallback-image.png"}
           />

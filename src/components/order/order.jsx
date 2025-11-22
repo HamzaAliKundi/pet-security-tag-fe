@@ -339,7 +339,7 @@ const OrderForm = () => {
         <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-16">
             {/* Main Title */}
             <h1 className="font-helvetica-neue font-medium text-[24px] sm:text-[28px] md:text-[36px] lg:text-[48px] leading-[110%] md:leading-[100%] text-black text-center capitalize mb-6 sm:mb-8 md:mb-12 lg:mb-16 max-w-[300px] sm:max-w-[400px] md:max-w-[482px] mx-auto">
-                Order Your PetSecure
+                Order Your Digital Tails
                 <br />
                 Tag Today!
             </h1>
