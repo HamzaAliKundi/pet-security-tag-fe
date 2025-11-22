@@ -16,7 +16,7 @@ const Replacements = () => {
           {/* Header with Paw Icon */}
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-helvetica-neue font-bold text-[22px] leading-[100%] text-white">
-              How Can I Order A Replacement PetSecure Tag?
+              How Can I Order A Replacement Digital Tails Tag?
             </h3>
             <img src="/faqs/foot-white.svg" alt="Paw print" className="flex-shrink-0 ml-2" />
           </div>
