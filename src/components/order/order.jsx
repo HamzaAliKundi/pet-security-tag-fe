@@ -17,6 +17,7 @@ const OrderForm = () => {
     const [quantity, setQuantity] = useState(1)
     const [selectedPlan, setSelectedPlan] = useState('monthly')
     const [selectedTagColor, setSelectedTagColor] = useState('blue')
+    const [tagColors, setTagColors] = useState(['blue']) // Array to store color for each tag
     const [countryCode, setCountryCode] = useState('+44')
     const [formData, setFormData] = useState({
         email: '',
@@ -45,8 +46,33 @@ const OrderForm = () => {
         ? 'Detecting local pricing…'
         : `Shipping price shown in ${shippingPrice.currency}.`
 
-    const handleIncrement = () => setQuantity(prev => prev + 1)
-    const handleDecrement = () => setQuantity(prev => prev > 1 ? prev - 1 : 1)
+    const handleIncrement = () => {
+        setQuantity(prev => {
+            const newQuantity = prev + 1
+            // Add default color for new tag
+            setTagColors(prevColors => [...prevColors, 'blue'])
+            return newQuantity
+        })
+    }
+    const handleDecrement = () => {
+        setQuantity(prev => {
+            if (prev > 1) {
+                const newQuantity = prev - 1
+                // Remove last color
+                setTagColors(prevColors => prevColors.slice(0, newQuantity))
+                return newQuantity
+            }
+            return prev
+        })
+    }
+    
+    const handleTagColorChange = (index, color) => {
+        setTagColors(prev => {
+            const newColors = [...prev]
+            newColors[index] = color
+            return newColors
+        })
+    }
 
     // Calculate total cost (tag is free, just shipping)
     // Backend expects EUR, so we convert based on the shipping price
@@ -114,7 +140,7 @@ const OrderForm = () => {
     }
 
     // Tag color options
-    const tagColors = [
+    const availableTagColors = [
         { id: 'blue', name: 'Blue', image: '/order/tag-blue.jpg' },
         { id: 'pink', name: 'Pink', image: '/order/tag-pink.jpg' },
         { id: 'yellow', name: 'Yellow', image: '/order/tag-yellow.jpg' }
@@ -241,13 +267,28 @@ const OrderForm = () => {
                 return
             }
 
+            // Ensure tagColors array matches quantity exactly (trim if longer, pad if shorter)
+            let finalTagColors;
+            if (quantity === 1) {
+                finalTagColors = [selectedTagColor];
+            } else {
+                // For multiple tags, ensure array matches quantity
+                if (tagColors.length >= quantity) {
+                    finalTagColors = tagColors.slice(0, quantity);
+                } else {
+                    // Pad with 'blue' if fewer colors than quantity
+                    finalTagColors = [...tagColors, ...Array(quantity - tagColors.length).fill('blue')];
+                }
+            }
+
             const orderData = {
                 email: formData.email,
                 name: formData.name,
                 petName: formData.petName,
                 quantity: quantity,
                 subscriptionType: selectedPlan,
-                tagColor: selectedTagColor,
+                tagColor: quantity === 1 ? selectedTagColor : undefined, // Keep for backward compatibility
+                tagColors: finalTagColors, // Array of colors for each tag (exactly matching quantity)
                 phone: fullPhoneNumber,
                 shippingAddress: formData.shippingAddress,
                 totalCostEuro: totalCost,
@@ -310,6 +351,7 @@ const OrderForm = () => {
                 setQuantity(1)
                 setSelectedPlan('monthly')
                 setSelectedTagColor('blue')
+                setTagColors(['blue'])
                 setCountryCode('+44')
                 setShowShippingForm(false)
                 
@@ -356,48 +398,91 @@ const OrderForm = () => {
                     {/* Tag Color Selection */}
                     <div className="w-full overflow-visible">
                         <h3 className="font-helvetica-neue font-bold text-[18px] leading-[100%] capitalize mb-6 text-center">
-                            Select Tag Color
+                            {quantity === 1 ? 'Select Tag Color' : 'Select Color for Each Tag'}
                         </h3>
-                        <div className="grid grid-cols-3 gap-4 overflow-visible">
-                            {tagColors.map((color) => (
-                                <div
-                                    key={color.id}
-                                    className={`cursor-pointer rounded-lg p-4 transition-all duration-200 border-2 relative group overflow-visible ${
-                                        selectedTagColor === color.id
-                                            ? `${
-                                                color.id === 'blue' ? 'border-blue-500 bg-blue-50' :
-                                                color.id === 'pink' ? 'border-pink-500 bg-pink-50' :
-                                                'border-yellow-500 bg-yellow-50'
-                                              } shadow-lg`
-                                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                    onClick={() => setSelectedTagColor(color.id)}
-                                >
-                                    <div className="w-16 h-16 mx-auto mb-3 flex items-center justify-center relative overflow-visible">
-                                        <img
-                                            src={color.image}
-                                            alt={`${color.name} tag`}
-                                            className="w-full h-full object-contain"
-                                        />
-                                        {/* Magnified preview on hover */}
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none z-[100] transform scale-75 group-hover:scale-100 origin-bottom">
-                                            <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 xl:w-80 xl:h-80 rounded-xl shadow-2xl border-4 border-white overflow-hidden bg-white">
-                                                <img
-                                                    src={color.image}
-                                                    alt={`${color.name} tag enlarged`}
-                                                    className="w-full h-full object-cover"
-                                                />
+                        
+                        {quantity === 1 ? (
+                            // Single tag - show color selector
+                            <div className="grid grid-cols-3 gap-4 overflow-visible">
+                                {availableTagColors.map((color) => (
+                                    <div
+                                        key={color.id}
+                                        className={`cursor-pointer rounded-lg p-4 transition-all duration-200 border-2 relative group overflow-visible ${
+                                            selectedTagColor === color.id
+                                                ? `${
+                                                    color.id === 'blue' ? 'border-blue-500 bg-blue-50' :
+                                                    color.id === 'pink' ? 'border-pink-500 bg-pink-50' :
+                                                    'border-yellow-500 bg-yellow-50'
+                                                  } shadow-lg`
+                                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                        onClick={() => setSelectedTagColor(color.id)}
+                                    >
+                                        <div className="w-16 h-16 mx-auto mb-3 flex items-center justify-center relative overflow-visible">
+                                            <img
+                                                src={color.image}
+                                                alt={`${color.name} tag`}
+                                                className="w-full h-full object-contain"
+                                            />
+                                            {/* Magnified preview on hover */}
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none z-[100] transform scale-75 group-hover:scale-100 origin-bottom">
+                                                <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 xl:w-80 xl:h-80 rounded-xl shadow-2xl border-4 border-white overflow-hidden bg-white">
+                                                    <img
+                                                        src={color.image}
+                                                        alt={`${color.name} tag enlarged`}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                                {/* Arrow pointer */}
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[14px] border-r-[14px] border-t-[14px] border-transparent border-t-white"></div>
                                             </div>
-                                            {/* Arrow pointer */}
-                                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[14px] border-r-[14px] border-t-[14px] border-transparent border-t-white"></div>
+                                        </div>
+                                        <p className="text-center font-helvetica-neue font-semibold text-sm capitalize">
+                                            {color.name}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            // Multiple tags - show color selector for each tag
+                            <div className="space-y-6">
+                                {Array.from({ length: quantity }).map((_, index) => (
+                                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                                        <h4 className="font-helvetica-neue font-semibold text-sm mb-3 text-center">
+                                            Tag {index + 1} Color
+                                        </h4>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {availableTagColors.map((color) => (
+                                                <div
+                                                    key={color.id}
+                                                    className={`cursor-pointer rounded-lg p-3 transition-all duration-200 border-2 relative group overflow-visible ${
+                                                        tagColors[index] === color.id
+                                                            ? `${
+                                                                color.id === 'blue' ? 'border-blue-500 bg-blue-50' :
+                                                                color.id === 'pink' ? 'border-pink-500 bg-pink-50' :
+                                                                'border-yellow-500 bg-yellow-50'
+                                                              } shadow-lg`
+                                                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                    }`}
+                                                    onClick={() => handleTagColorChange(index, color.id)}
+                                                >
+                                                    <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center relative overflow-visible">
+                                                        <img
+                                                            src={color.image}
+                                                            alt={`${color.name} tag`}
+                                                            className="w-full h-full object-contain"
+                                                        />
+                                                    </div>
+                                                    <p className="text-center font-helvetica-neue font-semibold text-xs capitalize">
+                                                        {color.name}
+                                                    </p>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                    <p className="text-center font-helvetica-neue font-semibold text-sm capitalize">
-                                        {color.name}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Pricing Information */}
@@ -525,20 +610,8 @@ const OrderForm = () => {
                                         style={{ width: '120px' }}
                                     >
                                         <option value="+44">+44 (UK)</option>
-                                        <option value="+1">+1 (US/CA)</option>
-                                        <option value="+92">+92 (PK)</option>
-                                        <option value="+91">+91 (IN)</option>
-                                        <option value="+86">+86 (CN)</option>
-                                        <option value="+81">+81 (JP)</option>
-                                        <option value="+33">+33 (FR)</option>
-                                        <option value="+49">+49 (DE)</option>
-                                        <option value="+39">+39 (IT)</option>
-                                        <option value="+34">+34 (ES)</option>
-                                        <option value="+7">+7 (RU)</option>
-                                        <option value="+61">+61 (AU)</option>
-                                        <option value="+27">+27 (ZA)</option>
-                                        <option value="+55">+55 (BR)</option>
-                                        <option value="+52">+52 (MX)</option>
+                                        <option value="+1">+1 (USA)</option>
+                                        <option value="+1">+1 (Canada)</option>
                                     </select>
                                     <input
                                         type="tel"

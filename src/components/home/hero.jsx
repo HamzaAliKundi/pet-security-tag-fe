@@ -46,7 +46,7 @@ const Hero = () => {
         <div className="relative w-full px-4 md:px-0">
           {/* Dog Image */}
           <img
-            src="/home/hero/dog.svg"
+            src="/home/hero/dog.webp"
             alt="Dog with tag"
             className="w-full max-w-[500px] lg:max-w-[700px] h-auto mx-auto"
           />
