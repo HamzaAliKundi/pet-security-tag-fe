@@ -40,7 +40,12 @@ const OrderForm = () => {
     const [confirmPayment] = useConfirmPaymentMutation()
     const stripe = useStripe()
     const elements = useElements()
-    const { shippingPrice, isLocalizing: isLocalizingPrice } = useLocalization()
+    const { shippingPrice, isLocalizing: isLocalizingPrice, userCountry } = useLocalization()
+    
+    // Determine color spelling based on region (UK/Europe = "Colour", Others = "Color")
+    const colorSpelling = (userCountry === 'GB' || (userCountry && ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'CH', 'SE', 'NO', 'DK', 'FI', 'IE', 'PT', 'PL', 'GR', 'CZ', 'HU', 'RO', 'BG', 'HR', 'SK', 'SI', 'EE', 'LV', 'LT', 'LU', 'MT', 'CY'].includes(userCountry))) 
+        ? 'Colour' 
+        : 'Color'
 
     const shippingMessage = isLocalizingPrice
         ? 'Detecting local pricing…'
@@ -48,6 +53,9 @@ const OrderForm = () => {
 
     const handleIncrement = () => {
         setQuantity(prev => {
+            if (prev >= 5) {
+                return prev // Maximum limit is 5
+            }
             const newQuantity = prev + 1
             // Add default color for new tag
             setTagColors(prevColors => [...prevColors, 'blue'])
@@ -391,14 +399,12 @@ const OrderForm = () => {
                 <div className="w-full lg:w-[400px] xl:w-[437px] flex flex-col items-center gap-6">
                     <h2 className="font-helvetica-neue font-bold text-[24px] sm:text-[28px] md:text-[32px] lg:text-[40px] leading-[110%] md:leading-[100%] text-black text-center uppercase">
                         CHOOSE YOUR TAG
-                        <br />
-                        COLOR
                     </h2>
 
                     {/* Tag Color Selection */}
                     <div className="w-full overflow-visible">
                         <h3 className="font-helvetica-neue font-bold text-[18px] leading-[100%] capitalize mb-6 text-center">
-                            {quantity === 1 ? 'Select Tag Color' : 'Select Color for Each Tag'}
+                            {quantity === 1 ? `Select Tag ${colorSpelling}` : `Select ${colorSpelling} for Each Tag`}
                         </h3>
                         
                         {quantity === 1 ? (
@@ -449,7 +455,7 @@ const OrderForm = () => {
                                 {Array.from({ length: quantity }).map((_, index) => (
                                     <div key={index} className="border border-gray-200 rounded-lg p-4">
                                         <h4 className="font-helvetica-neue font-semibold text-sm mb-3 text-center">
-                                            Tag {index + 1} Color
+                                            Tag {index + 1} {colorSpelling}
                                         </h4>
                                         <div className="grid grid-cols-3 gap-3">
                                             {availableTagColors.map((color) => (
@@ -782,8 +788,13 @@ const OrderForm = () => {
                                     <span className="w-[48px] sm:w-[56px] text-center text-lg sm:text-xl font-bold">{quantity}</span>
                                     <button
                                         onClick={handleIncrement}
-                                        className="w-[48px] h-[48px] sm:w-[56px] sm:h-[56px] rounded-[8px] bg-[#FDD30F]
-                                         flex items-center justify-center text-xl sm:text-2xl hover:bg-[#E6BE0E] transition-colors"
+                                        disabled={quantity >= 5}
+                                        className={`w-[48px] h-[48px] sm:w-[56px] sm:h-[56px] rounded-[8px] 
+                                         flex items-center justify-center text-xl sm:text-2xl transition-colors ${
+                                            quantity >= 5 
+                                                ? 'bg-gray-400 cursor-not-allowed opacity-50' 
+                                                : 'bg-[#FDD30F] hover:bg-[#E6BE0E]'
+                                         }`}
                                     >
                                         +
                                     </button>
