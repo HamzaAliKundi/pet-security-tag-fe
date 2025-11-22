@@ -25,7 +25,7 @@ const GetStarted = () => {
     {
       number: '04',
       title: 'Attach Tag to Your Pet',
-      description: "After registering and setting up your subscription, simply attach the PetSecure Tag securely to your pet's collar. Now, you're good to go on your adventures, with the assurance that your pet's safety is well taken care of"
+      description: "After registering and setting up your subscription, simply attach the Digital Tails Tag securely to your pet's collar. Now, you're good to go on your adventures, with the assurance that your pet's safety is well taken care of"
     }
   ]
 
