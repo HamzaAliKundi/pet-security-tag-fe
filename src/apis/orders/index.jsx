@@ -41,6 +41,13 @@ export const ordersApi = createApi({
         body: { paymentIntentId },
       }),
     }),
+
+    checkQRAvailability: builder.query({
+      query: () => ({
+        url: "/qr/check-availability",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -50,4 +57,5 @@ export const {
   useUpdateOrderShippingMutation,
   useUpdateOrderStatusMutation,
   useConfirmPaymentMutation,
+  useCheckQRAvailabilityQuery,
 } = ordersApi; 

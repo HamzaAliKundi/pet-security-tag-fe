@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { useCreateOrderMutation, useConfirmPaymentMutation } from '../../apis/orders'
+import { useCreateOrderMutation, useConfirmPaymentMutation, useCheckQRAvailabilityQuery } from '../../apis/orders'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useLocalization } from '../../context/LocalizationContext'
@@ -38,9 +38,14 @@ const OrderForm = () => {
 
     const [createOrder, { isLoading }] = useCreateOrderMutation()
     const [confirmPayment] = useConfirmPaymentMutation()
+    const { data: qrAvailability, isLoading: isLoadingAvailability } = useCheckQRAvailabilityQuery()
     const stripe = useStripe()
     const elements = useElements()
     const { shippingPrice, isLocalizing: isLocalizingPrice, userCountry } = useLocalization()
+    
+    // Check if QR codes are available
+    const isQRAvailable = qrAvailability?.isAvailable ?? true // Default to true if still loading
+    const isOrderDisabled = !isQRAvailable || isLoadingAvailability
     
     // Determine color spelling based on region (UK/Europe = "Colour", Others = "Color")
     const colorSpelling = (userCountry === 'GB' || (userCountry && ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'CH', 'SE', 'NO', 'DK', 'FI', 'IE', 'PT', 'PL', 'GR', 'CZ', 'HU', 'RO', 'BG', 'HR', 'SK', 'SI', 'EE', 'LV', 'LT', 'LU', 'MT', 'CY'].includes(userCountry))) 
@@ -804,16 +809,25 @@ const OrderForm = () => {
                         </div>
                     </div>
 
+                    {/* QR Availability Message */}
+                    {!isLoadingAvailability && !isQRAvailable && (
+                        <div className="w-full mt-6 sm:mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-[8px]">
+                            <p className="font-helvetica-neue font-semibold text-[14px] sm:text-[16px] text-yellow-800 text-center">
+                                ⚠️ We're currently out of stock. New tags will be available soon. Please check back in a day or two.
+                            </p>
+                        </div>
+                    )}
+
                     {/* Payment Button */}
                     <button 
                         onClick={showShippingForm ? handleSubmit : handleGoToPayment}
-                        disabled={isLoading || isProcessing || !stripe}
+                        disabled={isLoading || isProcessing || !stripe || isOrderDisabled}
                         className={`w-full h-[48px] sm:h-[56px] rounded-[8px] px-4 sm:px-6 py-2 sm:py-2.5 mt-6 sm:mt-8
                                      bg-gradient-to-r from-[#FFD700] to-[#B89D0B]
                                      font-helvetica-neue font-bold text-[16px] sm:text-[18px] leading-[100%] text-black
-                                     ${(isLoading || isProcessing || !stripe) ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'} transition-all duration-200`}
+                                     ${(isLoading || isProcessing || !stripe || isOrderDisabled) ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'} transition-all duration-200`}
                     >
-                        {isLoading || isProcessing ? 'Processing...' : showShippingForm ? 'Place Order' : 'Go To Payment'}
+                        {isLoading || isProcessing ? 'Processing...' : isOrderDisabled ? 'Out of Stock' : showShippingForm ? 'Place Order' : 'Go To Payment'}
                     </button>
                 </div>
             </div>
