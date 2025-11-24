@@ -97,7 +97,7 @@ const LocationShareModal = ({ isOpen, onClose, petId, petName }) => {
           const cleanPhone = result.phoneNumber.replace(/[^0-9+]/g, '');
           
           // Create WhatsApp message
-          const whatsappMessage = `🐾 *Pet Found Alert!*\n\n*${petName}* has been found!\n\n📍 *GPS Location:* ${locationUrl}\n\nPlease contact the finder to arrange pickup. Thank you for using Digital Tails!`;
+          const whatsappMessage = `Good news! Your pet has been located, and their tag was scanned at the location shown. Expect a call or message from the person who found them soon. 🐾\n\n📍 *GPS Location:* ${locationUrl}`;
           
           // Open WhatsApp with pre-filled message
           const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
