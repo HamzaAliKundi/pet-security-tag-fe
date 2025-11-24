@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { useCreateOrderMutation, useConfirmPaymentMutation, useCheckQRAvailabilityQuery } from '../../apis/orders'
 import { loadStripe } from '@stripe/stripe-js'
@@ -35,6 +35,8 @@ const OrderForm = () => {
     const [errors, setErrors] = useState({})
     const [showShippingForm, setShowShippingForm] = useState(false)
     const [isProcessing, setIsProcessing] = useState(false)
+    const [activePreview, setActivePreview] = useState(null) // Track which color preview is active
+    const colorSelectorRef = useRef(null) // Ref for the color selector container
 
     const [createOrder, { isLoading }] = useCreateOrderMutation()
     const [confirmPayment] = useConfirmPaymentMutation()
@@ -46,6 +48,30 @@ const OrderForm = () => {
     // Check if QR codes are available
     const isQRAvailable = qrAvailability?.isAvailable ?? true // Default to true if still loading
     const isOrderDisabled = !isQRAvailable || isLoadingAvailability
+    
+    // Check if device is mobile/touch
+    const isMobileDevice = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+    
+    // Close preview when clicking outside (mobile only)
+    useEffect(() => {
+        if (!isMobileDevice || !activePreview) return
+        
+        const handleClickOutside = (event) => {
+            if (colorSelectorRef.current && !colorSelectorRef.current.contains(event.target)) {
+                setActivePreview(null)
+            }
+        }
+        
+        // Add event listener
+        document.addEventListener('mousedown', handleClickOutside)
+        document.addEventListener('touchstart', handleClickOutside)
+        
+        // Cleanup
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+            document.removeEventListener('touchstart', handleClickOutside)
+        }
+    }, [activePreview, isMobileDevice])
     
     // Determine color spelling based on region (UK/Europe = "Colour", Others = "Color")
     const colorSpelling = (userCountry === 'GB' || (userCountry && ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'CH', 'SE', 'NO', 'DK', 'FI', 'IE', 'PT', 'PL', 'GR', 'CZ', 'HU', 'RO', 'BG', 'HR', 'SK', 'SI', 'EE', 'LV', 'LT', 'LU', 'MT', 'CY'].includes(userCountry))) 
@@ -407,7 +433,7 @@ const OrderForm = () => {
                     </h2>
 
                     {/* Tag Color Selection */}
-                    <div className="w-full overflow-visible">
+                    <div className="w-full overflow-visible" ref={colorSelectorRef}>
                         <h3 className="font-helvetica-neue font-bold text-[18px] leading-[100%] capitalize mb-6 text-center">
                             {quantity === 1 ? `Select Tag ${colorSpelling}` : `Select ${colorSpelling} for Each Tag`}
                         </h3>
@@ -418,25 +444,48 @@ const OrderForm = () => {
                                 {availableTagColors.map((color) => (
                                     <div
                                         key={color.id}
-                                        className={`cursor-pointer rounded-lg p-4 transition-all duration-200 border-2 relative group overflow-visible ${
+                                        className={`cursor-pointer rounded-lg p-4 transition-all duration-200 border-2 relative group overflow-visible touch-manipulation ${
                                             selectedTagColor === color.id
                                                 ? `${
                                                     color.id === 'blue' ? 'border-blue-500 bg-blue-50' :
                                                     color.id === 'pink' ? 'border-pink-500 bg-pink-50' :
                                                     'border-yellow-500 bg-yellow-50'
                                                   } shadow-lg`
-                                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 active:bg-gray-100'
                                         }`}
-                                        onClick={() => setSelectedTagColor(color.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedTagColor(color.id);
+                                            // Only set activePreview on mobile (touch devices)
+                                            if (isMobileDevice) {
+                                                setActivePreview(color.id);
+                                            }
+                                        }}
+                                        onTouchStart={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedTagColor(color.id);
+                                            setActivePreview(color.id);
+                                        }}
+                                        onMouseLeave={() => {
+                                            // Clear activePreview on desktop when mouse leaves
+                                            if (!isMobileDevice) {
+                                                setActivePreview(null);
+                                            }
+                                        }}
                                     >
                                         <div className="w-16 h-16 mx-auto mb-3 flex items-center justify-center relative overflow-visible">
                                             <img
                                                 src={color.image}
                                                 alt={`${color.name} tag`}
-                                                className="w-full h-full object-contain"
+                                                className="w-full h-full object-contain pointer-events-none"
                                             />
-                                            {/* Magnified preview on hover */}
-                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none z-[100] transform scale-75 group-hover:scale-100 origin-bottom">
+                                            {/* Magnified preview - shows on hover (desktop) or when active (mobile) */}
+                                            <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-4 transition-all duration-300 ease-out pointer-events-none z-[100] transform origin-bottom ${
+                                                // Desktop: show on hover only, Mobile: show when active
+                                                activePreview === color.id 
+                                                    ? 'opacity-100 scale-100 block md:hidden' 
+                                                    : 'md:opacity-0 md:group-hover:opacity-100 md:block md:scale-75 md:group-hover:scale-100 hidden'
+                                            }`}>
                                                 <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 xl:w-80 xl:h-80 rounded-xl shadow-2xl border-4 border-white overflow-hidden bg-white">
                                                     <img
                                                         src={color.image}
@@ -448,7 +497,7 @@ const OrderForm = () => {
                                                 <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[14px] border-r-[14px] border-t-[14px] border-transparent border-t-white"></div>
                                             </div>
                                         </div>
-                                        <p className="text-center font-helvetica-neue font-semibold text-sm capitalize">
+                                        <p className="text-center font-helvetica-neue font-semibold text-sm capitalize pointer-events-none">
                                             {color.name}
                                         </p>
                                     </div>
@@ -466,25 +515,58 @@ const OrderForm = () => {
                                             {availableTagColors.map((color) => (
                                                 <div
                                                     key={color.id}
-                                                    className={`cursor-pointer rounded-lg p-3 transition-all duration-200 border-2 relative group overflow-visible ${
+                                                    className={`cursor-pointer rounded-lg p-3 transition-all duration-200 border-2 relative group overflow-visible touch-manipulation ${
                                                         tagColors[index] === color.id
                                                             ? `${
                                                                 color.id === 'blue' ? 'border-blue-500 bg-blue-50' :
                                                                 color.id === 'pink' ? 'border-pink-500 bg-pink-50' :
                                                                 'border-yellow-500 bg-yellow-50'
                                                               } shadow-lg`
-                                                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 active:bg-gray-100'
                                                     }`}
-                                                    onClick={() => handleTagColorChange(index, color.id)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleTagColorChange(index, color.id);
+                                                        // Only set activePreview on mobile (touch devices)
+                                                        if (isMobileDevice) {
+                                                            setActivePreview(`${index}-${color.id}`);
+                                                        }
+                                                    }}
+                                                    onTouchStart={(e) => {
+                                                        e.stopPropagation();
+                                                        handleTagColorChange(index, color.id);
+                                                        setActivePreview(`${index}-${color.id}`);
+                                                    }}
+                                                    onMouseLeave={() => {
+                                                        // Clear activePreview on desktop when mouse leaves
+                                                        if (!isMobileDevice) {
+                                                            setActivePreview(null);
+                                                        }
+                                                    }}
                                                 >
                                                     <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center relative overflow-visible">
                                                         <img
                                                             src={color.image}
                                                             alt={`${color.name} tag`}
-                                                            className="w-full h-full object-contain"
+                                                            className="w-full h-full object-contain pointer-events-none"
                                                         />
+                                                        {/* Magnified preview for multiple tags - shows on mobile when active */}
+                                                        <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 transition-all duration-300 ease-out pointer-events-none z-[100] transform origin-bottom ${
+                                                            activePreview === `${index}-${color.id}`
+                                                                ? 'opacity-100 scale-100 block md:hidden'
+                                                                : 'md:opacity-0 md:group-hover:opacity-100 md:block md:scale-75 md:group-hover:scale-100 hidden'
+                                                        }`}>
+                                                            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl shadow-2xl border-4 border-white overflow-hidden bg-white">
+                                                                <img
+                                                                    src={color.image}
+                                                                    alt={`${color.name} tag enlarged`}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            </div>
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[10px] border-r-[10px] border-t-[10px] border-transparent border-t-white"></div>
+                                                        </div>
                                                     </div>
-                                                    <p className="text-center font-helvetica-neue font-semibold text-xs capitalize">
+                                                    <p className="text-center font-helvetica-neue font-semibold text-xs capitalize pointer-events-none">
                                                         {color.name}
                                                     </p>
                                                 </div>
