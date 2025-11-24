@@ -85,7 +85,7 @@ const Profile = ({ id }) => {
       
       if (response.ok && result.phoneNumber) {
         const cleanPhone = result.phoneNumber.replace(/[^0-9+]/g, '');
-        const whatsappMessage = `Good news! Your pet has been located, and their tag was scanned at the location shown. Expect a call or message from the person who found them soon. 🐾\n\n📍 *GPS Location:* ${locationUrl}`;
+        const whatsappMessage = `Pet found alert 🚨\n\nGood news! Your pet has been located, and their tag was scanned at the location shown. Expect a call or message from the person who found them soon. 🐾\n\n📍 *GPS Location:* ${locationUrl}`;
         const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
         
         console.log('💬 Opening WhatsApp...');
