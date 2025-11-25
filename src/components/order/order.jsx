@@ -870,7 +870,7 @@ const OrderForm = () => {
                                                  shadow-[0px_0px_4px_0px_#17191C0D] ${
                                                    errors.country ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
-                                        placeholder="Enter country name (e.g., United States)"
+                                        placeholder="Enter country name (e.g., United Kingdom / Canada / United States)"
                                     />
                                     {errors.country && (
                                         <span className="text-red-500 text-sm">{errors.country}</span>
