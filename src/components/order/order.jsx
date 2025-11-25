@@ -718,7 +718,7 @@ const OrderForm = () => {
                             className="mt-1 w-5 h-5 rounded border-gray-300 text-[#4CB2E2] focus:ring-[#4CB2E2] cursor-pointer flex-shrink-0"
                         />
                         <label htmlFor="terms-checkbox" className="font-helvetica-neue font-normal text-[14px] sm:text-[16px] leading-[140%] text-[#333333] cursor-pointer">
-                            By clicking this check box, you acknowledge & agree our{' '}
+                            By clicking this check box, you acknowledge & agree to our{' '}
                             <a href="/terms-conditions" target="_blank" rel="noopener noreferrer" className="text-[#4CB2E2] hover:underline">
                                 terms of service
                             </a>
