@@ -35,6 +35,7 @@ const OrderForm = () => {
     const [errors, setErrors] = useState({})
     const [showShippingForm, setShowShippingForm] = useState(false)
     const [isProcessing, setIsProcessing] = useState(false)
+    const [termsAccepted, setTermsAccepted] = useState(false)
     const [activePreview, setActivePreview] = useState(null) // Track which color preview is active
     const colorSelectorRef = useRef(null) // Ref for the color selector container
 
@@ -235,6 +236,10 @@ const OrderForm = () => {
             newErrors.petName = 'Pet name is required'
         }
 
+        if (!termsAccepted) {
+            newErrors.termsAccepted = 'You must accept the Terms and Privacy policies to proceed'
+        }
+
         if (showShippingForm) {
             if (!formData.phone) {
                 newErrors.phone = 'Phone number is required'
@@ -331,7 +336,8 @@ const OrderForm = () => {
                 phone: fullPhoneNumber,
                 shippingAddress: formData.shippingAddress,
                 totalCostEuro: totalCost,
-                paymentMethodId: paymentMethod.id
+                paymentMethodId: paymentMethod.id,
+                termsAccepted: termsAccepted
             }
 
             const result = await createOrder(orderData).unwrap()
@@ -393,6 +399,7 @@ const OrderForm = () => {
                 setTagColors(['blue'])
                 setCountryCode('+44')
                 setShowShippingForm(false)
+                setTermsAccepted(false)
                 
                 // Clear Stripe Elements
                 elements.getElement(CardElement)?.clear()
@@ -411,6 +418,14 @@ const OrderForm = () => {
     const handleGoToPayment = () => {
         if (!formData.email || !formData.name || !formData.petName) {
             toast.error('Please fill in all required fields first')
+            return
+        }
+        if (!termsAccepted) {
+            toast.error('You must accept the Terms and Privacy policies to proceed')
+            setErrors(prev => ({
+                ...prev,
+                termsAccepted: 'You must accept the Terms and Privacy policies to proceed'
+            }))
             return
         }
         setShowShippingForm(true)
@@ -900,14 +915,51 @@ const OrderForm = () => {
                         </div>
                     )}
 
+                    {/* Terms and Privacy Checkbox */}
+                    <div className="w-full mt-6 sm:mt-8 flex items-start gap-3">
+                        <input
+                            type="checkbox"
+                            id="terms-checkbox"
+                            checked={termsAccepted}
+                            onChange={(e) => {
+                                setTermsAccepted(e.target.checked)
+                                if (errors.termsAccepted) {
+                                    setErrors(prev => ({
+                                        ...prev,
+                                        termsAccepted: ''
+                                    }))
+                                }
+                            }}
+                            className="mt-1 w-5 h-5 rounded border-gray-300 text-[#4CB2E2] focus:ring-[#4CB2E2] cursor-pointer flex-shrink-0"
+                        />
+                        <label htmlFor="terms-checkbox" className="font-helvetica-neue font-normal text-[14px] sm:text-[16px] leading-[140%] text-[#333333] cursor-pointer">
+                            By clicking this check box, you acknowledge & agree our{' '}
+                            <a href="/terms-conditions" target="_blank" rel="noopener noreferrer" className="text-[#4CB2E2] hover:underline">
+                                terms of service
+                            </a>
+                            {', '}
+                            <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-[#4CB2E2] hover:underline">
+                                Privacy policy
+                            </a>
+                            {' '}&{' '}
+                            <a href="/sms-consent-statement" target="_blank" rel="noopener noreferrer" className="text-[#4CB2E2] hover:underline">
+                                sms consent statement
+                            </a>
+                            .
+                        </label>
+                    </div>
+                    {errors.termsAccepted && (
+                        <span className="text-red-500 text-sm mt-1">{errors.termsAccepted}</span>
+                    )}
+
                     {/* Payment Button */}
                     <button 
                         onClick={showShippingForm ? handleSubmit : handleGoToPayment}
-                        disabled={isLoading || isProcessing || !stripe || isOrderDisabled}
+                        disabled={isLoading || isProcessing || !stripe || isOrderDisabled || !termsAccepted}
                         className={`w-full h-[48px] sm:h-[56px] rounded-[8px] px-4 sm:px-6 py-2 sm:py-2.5 mt-6 sm:mt-8
                                      bg-gradient-to-r from-[#FFD700] to-[#B89D0B]
                                      font-helvetica-neue font-bold text-[16px] sm:text-[18px] leading-[100%] text-black
-                                     ${(isLoading || isProcessing || !stripe || isOrderDisabled) ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'} transition-all duration-200`}
+                                     ${(isLoading || isProcessing || !stripe || isOrderDisabled || !termsAccepted) ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'} transition-all duration-200`}
                     >
                         {isLoading || isProcessing ? 'Processing...' : isOrderDisabled ? 'Out of Stock' : showShippingForm ? 'Place Order' : 'Go To Payment'}
                     </button>
