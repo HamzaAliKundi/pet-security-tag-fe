@@ -700,6 +700,43 @@ const OrderForm = () => {
                         )}
                     </div>
 
+                    {/* Terms and Privacy Checkbox */}
+                    <div className="w-full mt-4 sm:mt-6 flex items-start gap-3">
+                        <input
+                            type="checkbox"
+                            id="terms-checkbox"
+                            checked={termsAccepted}
+                            onChange={(e) => {
+                                setTermsAccepted(e.target.checked)
+                                if (errors.termsAccepted) {
+                                    setErrors(prev => ({
+                                        ...prev,
+                                        termsAccepted: ''
+                                    }))
+                                }
+                            }}
+                            className="mt-1 w-5 h-5 rounded border-gray-300 text-[#4CB2E2] focus:ring-[#4CB2E2] cursor-pointer flex-shrink-0"
+                        />
+                        <label htmlFor="terms-checkbox" className="font-helvetica-neue font-normal text-[14px] sm:text-[16px] leading-[140%] text-[#333333] cursor-pointer">
+                            By clicking this check box, you acknowledge & agree our{' '}
+                            <a href="/terms-conditions" target="_blank" rel="noopener noreferrer" className="text-[#4CB2E2] hover:underline">
+                                terms of service
+                            </a>
+                            {', '}
+                            <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-[#4CB2E2] hover:underline">
+                                Privacy policy
+                            </a>
+                            {' '}&{' '}
+                            <a href="/sms-consent-statement" target="_blank" rel="noopener noreferrer" className="text-[#4CB2E2] hover:underline">
+                                sms consent statement
+                            </a>
+                            .
+                        </label>
+                    </div>
+                    {errors.termsAccepted && (
+                        <span className="text-red-500 text-sm mt-1">{errors.termsAccepted}</span>
+                    )}
+
                     {/* Shipping Information - Show when Go to Payment is clicked */}
                     {showShippingForm && (
                         <>
@@ -913,43 +950,6 @@ const OrderForm = () => {
                                 ⚠️ We're currently out of stock. New tags will be available soon. Please check back in a day or two.
                             </p>
                         </div>
-                    )}
-
-                    {/* Terms and Privacy Checkbox */}
-                    <div className="w-full mt-6 sm:mt-8 flex items-start gap-3">
-                        <input
-                            type="checkbox"
-                            id="terms-checkbox"
-                            checked={termsAccepted}
-                            onChange={(e) => {
-                                setTermsAccepted(e.target.checked)
-                                if (errors.termsAccepted) {
-                                    setErrors(prev => ({
-                                        ...prev,
-                                        termsAccepted: ''
-                                    }))
-                                }
-                            }}
-                            className="mt-1 w-5 h-5 rounded border-gray-300 text-[#4CB2E2] focus:ring-[#4CB2E2] cursor-pointer flex-shrink-0"
-                        />
-                        <label htmlFor="terms-checkbox" className="font-helvetica-neue font-normal text-[14px] sm:text-[16px] leading-[140%] text-[#333333] cursor-pointer">
-                            By clicking this check box, you acknowledge & agree our{' '}
-                            <a href="/terms-conditions" target="_blank" rel="noopener noreferrer" className="text-[#4CB2E2] hover:underline">
-                                terms of service
-                            </a>
-                            {', '}
-                            <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-[#4CB2E2] hover:underline">
-                                Privacy policy
-                            </a>
-                            {' '}&{' '}
-                            <a href="/sms-consent-statement" target="_blank" rel="noopener noreferrer" className="text-[#4CB2E2] hover:underline">
-                                sms consent statement
-                            </a>
-                            .
-                        </label>
-                    </div>
-                    {errors.termsAccepted && (
-                        <span className="text-red-500 text-sm mt-1">{errors.termsAccepted}</span>
                     )}
 
                     {/* Payment Button */}
