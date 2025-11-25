@@ -21,13 +21,14 @@ const Footer = () => {
       ]
     },
     support: {
-      title: 'Support',
+      title: 'Policies',
       links: [
         { name: 'Shipping Policy', path: '/shipping-policy' },
         { name: 'Refund & Cancellation Policy', path: '/refund-cancellation-policy' },
         { name: 'Privacy Policy', path: '/privacy-policy' },
         { name: 'Terms & Conditions', path: '/terms-conditions' },
-        { name: 'Cookie Policy', path: '/cookie-policy' }
+        { name: 'SMS Consent Statement', path: '/sms-consent-statement' },
+        { name: 'Cookie Policy', path: '/cookie-policy' },
       ]
     }
   }

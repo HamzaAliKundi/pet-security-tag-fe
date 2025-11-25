@@ -21,6 +21,7 @@ import RefundCancellationPolicy from "./components/RefundCancellationPolicy";
 import ShippingPolicy from "./components/ShippingPolicy";
 import AboutUs from "./components/AboutUs";
 import PricingPage from "./pages/pricing";
+import SMSConsentStatement from "./components/SMSConsentStatement";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -49,6 +50,7 @@ const AppRoutes = () => {
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/refund-cancellation-policy" element={<RefundCancellationPolicy />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
+        <Route path="/sms-consent-statement" element={<SMSConsentStatement />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
