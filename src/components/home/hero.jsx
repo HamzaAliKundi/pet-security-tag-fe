@@ -12,7 +12,7 @@ const Hero = () => {
   return (
     <div className="flex flex-col md:flex-row justify-between max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
       {/* Left Side */}
-      <div className="w-full flex justify-end md:max-w-[600px]">
+      <div className="w-full flex justify-center md:justify-end md:max-w-[600px]">
         <div>
         <h1 className="font-helvetica-neue font-bold text-[50px] md:text-[99px] leading-[50px] md:leading-[91px] tracking-[-0.04em]">
           The Fastest<br />
