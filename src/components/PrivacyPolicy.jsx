@@ -24,7 +24,7 @@ const PrivacyPolicy = () => {
             1. Who We Are
           </h2>
           <p className="font-helvetica-neue font-normal text-base sm:text-lg leading-relaxed text-[#333333] mb-4">
-            Digital Tails Ltd is a UK based smart pet tag brand.
+            Digital Tails is a UK based smart pet tag brand.
           </p>
           <ul className="list-disc pl-6 space-y-2 font-helvetica-neue font-normal text-base sm:text-lg leading-relaxed text-[#333333]">
             <li><strong>Business name:</strong> Digital Tails Services Ltd</li>
