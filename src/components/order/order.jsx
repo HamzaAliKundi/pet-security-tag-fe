@@ -819,7 +819,7 @@ const OrderForm = () => {
 
                                 <div className="flex flex-col gap-2">
                                     <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
-                                        State / Post code*
+                                        State / County*
                                     </label>
                                     <input
                                         type="text"
@@ -839,7 +839,7 @@ const OrderForm = () => {
 
                                 <div className="flex flex-col gap-2">
                                     <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
-                                        Zip Code / / County*
+                                        Zip Code / Post code*
                                     </label>
                                     <input
                                         type="text"
