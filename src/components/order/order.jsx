@@ -355,7 +355,7 @@ const OrderForm = () => {
                 }
 
                 if (paymentIntent && paymentIntent.status === 'succeeded') {
-                    // Confirm payment with backend to create user account and assign QR code
+                    // Confirm payment with backend to create user account (QR codes will be assigned when tags are scanned)
                     try {
                         const confirmResult = await confirmPayment({
                             orderId: result.order._id,
