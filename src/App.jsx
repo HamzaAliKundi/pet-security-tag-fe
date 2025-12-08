@@ -10,6 +10,7 @@ import FaqsPage from "./pages/faqs";
 import PetTagPage from "./pages/tag";
 import BlogPage from "./pages/blog";
 import OrderPage from "./pages/order";
+import OrderSummaryPage from "./pages/orderSummary";
 import ProfilePage from "./pages/profile";
 import BlogDetail from "./pages/blog-detail";
 import GetInfo from "./components/get-info/get-info";
@@ -40,6 +41,7 @@ const AppRoutes = () => {
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog-detail/:id" element={<BlogDetail />} />
         <Route path="/order" element={<OrderPage />} />
+        <Route path="/order-summary" element={<OrderSummaryPage />} />
         <Route path="/qr/:code" element={<QRScanner />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/get-info" element={<GetInfo />} />

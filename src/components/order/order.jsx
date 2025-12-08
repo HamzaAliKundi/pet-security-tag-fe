@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
+import { useNavigate } from 'react-router-dom'
 import { useCreateOrderMutation, useConfirmPaymentMutation, useCheckQRAvailabilityQuery } from '../../apis/orders'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -45,6 +46,7 @@ const OrderForm = () => {
     const stripe = useStripe()
     const elements = useElements()
     const { shippingPrice, isLocalizing: isLocalizingPrice, userCountry } = useLocalization()
+    const navigate = useNavigate()
     
     // Check if QR codes are available
     const isQRAvailable = qrAvailability?.isAvailable ?? true // Default to true if still loading
@@ -362,47 +364,23 @@ const OrderForm = () => {
                             paymentIntentId: paymentIntent.id
                         }).unwrap()
 
-                        if (confirmResult.isNewUser) {
-                            toast.success('Payment successful! Your account has been created and you will receive login credentials via email!')
-                        } else {
-                            toast.success('Payment successful! Order created successfully!')
-                        }
-                        
-                        console.log('Order confirmed:', confirmResult)
+                        // Navigate to order summary page with order data
+                        navigate('/order-summary', {
+                            state: {
+                                orderData: confirmResult,
+                                confirmResult: confirmResult
+                            }
+                        })
                     } catch (confirmError) {
                         console.error('Backend payment confirmation failed:', confirmError)
                         toast.error('Payment processed but account creation failed. Please contact support.')
+                        setIsProcessing(false)
                     }
                 } else {
                     toast.error('Payment not successful. Please try again.')
                     setIsProcessing(false)
                     return
                 }
-                
-                // Reset form
-                setFormData({
-                    email: '',
-                    name: '',
-                    petName: '',
-                    phone: '',
-                    shippingAddress: {
-                        street: '',
-                        city: '',
-                        state: '',
-                        zipCode: '',
-                        country: ''
-                    }
-                })
-                setQuantity(1)
-                setSelectedPlan('monthly')
-                setSelectedTagColor('blue')
-                setTagColors(['blue'])
-                setCountryCode('+44')
-                setShowShippingForm(false)
-                setTermsAccepted(false)
-                
-                // Clear Stripe Elements
-                elements.getElement(CardElement)?.clear()
             } else {
                 toast.error('Payment intent creation failed')
             }
