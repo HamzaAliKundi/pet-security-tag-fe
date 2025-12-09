@@ -1,6 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const Reviews = () => {
+  useEffect(() => {
+    // Check if script already exists
+    if (document.getElementById('EmbedSocialHashtagScript')) {
+      return;
+    }
+
+    // Create and append the script
+    const script = document.createElement('script');
+    script.id = 'EmbedSocialHashtagScript';
+    script.src = 'https://embedsocial.com/cdn/ht.js';
+    document.getElementsByTagName('head')[0].appendChild(script);
+
+    // Cleanup function to remove script on unmount (optional)
+    return () => {
+      const existingScript = document.getElementById('EmbedSocialHashtagScript');
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
+  }, []);
+
   return (
     <div className="w-full bg-gray-50 py-8 sm:py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,37 +36,11 @@ const Reviews = () => {
         </div>
 
         {/* Reviews Container */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200" style={{ overflow: 'hidden', maxHeight: '900px' }}>
-          <style>{`
-            .uc-iframe {
-              height: 900px !important;
-              width: 100% !important;
-              border: none !important;
-              display: block;
-              margin: 0;
-              padding: 0;
-            }
-            @media (max-width: 798px) {
-              .uc-iframe {
-                height: 700px !important;
-              }
-            }
-            @media (max-width: 640px) {
-              .uc-iframe {
-                height: 650px !important;
-              }
-            }
-          `}</style>
-          <iframe
-            id="EmbedReviews-Collect-Form"
-            className="uc-iframe"
-            src="https://embedsocial.com/api/pro_universal_collect_form/7830983d4e58b13503a24afec9acce0b96121f12"
-            frameBorder="0"
-            border="0"
-            title="Customer Reviews"
-            allow="clipboard-read; clipboard-write"
-            scrolling="yes"
-          />
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-6">
+          <div 
+            className="embedsocial-hashtag" 
+            data-ref="ccae6baa842a94b742131c49051a8200f1a59d35"
+          ></div>
         </div>
       </div>
     </div>
