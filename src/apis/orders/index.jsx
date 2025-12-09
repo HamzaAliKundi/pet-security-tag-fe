@@ -35,8 +35,8 @@ export const ordersApi = createApi({
     }),
 
     confirmPayment: builder.mutation({
-      query: ({ orderId, paymentIntentId }) => ({
-        url: `/user/orders/${orderId}/confirm-payment`,
+      query: ({ orderId, paymentIntentId, referralCode }) => ({
+        url: `/user/orders/${orderId}/confirm-payment${referralCode ? `?referralCode=${encodeURIComponent(referralCode)}` : ''}`,
         method: "POST",
         body: { paymentIntentId },
       }),

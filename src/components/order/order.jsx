@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCreateOrderMutation, useConfirmPaymentMutation, useCheckQRAvailabilityQuery } from '../../apis/orders'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -47,6 +47,8 @@ const OrderForm = () => {
     const elements = useElements()
     const { shippingPrice, isLocalizing: isLocalizingPrice, userCountry } = useLocalization()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const referralCode = searchParams.get('ref') // Get referral code from URL
     
     // Check if QR codes are available
     const isQRAvailable = qrAvailability?.isAvailable ?? true // Default to true if still loading
@@ -361,7 +363,8 @@ const OrderForm = () => {
                     try {
                         const confirmResult = await confirmPayment({
                             orderId: result.order._id,
-                            paymentIntentId: paymentIntent.id
+                            paymentIntentId: paymentIntent.id,
+                            referralCode: referralCode || undefined // Pass referral code if present
                         }).unwrap()
 
                         // Navigate to order summary page with order data
