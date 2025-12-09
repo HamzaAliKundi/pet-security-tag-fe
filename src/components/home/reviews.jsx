@@ -15,31 +15,36 @@ const Reviews = () => {
         </div>
 
         {/* Reviews Container */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200" style={{ overflow: 'hidden', maxHeight: '900px' }}>
           <style>{`
             .uc-iframe {
-              height: 700px !important;
-              border: none;
+              height: 900px !important;
+              width: 100% !important;
+              border: none !important;
+              display: block;
+              margin: 0;
+              padding: 0;
             }
-            @media (max-width: 768px) {
+            @media (max-width: 798px) {
               .uc-iframe {
-                height: 600px !important;
+                height: 700px !important;
               }
             }
             @media (max-width: 640px) {
               .uc-iframe {
-                height: 550px !important;
+                height: 650px !important;
               }
             }
           `}</style>
           <iframe
             id="EmbedReviews-Collect-Form"
-            className="uc-iframe w-full"
+            className="uc-iframe"
             src="https://embedsocial.com/api/pro_universal_collect_form/7830983d4e58b13503a24afec9acce0b96121f12"
             frameBorder="0"
             border="0"
             title="Customer Reviews"
             allow="clipboard-read; clipboard-write"
+            scrolling="yes"
           />
         </div>
       </div>
