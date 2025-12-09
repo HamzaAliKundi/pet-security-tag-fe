@@ -7,6 +7,7 @@ import Pricing from './../../components/home/pricing';
 import Message from './../../components/home/message';
 import ServicesInfo from '../../components/common/servicesInfo';
 import Customers from '../../components/common/customer';
+import Reviews from '../../components/home/reviews';
 import Order from '../../components/common/order';
 import Faqs from '../../components/common/faqs';
 import GetStarted from '../../components/common/getStarted';
@@ -22,6 +23,7 @@ const HomePage = () => {
       {/* <GetMoreInfo /> */}
       <ServicesInfo />
       <Customers />
+      <Reviews />
       <GetStarted />
       <Order />
       <Faqs />
