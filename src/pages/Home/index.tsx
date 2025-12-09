@@ -22,7 +22,7 @@ const HomePage = () => {
       <Services />
       {/* <GetMoreInfo /> */}
       <ServicesInfo />
-      <Customers />
+      {/* <Customers /> */}
       <Reviews />
       <GetStarted />
       <Order />
