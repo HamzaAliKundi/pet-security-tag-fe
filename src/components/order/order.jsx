@@ -574,6 +574,24 @@ const OrderForm = () => {
                         )}
                     </div>
 
+                    {/* Tag Back Image */}
+                    <div className="w-full mt-6 p-4 bg-white border border-gray-200 rounded-lg">
+                        <h3 className="font-helvetica-neue font-bold text-[16px] leading-[100%] capitalize mb-3 text-center">
+                            Tag Back View
+                        </h3>
+                        <div className="flex justify-center items-center">
+                            <img
+                                src="/order/tag-back.png"
+                                alt="Tag back view - Scan me I'm lost"
+                                className="max-w-full h-auto object-contain"
+                                style={{ maxHeight: '300px' }}
+                            />
+                        </div>
+                        <p className="text-center font-helvetica-neue text-sm text-gray-600 mt-3">
+                            Scan me I'm lost
+                        </p>
+                    </div>
+
                     {/* Pricing Information */}
                     <div className="w-full mt-6 p-4 bg-gray-50 rounded-lg">
                         <h3 className="font-helvetica-neue font-bold text-[18px] leading-[100%] capitalize mb-3">
