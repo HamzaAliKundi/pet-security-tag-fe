@@ -33,13 +33,6 @@ const Banner = () => {
               Digital Tails Tag Uses Smart QR Technology To Ensure Your Pets' Safety. Instantly Receive Their Location When The Tag Is Scanned.
             </p>
 
-            {/* Price */}
-            <div className="mt-2 sm:mt-4">
-              <span className="font-helvetica-neue font-medium text-lg sm:text-[24px] leading-[136%] text-[#4CB2E2] capitalize">
-                £1.49 Free
-              </span>
-            </div>
-
             {/* CTA Button */}
             <Link
               onClick={() => window.scrollTo(0, 0)}
@@ -47,7 +40,7 @@ const Banner = () => {
               className="mt-4 sm:mt-8 w-full sm:w-[300px] md:w-[387px] h-[50px] sm:h-[74px] bg-[#4CB2E2] rounded-[100px] px-4 sm:px-6 flex items-center justify-center"
             >
               <span className="font-helvetica-neue font-bold text-lg sm:text-[24px] leading-[100%] text-white uppercase">
-                Order a FREE Tag →
+                Order a Tag →
               </span>
             </Link>
           </div>

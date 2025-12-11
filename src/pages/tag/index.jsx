@@ -13,7 +13,7 @@ const PetTagPage = () => {
       <Banner />
       <ServicesInfo />
       <Gps />
-      <Customers />
+      {/* <Customers /> */}
       <GetStarted />
       <Search />
       <Faqs />
