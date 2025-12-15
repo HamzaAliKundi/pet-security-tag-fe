@@ -37,26 +37,35 @@ const Profile = ({ id }) => {
     try {
       console.log('🌍 Requesting location for WhatsApp...');
       
-      // Get current location with better error handling
+      // Get current location with better error handling for iOS
       const position = await new Promise((resolve, reject) => {
         let resolved = false;
+        const TIMEOUT = 15000; // 15 seconds for iOS
+        
+        // Safety timeout to prevent infinite loading
+        const timeoutId = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            reject(new Error('Location request timeout. Please try again.'));
+          }
+        }, TIMEOUT);
         
         const successCallback = (pos) => {
           if (!resolved) {
             resolved = true;
+            clearTimeout(timeoutId);
             console.log('✅ Location obtained:', pos.coords);
             resolve(pos);
           }
         };
         
         const errorCallback = (error) => {
-          console.error('❌ Geolocation error:', error);
-          setTimeout(() => {
-            if (!resolved) {
-              resolved = true;
-              reject(error);
-            }
-          }, 100);
+          if (!resolved) {
+            resolved = true;
+            clearTimeout(timeoutId);
+            console.error('❌ Geolocation error:', error);
+            reject(error);
+          }
         };
         
         navigator.geolocation.getCurrentPosition(
@@ -64,8 +73,8 @@ const Profile = ({ id }) => {
           errorCallback,
           {
             enableHighAccuracy: false,
-            timeout: 10000,
-            maximumAge: 300000
+            timeout: TIMEOUT,
+            maximumAge: 60000 // Reduced to 1 minute for better iOS compatibility
           }
         );
       });
