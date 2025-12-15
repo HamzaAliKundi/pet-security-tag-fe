@@ -95,11 +95,11 @@ const OrderSummary = () => {
                         </div>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                        Order Confirmed Successfully!
+                        Your order has been confirmed! 
                     </h1>
                     {isNewUser && (
                         <p className="text-green-600 font-semibold mb-2">
-                            🎉 Your account has been created! Check your email for login credentials.
+                            🎉 Your account has been created! Check your email for login details.
                         </p>
                     )}
                     <p className="text-gray-600">
@@ -267,10 +267,10 @@ const OrderSummary = () => {
                     <ul className="space-y-2 text-blue-800 text-sm">
                         <li>• You will receive an email confirmation with your order details</li>
                         <li>• Your physical tags will be shipped to the address provided</li>
-                        <li>• Once you receive your tags, scan the QR code to activate your subscription</li>
+                        <li>• Scan the QR code to activate your tag</li>
                         <li>• QR codes will be assigned when you scan your tags for the first time</li>
                         {isNewUser && (
-                            <li>• Check your email for your account login credentials</li>
+                            <li>• Check your email for your account login details</li>
                         )}
                     </ul>
                 </div>
