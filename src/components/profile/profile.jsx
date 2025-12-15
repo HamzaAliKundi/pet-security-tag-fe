@@ -13,8 +13,18 @@ const Profile = ({ id }) => {
   };
 
   const handleCallOwner = () => {
-    // In a real implementation, you'd have the owner's phone number
-    alert('This would initiate a call to the pet owner. Feature coming soon!');
+    const ownerPhone = petData?.pet?.owner?.phone;
+    
+    if (!ownerPhone) {
+      alert('Owner phone number is not available.');
+      return;
+    }
+    
+    // Clean the phone number (keep only digits and +)
+    const cleanPhone = ownerPhone.replace(/[^0-9+]/g, '');
+    
+    // Open phone dialer
+    window.location.href = `tel:${cleanPhone}`;
   };
 
   const handleWhatsApp = async () => {
