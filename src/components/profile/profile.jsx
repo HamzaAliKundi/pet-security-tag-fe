@@ -13,18 +13,8 @@ const Profile = ({ id }) => {
   };
 
   const handleCallOwner = () => {
-    const ownerPhone = petData?.pet?.owner?.phone;
-    
-    if (!ownerPhone) {
-      alert('Owner phone number is not available.');
-      return;
-    }
-    
-    // Clean the phone number (keep only digits and +)
-    const cleanPhone = ownerPhone.replace(/[^0-9+]/g, '');
-    
-    // Open phone dialer
-    window.location.href = `tel:${cleanPhone}`;
+    // In a real implementation, you'd have the owner's phone number
+    alert('This would initiate a call to the pet owner. Feature coming soon!');
   };
 
   const handleWhatsApp = async () => {
@@ -37,35 +27,26 @@ const Profile = ({ id }) => {
     try {
       console.log('🌍 Requesting location for WhatsApp...');
       
-      // Get current location with better error handling for iOS
+      // Get current location with better error handling
       const position = await new Promise((resolve, reject) => {
         let resolved = false;
-        const TIMEOUT = 15000; // 15 seconds for iOS compatibility
-        
-        // Safety timeout to prevent infinite loading on iOS
-        const timeoutId = setTimeout(() => {
-          if (!resolved) {
-            resolved = true;
-            reject(new Error('Location request timeout. Please try again.'));
-          }
-        }, TIMEOUT);
         
         const successCallback = (pos) => {
           if (!resolved) {
             resolved = true;
-            clearTimeout(timeoutId);
             console.log('✅ Location obtained:', pos.coords);
             resolve(pos);
           }
         };
         
         const errorCallback = (error) => {
-          if (!resolved) {
-            resolved = true;
-            clearTimeout(timeoutId);
-            console.error('❌ Geolocation error:', error);
-            reject(error);
-          }
+          console.error('❌ Geolocation error:', error);
+          setTimeout(() => {
+            if (!resolved) {
+              resolved = true;
+              reject(error);
+            }
+          }, 100);
         };
         
         navigator.geolocation.getCurrentPosition(
@@ -73,8 +54,8 @@ const Profile = ({ id }) => {
           errorCallback,
           {
             enableHighAccuracy: false,
-            timeout: TIMEOUT,
-            maximumAge: 60000 // Reduced to 1 minute for better iOS compatibility
+            timeout: 10000,
+            maximumAge: 300000
           }
         );
       });
@@ -108,45 +89,7 @@ const Profile = ({ id }) => {
         const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
         
         console.log('💬 Opening WhatsApp...');
-        
-        // Safari blocks navigation after async operations
-        // Create a visible link that auto-clicks, or user can tap if auto-click fails
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPad|iPhone|iPod/.test(navigator.userAgent);
-        
-        if (isSafari) {
-          // Create a temporary visible link for Safari
-          const link = document.createElement('a');
-          link.href = whatsappUrl;
-          link.style.position = 'fixed';
-          link.style.top = '10px';
-          link.style.right = '10px';
-          link.style.background = '#25D366';
-          link.style.color = 'white';
-          link.style.padding = '12px 20px';
-          link.style.borderRadius = '8px';
-          link.style.textDecoration = 'none';
-          link.style.zIndex = '9999';
-          link.style.fontSize = '16px';
-          link.style.fontWeight = 'bold';
-          link.textContent = 'Open WhatsApp';
-          link.target = '_blank';
-          
-          // Add to page
-          document.body.appendChild(link);
-          
-          // Try to auto-click
-          setTimeout(() => {
-            link.click();
-            // Remove after 3 seconds if still there
-            setTimeout(() => {
-              if (link.parentNode) {
-                document.body.removeChild(link);
-              }
-            }, 3000);
-          }, 100);
-        } else {
-          window.open(whatsappUrl, '_blank');
-        }
+        window.open(whatsappUrl, '_blank');
       } else {
         alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
       }
