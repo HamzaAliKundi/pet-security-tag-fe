@@ -40,9 +40,9 @@ const Profile = ({ id }) => {
       // Get current location with better error handling for iOS
       const position = await new Promise((resolve, reject) => {
         let resolved = false;
-        const TIMEOUT = 15000; // 15 seconds for iOS
+        const TIMEOUT = 15000; // 15 seconds for iOS compatibility
         
-        // Safety timeout to prevent infinite loading
+        // Safety timeout to prevent infinite loading on iOS
         const timeoutId = setTimeout(() => {
           if (!resolved) {
             resolved = true;
