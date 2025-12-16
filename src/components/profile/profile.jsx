@@ -110,10 +110,17 @@ const Profile = ({ id }) => {
         console.log('💬 Opening WhatsApp...');
         
         // Safari (iOS and desktop) blocks window.open() after async operations
-        // Use window.location.href for Safari compatibility
+        // Create and click an anchor element for Safari compatibility
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPad|iPhone|iPod/.test(navigator.userAgent);
         if (isSafari) {
-          window.location.href = whatsappUrl;
+          // Create an anchor element and click it - works better on Safari
+          const link = document.createElement('a');
+          link.href = whatsappUrl;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
         } else {
           window.open(whatsappUrl, '_blank');
         }
