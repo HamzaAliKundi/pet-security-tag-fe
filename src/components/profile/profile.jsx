@@ -109,18 +109,25 @@ const Profile = ({ id }) => {
         
         console.log('💬 Opening WhatsApp...');
         
-        // Safari (iOS and desktop) blocks window.open() after async operations
-        // Create and click an anchor element for Safari compatibility
+        // Safari blocks navigation after async operations
+        // Try multiple methods for Safari compatibility
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPad|iPhone|iPod/.test(navigator.userAgent);
+        
         if (isSafari) {
-          // Create an anchor element and click it - works better on Safari
-          const link = document.createElement('a');
-          link.href = whatsappUrl;
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          // For Safari, try setTimeout to preserve user gesture context
+          setTimeout(() => {
+            // Try multiple methods
+            try {
+              window.location.href = whatsappUrl;
+            } catch (e) {
+              try {
+                window.location.replace(whatsappUrl);
+              } catch (e2) {
+                // Last resort: show URL for user to copy or click
+                alert(`Please click this link to open WhatsApp:\n${whatsappUrl}`);
+              }
+            }
+          }, 100);
         } else {
           window.open(whatsappUrl, '_blank');
         }
