@@ -110,23 +110,39 @@ const Profile = ({ id }) => {
         console.log('💬 Opening WhatsApp...');
         
         // Safari blocks navigation after async operations
-        // Try multiple methods for Safari compatibility
+        // Create a visible link that auto-clicks, or user can tap if auto-click fails
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPad|iPhone|iPod/.test(navigator.userAgent);
         
         if (isSafari) {
-          // For Safari, try setTimeout to preserve user gesture context
+          // Create a temporary visible link for Safari
+          const link = document.createElement('a');
+          link.href = whatsappUrl;
+          link.style.position = 'fixed';
+          link.style.top = '10px';
+          link.style.right = '10px';
+          link.style.background = '#25D366';
+          link.style.color = 'white';
+          link.style.padding = '12px 20px';
+          link.style.borderRadius = '8px';
+          link.style.textDecoration = 'none';
+          link.style.zIndex = '9999';
+          link.style.fontSize = '16px';
+          link.style.fontWeight = 'bold';
+          link.textContent = 'Open WhatsApp';
+          link.target = '_blank';
+          
+          // Add to page
+          document.body.appendChild(link);
+          
+          // Try to auto-click
           setTimeout(() => {
-            // Try multiple methods
-            try {
-              window.location.href = whatsappUrl;
-            } catch (e) {
-              try {
-                window.location.replace(whatsappUrl);
-              } catch (e2) {
-                // Last resort: show URL for user to copy or click
-                alert(`Please click this link to open WhatsApp:\n${whatsappUrl}`);
+            link.click();
+            // Remove after 3 seconds if still there
+            setTimeout(() => {
+              if (link.parentNode) {
+                document.body.removeChild(link);
               }
-            }
+            }, 3000);
           }, 100);
         } else {
           window.open(whatsappUrl, '_blank');
