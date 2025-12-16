@@ -108,7 +108,15 @@ const Profile = ({ id }) => {
         const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
         
         console.log('💬 Opening WhatsApp...');
-        window.open(whatsappUrl, '_blank');
+        
+        // Safari (iOS and desktop) blocks window.open() after async operations
+        // Use window.location.href for Safari compatibility
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (isSafari) {
+          window.location.href = whatsappUrl;
+        } else {
+          window.open(whatsappUrl, '_blank');
+        }
       } else {
         alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
       }
