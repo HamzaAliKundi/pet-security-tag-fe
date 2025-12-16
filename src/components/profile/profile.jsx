@@ -7,89 +7,58 @@ const Profile = ({ id }) => {
     skip: !id 
   });
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleShareLocation = () => {
     setIsLocationModalOpen(true);
   };
 
   const handleCallOwner = () => {
+    // In a real implementation, you'd have the owner's phone number
     alert('This would initiate a call to the pet owner. Feature coming soon!');
   };
 
-  // Helper function to get geolocation with iOS Safari fixes
-  const getLocation = () => {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error('Geolocation is not supported by this browser.'));
-        return;
-      }
-
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      
-      const options = {
-        enableHighAccuracy: false,
-        timeout: isIOS && isSafari ? 15000 : 10000,
-        maximumAge: isIOS && isSafari ? 60000 : 300000
-      };
-
-      console.log('🌍 Requesting location...', { isIOS, isSafari });
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log('✅ Location obtained:', position.coords);
-          resolve(position);
-        },
-        (error) => {
-          console.error('❌ Geolocation error:', error);
-          reject(error);
-        },
-        options
-      );
-    });
-  };
-
   const handleWhatsApp = async () => {
-    if (isProcessing) return;
-    
-    setIsProcessing(true);
-    
+    // Get GPS location and open WhatsApp
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser.');
+      return;
+    }
+
     try {
-      console.log('💬 Starting WhatsApp flow...');
+      console.log('🌍 Requesting location for WhatsApp...');
       
-      // CRITICAL: Open a blank window immediately to preserve user gesture
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      let whatsappWindow = null;
-      
-      if (!isIOS) {
-        // For non-iOS, open window immediately
-        whatsappWindow = window.open('', '_blank');
-        if (whatsappWindow) {
-          whatsappWindow.document.write('<html><body><h2>Loading WhatsApp...</h2><p>Please wait...</p></body></html>');
-        }
-      }
-      
-      // Get location
-      let position;
-      try {
-        position = await getLocation();
-      } catch (error) {
-        console.error('❌ Geolocation error:', error);
-        if (whatsappWindow) whatsappWindow.close();
+      // Get current location with better error handling
+      const position = await new Promise((resolve, reject) => {
+        let resolved = false;
         
-        if (error.code === 1) {
-          alert('❌ Location permission denied. Please enable location access in Settings > Safari > Location Services.');
-        } else if (error.code === 2) {
-          alert('❌ Location unavailable. Please check your device settings and ensure Location Services are enabled.');
-        } else if (error.code === 3) {
-          alert('❌ Location request timeout. Please try again or check your internet connection.');
-        } else {
-          alert(`❌ Could not get location: ${error.message || 'Please enable location services and try again.'}`);
-        }
-        setIsProcessing(false);
-        return;
-      }
+        const successCallback = (pos) => {
+          if (!resolved) {
+            resolved = true;
+            console.log('✅ Location obtained:', pos.coords);
+            resolve(pos);
+          }
+        };
+        
+        const errorCallback = (error) => {
+          console.error('❌ Geolocation error:', error);
+          setTimeout(() => {
+            if (!resolved) {
+              resolved = true;
+              reject(error);
+            }
+          }, 100);
+        };
+        
+        navigator.geolocation.getCurrentPosition(
+          successCallback,
+          errorCallback,
+          {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 300000
+          }
+        );
+      });
 
       const { latitude, longitude } = position.coords;
       const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
@@ -108,7 +77,7 @@ const Profile = ({ id }) => {
           latitude,
           longitude,
           locationUrl,
-          petName: petData?.pet?.petName
+          petName: pet?.petName
         }),
       });
 
@@ -120,58 +89,71 @@ const Profile = ({ id }) => {
         const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
         
         console.log('💬 Opening WhatsApp...');
-        
-        if (isIOS) {
-          // For iOS, use direct navigation
-          window.location.href = whatsappUrl;
-        } else {
-          // For non-iOS, update the window we opened earlier
-          if (whatsappWindow && !whatsappWindow.closed) {
-            whatsappWindow.location.href = whatsappUrl;
-          } else {
-            // Fallback if window was blocked
-            window.open(whatsappUrl, '_blank');
-          }
-        }
+        window.open(whatsappUrl, '_blank');
       } else {
-        if (whatsappWindow) whatsappWindow.close();
         alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('❌ Error in WhatsApp share:', error);
-      alert(`❌ Failed to share location: ${error.message || 'Please try again'}`);
-    } finally {
-      setIsProcessing(false);
+      
+      if (error && error.code) {
+        if (error.code === 1) {
+          alert('❌ Location permission denied. Please enable location access in your browser settings.');
+        } else if (error.code === 2) {
+          alert('❌ Location unavailable. Please check your device settings.');
+        } else if (error.code === 3) {
+          alert('❌ Location request timeout. Please try again.');
+        } else {
+          alert(`❌ Geolocation error: ${error.message || 'Unknown error'}`);
+        }
+      } else {
+        alert(`❌ Failed to share location: ${error.message || 'Please try again'}`);
+      }
     }
   };
 
   const handleShareLocationMessage = async () => {
-    if (isProcessing) return;
-    
-    setIsProcessing(true);
-    
+    // Share location via SMS
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser.');
+      return;
+    }
+
     try {
-      console.log('📱 Starting SMS flow...');
+      console.log('🌍 Requesting location for SMS...');
       
-      // Get location first
-      let position;
-      try {
-        position = await getLocation();
-      } catch (error) {
-        console.error('❌ Geolocation error:', error);
+      // Get current location with better error handling
+      const position = await new Promise((resolve, reject) => {
+        let resolved = false;
         
-        if (error.code === 1) {
-          alert('❌ Location permission denied. Please enable location access in Settings > Safari > Location Services.');
-        } else if (error.code === 2) {
-          alert('❌ Location unavailable. Please check your device settings and ensure Location Services are enabled.');
-        } else if (error.code === 3) {
-          alert('❌ Location request timeout. Please try again or check your internet connection.');
-        } else {
-          alert(`❌ Could not get location: ${error.message || 'Please enable location services and try again.'}`);
-        }
-        setIsProcessing(false);
-        return;
-      }
+        const successCallback = (pos) => {
+          if (!resolved) {
+            resolved = true;
+            console.log('✅ Location obtained:', pos.coords);
+            resolve(pos);
+          }
+        };
+        
+        const errorCallback = (error) => {
+          console.error('❌ Geolocation error:', error);
+          setTimeout(() => {
+            if (!resolved) {
+              resolved = true;
+              reject(error);
+            }
+          }, 100);
+        };
+        
+        navigator.geolocation.getCurrentPosition(
+          successCallback,
+          errorCallback,
+          {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 300000
+          }
+        );
+      });
 
       const { latitude, longitude } = position.coords;
       const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
@@ -190,22 +172,33 @@ const Profile = ({ id }) => {
           latitude,
           longitude,
           locationUrl,
-          petName: petData?.pet?.petName
+          petName: pet?.petName
         }),
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        alert('✅ Location shared successfully via SMS!');
+        alert(`✅ Location shared successfully via SMS!`);
       } else {
         alert(`❌ Failed to share location: ${result.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('❌ Error in SMS share:', error);
-      alert(`❌ Failed to share location: ${error.message || 'Please try again'}`);
-    } finally {
-      setIsProcessing(false);
+      
+      if (error && error.code) {
+        if (error.code === 1) {
+          alert('❌ Location permission denied. Please enable location access in your browser settings.');
+        } else if (error.code === 2) {
+          alert('❌ Location unavailable. Please check your device settings.');
+        } else if (error.code === 3) {
+          alert('❌ Location request timeout. Please try again.');
+        } else {
+          alert(`❌ Geolocation error: ${error.message || 'Unknown error'}`);
+        }
+      } else {
+        alert(`❌ Failed to share location: ${error.message || 'Please try again'}`);
+      }
     }
   };
 
@@ -252,6 +245,7 @@ const Profile = ({ id }) => {
               alt={pet.petName} 
               className="w-full h-full object-cover"
               onError={(e) => {
+                // Fallback to placeholder if image fails to load
                 e.currentTarget.src = "/profile/profile.svg";
               }}
             />
@@ -368,22 +362,20 @@ const Profile = ({ id }) => {
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <button 
           onClick={handleWhatsApp}
-          disabled={isProcessing}
-          className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] bg-[#4CB2E2] text-white rounded-[100px] px-4 md:px-8 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] bg-[#4CB2E2] text-white rounded-[100px] px-4 md:px-8 text-sm md:text-base"
         >
           <img src="/profile/wa.svg" alt="WhatsApp" className="w-5 h-5 md:w-6 md:h-6" />
-          {isProcessing ? 'Processing...' : 'Whatsapp Conversation'}
+          Whatsapp Conversation
         </button>
         <button 
           onClick={handleShareLocationMessage}
-          disabled={isProcessing}
-          className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] rounded-[100px] px-4 md:px-8 text-black text-sm md:text-base mt-3 md:mt-0 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] rounded-[100px] px-4 md:px-8 text-black text-sm md:text-base mt-3 md:mt-0"
           style={{
             background: 'radial-gradient(58.93% 58.93% at 50% 77.68%, #FFD700 0%, #B89D0B 100%)'
           }}
         >
           <img src="/profile/messanger.svg" alt="Location" className="w-5 h-5 md:w-6 md:h-6" />
-          {isProcessing ? 'Processing...' : 'Share Location On Message'}
+          Share Location On Message
         </button>
       </div>
 
