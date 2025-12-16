@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import { useGetPetProfileQuery } from '../../apis/petProfile';
 import LocationShareModal from './LocationShareModal';
 
+// iOS Safari detector
+const isIOSSafari = () => {
+  const ua = window.navigator.userAgent;
+  const iOS = /iPad|iPhone|iPod/.test(ua);
+  const webkit = /WebKit/.test(ua);
+  const isChrome = /CriOS/.test(ua);
+  return iOS && webkit && !isChrome;
+};
+
 const Profile = ({ id }) => {
   const { data: petData, isLoading, error } = useGetPetProfileQuery(id, { 
     skip: !id 
@@ -27,86 +36,67 @@ const Profile = ({ id }) => {
     window.location.href = `tel:${cleanPhone}`;
   };
 
-  const handleWhatsApp = async () => {
-    // Get GPS location and open WhatsApp
+  const handleWhatsApp = () => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by this browser.');
       return;
     }
 
-    try {
-      console.log('🌍 Requesting location for WhatsApp...');
-      
-      // Get current location with better error handling
-      const position = await new Promise((resolve, reject) => {
-        let resolved = false;
-        
-        const successCallback = (pos) => {
-          if (!resolved) {
-            resolved = true;
-            console.log('✅ Location obtained:', pos.coords);
-            resolve(pos);
-          }
-        };
-        
-        const errorCallback = (error) => {
-          console.error('❌ Geolocation error:', error);
-          setTimeout(() => {
-            if (!resolved) {
-              resolved = true;
-              reject(error);
+    // iOS Safari requires sync user gesture - use callback directly (not async/await)
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+        console.log('📍 Getting owner phone number...');
+
+        try {
+          const response = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/qr/share-location`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                petId: id,
+                method: 'get-phone',
+                latitude,
+                longitude,
+                locationUrl,
+                petName: petData?.pet?.petName
+              }),
             }
-          }, 100);
-        };
-        
-        navigator.geolocation.getCurrentPosition(
-          successCallback,
-          errorCallback,
-          {
-            enableHighAccuracy: false,
-            timeout: 10000,
-            maximumAge: 300000
+          );
+
+          const result = await response.json();
+
+          if (!response.ok || !result.phoneNumber) {
+            alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
+            return;
           }
-        );
-      });
 
-      const { latitude, longitude } = position.coords;
-      const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+          const cleanPhone = result.phoneNumber.replace(/[^0-9]/g, '');
+          const message = `Pet found alert 🚨\n\nGood news! Your pet has been located, and their tag was scanned at the location shown. Expect a call or message from the person who found them soon. 🐾\n\n📍 *GPS Location:* ${locationUrl}`;
 
-      console.log('📍 Getting owner phone number...');
+          let whatsappUrl;
 
-      // Get owner's phone number from backend
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          petId: id,
-          method: 'get-phone',
-          latitude,
-          longitude,
-          locationUrl,
-          petName: pet?.petName
-        }),
-      });
+          if (isIOSSafari()) {
+            // ✅ REQUIRED FOR iOS SAFARI - use whatsapp:// protocol
+            whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
+            window.location.href = whatsappUrl;
+          } else {
+            // Other browsers - use https://wa.me
+            whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+          }
 
-      const result = await response.json();
-      
-      if (response.ok && result.phoneNumber) {
-        const cleanPhone = result.phoneNumber.replace(/[^0-9+]/g, '');
-        const whatsappMessage = `Pet found alert 🚨\n\nGood news! Your pet has been located, and their tag was scanned at the location shown. Expect a call or message from the person who found them soon. 🐾\n\n📍 *GPS Location:* ${locationUrl}`;
-        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
-        
-        console.log('💬 Opening WhatsApp...');
-        window.open(whatsappUrl, '_blank');
-      } else {
-        alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('❌ Error in WhatsApp share:', error);
-      
-      if (error && error.code) {
+          console.log('💬 Opening WhatsApp...');
+        } catch (error) {
+          console.error('❌ Error fetching phone number:', error);
+          alert(`❌ Failed to get owner's phone number: ${error.message || 'Please try again'}`);
+        }
+      },
+      (error) => {
+        console.error('❌ Geolocation error:', error);
         if (error.code === 1) {
           alert('❌ Location permission denied. Please enable location access in your browser settings.');
         } else if (error.code === 2) {
@@ -114,12 +104,15 @@ const Profile = ({ id }) => {
         } else if (error.code === 3) {
           alert('❌ Location request timeout. Please try again.');
         } else {
-          alert(`❌ Geolocation error: ${error.message || 'Unknown error'}`);
+          alert(`❌ Geolocation error: ${error.message || 'Please enable location services and try again.'}`);
         }
-      } else {
-        alert(`❌ Failed to share location: ${error.message || 'Please try again'}`);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
       }
-    }
+    );
   };
 
   const handleShareLocationMessage = async () => {
