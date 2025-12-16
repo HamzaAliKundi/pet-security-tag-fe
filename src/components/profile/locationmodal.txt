@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
 
-// iOS Safari detector
-const isIOSSafari = () => {
-  const ua = window.navigator.userAgent;
-  const iOS = /iPad|iPhone|iPod/.test(ua);
-  const webkit = /WebKit/.test(ua);
-  const isChrome = /CriOS/.test(ua);
-  return iOS && webkit && !isChrome;
-};
-
 const LocationShareModal = ({ isOpen, onClose, petId, petName }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState('');
@@ -17,7 +8,7 @@ const LocationShareModal = ({ isOpen, onClose, petId, petName }) => {
   const [isLocationRequested, setIsLocationRequested] = useState(false);
 
 
-  const handleShareLocation = (method) => {
+  const handleShareLocation = async (method) => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by this browser.');
       return;
@@ -33,79 +24,139 @@ const LocationShareModal = ({ isOpen, onClose, petId, petName }) => {
     setSelectedMethod(method);
     setIsLocationRequested(true);
 
-    console.log('🌍 Requesting location...');
+    let position = null;
     
-    // iOS Safari requires sync user gesture - call geolocation directly (not in async wrapper)
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-
-        console.log('📍 Location coordinates:', { latitude, longitude });
-        console.log('🔗 Location URL:', locationUrl);
-
-        // Handle WhatsApp differently - open WhatsApp directly
-        if (method === 'whatsapp') {
-          console.log('💬 Opening WhatsApp...');
-          
-          try {
-            // Get the owner's phone number from backend
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                petId,
-                method: 'get-phone',
-                latitude,
-                longitude,
-                locationUrl,
-                petName
-              }),
-            });
-
-            const result = await response.json();
-            
-            if (response.ok && result.phoneNumber) {
-              // Remove formatting from phone number (remove spaces, dashes, etc)
-              const cleanPhone = result.phoneNumber.replace(/[^0-9]/g, '');
-              
-              // Create WhatsApp message
-              const whatsappMessage = `Pet found alert 🚨\n\nGood news! Your pet has been located, and their tag was scanned at the location shown. Expect a call or message from the person who found them soon. 🐾\n\n📍 *GPS Location:* ${locationUrl}`;
-              
-              let whatsappUrl;
-              
-              if (isIOSSafari()) {
-                // ✅ REQUIRED FOR iOS SAFARI - use whatsapp:// protocol
-                whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(whatsappMessage)}`;
-                window.location.href = whatsappUrl;
-              } else {
-                // Other browsers - use https://wa.me
-                whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
-                window.open(whatsappUrl, '_blank');
-              }
-              
-              console.log('📱 Opening WhatsApp URL:', whatsappUrl);
-              alert(`✅ Opening WhatsApp to share location with pet owner!`);
-              onClose();
-            } else {
-              alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
-            }
-          } catch (error) {
-            console.error('❌ Error fetching phone number:', error);
-            alert(`❌ Failed to get owner's phone number: ${error.message || 'Please try again'}`);
-          } finally {
-            setIsLoading(false);
-            setIsLocationRequested(false);
+    try {
+      console.log('🌍 Requesting location...');
+      
+      // Use a different approach - get location with Promise race
+      position = await new Promise((resolve, reject) => {
+        let resolved = false;
+        
+        const successCallback = (pos) => {
+          if (!resolved) {
+            resolved = true;
+            console.log('✅ Location obtained successfully:', pos);
+            console.log('📍 Coordinates:', pos.coords.latitude, pos.coords.longitude);
+            resolve(pos);
           }
-          return;
+        };
+        
+        const errorCallback = (error) => {
+          console.error('❌ Geolocation error (might be ignored):', error);
+          // Don't reject immediately, wait a bit to see if success callback fires
+          setTimeout(() => {
+            if (!resolved) {
+              resolved = true;
+              reject(error);
+            }
+          }, 100);
+        };
+        
+        navigator.geolocation.getCurrentPosition(
+          successCallback,
+          errorCallback,
+          {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 300000 // Allow 5 minute old location
+          }
+        );
+      });
+
+      const { latitude, longitude } = position.coords;
+      const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+      console.log('📍 Location coordinates:', { latitude, longitude });
+      console.log('🔗 Location URL:', locationUrl);
+
+      // Handle WhatsApp differently - open WhatsApp directly
+      if (method === 'whatsapp') {
+        console.log('💬 Opening WhatsApp...');
+        
+        // First, get the owner's phone number from backend
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            petId,
+            method: 'get-phone', // Special method to just get phone number
+            latitude,
+            longitude,
+            locationUrl,
+            petName
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (response.ok && result.phoneNumber) {
+          // Remove formatting from phone number (remove spaces, dashes, etc)
+          const cleanPhone = result.phoneNumber.replace(/[^0-9+]/g, '');
+          
+          // Create WhatsApp message
+          const whatsappMessage = `Pet found alert 🚨\n\nGood news! Your pet has been located, and their tag was scanned at the location shown. Expect a call or message from the person who found them soon. 🐾\n\n📍 *GPS Location:* ${locationUrl}`;
+          
+          // Open WhatsApp with pre-filled message
+          const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
+          
+          console.log('📱 Opening WhatsApp URL:', whatsappUrl);
+          window.open(whatsappUrl, '_blank');
+          
+          alert(`✅ Opening WhatsApp to share location with pet owner!`);
+          onClose();
+        } else {
+          alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
         }
+        
+        setIsLoading(false);
+        setIsLocationRequested(false);
+        return;
+      }
 
-        // For SMS, send through backend
-        console.log('📤 Sending SMS through backend...');
+      // For SMS, send through backend
+      console.log('📤 Sending SMS through backend...');
 
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          petId,
+          method,
+          latitude,
+          longitude,
+          locationUrl,
+          petName
+        }),
+      });
+
+      console.log('📡 Backend response status:', response.status);
+      
+      const result = await response.json();
+      console.log('📨 Backend response:', result);
+
+      if (response.ok) {
+        alert(`✅ Location shared successfully via ${method.toUpperCase()}!`);
+        onClose();
+      } else {
+        alert(`❌ Failed to share location: ${result.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('❌ Error in location sharing:', error);
+      
+      // If we got the position but there was an error, still try to send it
+      if (position && position.coords) {
+        console.log('🔄 Retrying with obtained position despite error...');
         try {
+          const { latitude, longitude } = position.coords;
+          const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+          console.log('📍 Using location:', { latitude, longitude });
+
           const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
             method: 'POST',
             headers: {
@@ -121,48 +172,32 @@ const LocationShareModal = ({ isOpen, onClose, petId, petName }) => {
             }),
           });
 
-          console.log('📡 Backend response status:', response.status);
+          await response.json();
           
-          const result = await response.json();
-          console.log('📨 Backend response:', result);
-
           if (response.ok) {
             alert(`✅ Location shared successfully via ${method.toUpperCase()}!`);
             onClose();
-          } else {
-            alert(`❌ Failed to share location: ${result.message || 'Unknown error'}`);
+            return;
           }
-        } catch (error) {
-          console.error('❌ Error sending SMS:', error);
-          alert(`❌ Failed to share location: ${error.message || 'Please try again'}`);
-        } finally {
-          setIsLoading(false);
-          setSelectedMethod('');
-          setIsLocationRequested(false);
+        } catch (retryError) {
+          console.error('❌ Retry failed:', retryError);
         }
-      },
-      (error) => {
-        console.error('❌ Geolocation error:', error);
-        setIsLoading(false);
-        setSelectedMethod('');
-        setIsLocationRequested(false);
-        
-        if (error.code === 1) {
-          alert('❌ Location access denied. Please refresh the page and allow location access.');
-        } else if (error.code === 2) {
-          alert('❌ Location unavailable. Please check your GPS settings.');
-        } else if (error.code === 3) {
-          alert('❌ Location request timed out. Please try again.');
-        } else {
-          alert('❌ Failed to get location. Please try again.');
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
       }
-    );
+      
+      if (error.code === 1) {
+        alert('❌ Location access denied. Please refresh the page and allow location access.');
+      } else if (error.code === 2) {
+        alert('❌ Location unavailable. Please check your GPS settings.');
+      } else if (error.code === 3) {
+        alert('❌ Location request timed out. Please try again.');
+      } else {
+        alert('❌ Failed to get location. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+      setSelectedMethod('');
+      setIsLocationRequested(false);
+    }
   };
 
   const handleManualLocationShare = async (method) => {
@@ -175,75 +210,31 @@ const LocationShareModal = ({ isOpen, onClose, petId, petName }) => {
     setSelectedMethod(method);
 
     try {
-      // For WhatsApp with manual location, we need to get phone number first
-      if (method === 'whatsapp') {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            petId,
-            method: 'get-phone',
-            latitude: null,
-            longitude: null,
-            locationUrl: manualLocation,
-            petName,
-            isManualLocation: true
-          }),
-        });
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          petId,
+          method,
+          latitude: null,
+          longitude: null,
+          locationUrl: manualLocation,
+          petName,
+          isManualLocation: true
+        }),
+      });
 
-        const result = await response.json();
+      const result = await response.json();
 
-        if (response.ok && result.phoneNumber) {
-          const cleanPhone = result.phoneNumber.replace(/[^0-9]/g, '');
-          const whatsappMessage = `Pet found alert 🚨\n\nGood news! Your pet has been located, and their tag was scanned at the location shown. Expect a call or message from the person who found them soon. 🐾\n\n📍 *Location:* ${manualLocation}`;
-          
-          let whatsappUrl;
-          
-          if (isIOSSafari()) {
-            // ✅ REQUIRED FOR iOS SAFARI
-            whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(whatsappMessage)}`;
-            window.location.href = whatsappUrl;
-          } else {
-            whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
-            window.open(whatsappUrl, '_blank');
-          }
-          
-          alert(`✅ Opening WhatsApp to share location with pet owner!`);
-          onClose();
-        } else {
-          alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
-        }
+      if (response.ok) {
+        alert(`✅ Location shared successfully via ${method.toUpperCase()}!`);
+        onClose();
       } else {
-        // SMS with manual location
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/qr/share-location`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            petId,
-            method,
-            latitude: null,
-            longitude: null,
-            locationUrl: manualLocation,
-            petName,
-            isManualLocation: true
-          }),
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          alert(`✅ Location shared successfully via ${method.toUpperCase()}!`);
-          onClose();
-        } else {
-          alert(`❌ Failed to share location: ${result.message || 'Unknown error'}`);
-        }
+        alert(`❌ Failed to share location: ${result.message || 'Unknown error'}`);
       }
-    } catch (error) {
-      console.error('❌ Error sharing location:', error);
+    } catch {
       alert('❌ Failed to share location. Please try again.');
     } finally {
       setIsLoading(false);
