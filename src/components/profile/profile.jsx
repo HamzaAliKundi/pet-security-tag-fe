@@ -7,6 +7,7 @@ const Profile = ({ id }) => {
     skip: !id 
   });
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleShareLocation = () => {
     setIsLocationModalOpen(true);
@@ -24,73 +25,58 @@ const Profile = ({ id }) => {
         return;
       }
 
-      // Check if we're on iOS Safari
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
       
       const options = {
-        enableHighAccuracy: false, // Set to false for better iOS compatibility
-        timeout: isIOS && isSafari ? 15000 : 10000, // Longer timeout for iOS Safari
-        maximumAge: isIOS && isSafari ? 60000 : 300000 // Shorter cache for iOS
+        enableHighAccuracy: false,
+        timeout: isIOS && isSafari ? 15000 : 10000,
+        maximumAge: isIOS && isSafari ? 60000 : 300000
       };
 
       console.log('🌍 Requesting location...', { isIOS, isSafari });
-      
-      let timeoutId;
-      let resolved = false;
-
-      const cleanup = () => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-      };
-
-      const successCallback = (position) => {
-        if (!resolved) {
-          resolved = true;
-          cleanup();
-          console.log('✅ Location obtained:', position.coords);
-          resolve(position);
-        }
-      };
-
-      const errorCallback = (error) => {
-        if (!resolved) {
-          resolved = true;
-          cleanup();
-          console.error('❌ Geolocation error:', error);
-          reject(error);
-        }
-      };
-
-      // Set a backup timeout for iOS Safari
-      if (isIOS && isSafari) {
-        timeoutId = setTimeout(() => {
-          if (!resolved) {
-            resolved = true;
-            reject(new Error('Location request timeout. Please try again.'));
-          }
-        }, options.timeout + 1000);
-      }
 
       navigator.geolocation.getCurrentPosition(
-        successCallback,
-        errorCallback,
+        (position) => {
+          console.log('✅ Location obtained:', position.coords);
+          resolve(position);
+        },
+        (error) => {
+          console.error('❌ Geolocation error:', error);
+          reject(error);
+        },
         options
       );
     });
   };
 
   const handleWhatsApp = async () => {
+    if (isProcessing) return;
+    
+    setIsProcessing(true);
+    
     try {
       console.log('💬 Starting WhatsApp flow...');
       
-      // Get location first
+      // CRITICAL: Open a blank window immediately to preserve user gesture
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      let whatsappWindow = null;
+      
+      if (!isIOS) {
+        // For non-iOS, open window immediately
+        whatsappWindow = window.open('', '_blank');
+        if (whatsappWindow) {
+          whatsappWindow.document.write('<html><body><h2>Loading WhatsApp...</h2><p>Please wait...</p></body></html>');
+        }
+      }
+      
+      // Get location
       let position;
       try {
         position = await getLocation();
       } catch (error) {
         console.error('❌ Geolocation error:', error);
+        if (whatsappWindow) whatsappWindow.close();
         
         if (error.code === 1) {
           alert('❌ Location permission denied. Please enable location access in Settings > Safari > Location Services.');
@@ -101,6 +87,7 @@ const Profile = ({ id }) => {
         } else {
           alert(`❌ Could not get location: ${error.message || 'Please enable location services and try again.'}`);
         }
+        setIsProcessing(false);
         return;
       }
 
@@ -134,23 +121,35 @@ const Profile = ({ id }) => {
         
         console.log('💬 Opening WhatsApp...');
         
-        // For iOS Safari, use location.href instead of window.open
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         if (isIOS) {
+          // For iOS, use direct navigation
           window.location.href = whatsappUrl;
         } else {
-          window.open(whatsappUrl, '_blank');
+          // For non-iOS, update the window we opened earlier
+          if (whatsappWindow && !whatsappWindow.closed) {
+            whatsappWindow.location.href = whatsappUrl;
+          } else {
+            // Fallback if window was blocked
+            window.open(whatsappUrl, '_blank');
+          }
         }
       } else {
+        if (whatsappWindow) whatsappWindow.close();
         alert(`❌ Failed to get owner's phone number: ${result.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('❌ Error in WhatsApp share:', error);
       alert(`❌ Failed to share location: ${error.message || 'Please try again'}`);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleShareLocationMessage = async () => {
+    if (isProcessing) return;
+    
+    setIsProcessing(true);
+    
     try {
       console.log('📱 Starting SMS flow...');
       
@@ -170,6 +169,7 @@ const Profile = ({ id }) => {
         } else {
           alert(`❌ Could not get location: ${error.message || 'Please enable location services and try again.'}`);
         }
+        setIsProcessing(false);
         return;
       }
 
@@ -204,6 +204,8 @@ const Profile = ({ id }) => {
     } catch (error) {
       console.error('❌ Error in SMS share:', error);
       alert(`❌ Failed to share location: ${error.message || 'Please try again'}`);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -366,20 +368,22 @@ const Profile = ({ id }) => {
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <button 
           onClick={handleWhatsApp}
-          className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] bg-[#4CB2E2] text-white rounded-[100px] px-4 md:px-8 text-sm md:text-base"
+          disabled={isProcessing}
+          className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] bg-[#4CB2E2] text-white rounded-[100px] px-4 md:px-8 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <img src="/profile/wa.svg" alt="WhatsApp" className="w-5 h-5 md:w-6 md:h-6" />
-          Whatsapp Conversation
+          {isProcessing ? 'Processing...' : 'Whatsapp Conversation'}
         </button>
         <button 
           onClick={handleShareLocationMessage}
-          className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] rounded-[100px] px-4 md:px-8 text-black text-sm md:text-base mt-3 md:mt-0"
+          disabled={isProcessing}
+          className="flex items-center justify-center gap-2 w-full md:w-[386px] h-[60px] md:h-[74px] rounded-[100px] px-4 md:px-8 text-black text-sm md:text-base mt-3 md:mt-0 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             background: 'radial-gradient(58.93% 58.93% at 50% 77.68%, #FFD700 0%, #B89D0B 100%)'
           }}
         >
           <img src="/profile/messanger.svg" alt="Location" className="w-5 h-5 md:w-6 md:h-6" />
-          Share Location On Message
+          {isProcessing ? 'Processing...' : 'Share Location On Message'}
         </button>
       </div>
 
