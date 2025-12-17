@@ -59,6 +59,28 @@ const Footer = () => {
             />
           </div>
 
+          {/* Partnership Section */}
+          <div className="mb-6 pt-6 border-t border-gray-200">
+            <p className="font-helvetica-neue font-normal text-[14px] leading-[20px] text-[#6E6E6E] mb-3">
+              We are working in partnership with
+            </p>
+            <a 
+              href="https://www.torontohumanesociety.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-block hover:opacity-80 transition-opacity"
+            >
+              <img 
+                src="/toronto-humane-society-logo.png" 
+                alt="Toronto Humane Society - Canada based pet charity" 
+                className="h-10 object-contain"
+              />
+            </a>
+            <p className="font-helvetica-neue font-normal text-[12px] leading-[18px] text-[#6E6E6E] mt-2">
+              Canada based pet charity
+            </p>
+          </div>
+
           {/* Company Name */}
           <h3 className="font-helvetica-neue font-bold text-[16px] leading-[24px] text-[#333333] mb-2">
             Digital Tails
