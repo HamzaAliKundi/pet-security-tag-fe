@@ -18,6 +18,7 @@ const Footer = () => {
         { name: 'About Us', path: '/about-us' },
         { name: 'Contact Us', path: '/contact' },
         { name: 'Invest', path: '/invest' },
+        { name: 'Partner Charities', path: '/partner-charities' },
         // { name: 'Support', path: '/contact' }
       ]
     },
@@ -57,28 +58,6 @@ const Footer = () => {
               alt="Digital Tails" 
               className="w-[197.56px] h-[50px]"
             />
-          </div>
-
-          {/* Partnership Section */}
-          <div className="mb-6 pt-6 border-t border-gray-200">
-            <p className="font-helvetica-neue font-normal text-[14px] leading-[20px] text-[#6E6E6E] mb-3">
-              We are working in partnership with
-            </p>
-            <a 
-              href="https://www.torontohumanesociety.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-block hover:opacity-80 transition-opacity"
-            >
-              <img 
-                src="/toronto-humane-society-logo.png" 
-                alt="Toronto Humane Society - Canada based pet charity" 
-                className="h-10 object-contain"
-              />
-            </a>
-            <p className="font-helvetica-neue font-normal text-[12px] leading-[18px] text-[#6E6E6E] mt-2">
-              Canada based pet charity
-            </p>
           </div>
 
           {/* Company Name */}

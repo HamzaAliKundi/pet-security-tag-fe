@@ -24,6 +24,7 @@ import AboutUs from "./components/AboutUs";
 import PricingPage from "./pages/pricing";
 import SMSConsentStatement from "./components/SMSConsentStatement";
 import InvestPage from "./pages/invest";
+import PartnerCharitiesPage from "./pages/PartnerCharities";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -55,6 +56,7 @@ const AppRoutes = () => {
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
         <Route path="/sms-consent-statement" element={<SMSConsentStatement />} />
         <Route path="/invest" element={<InvestPage />} />
+        <Route path="/partner-charities" element={<PartnerCharitiesPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
