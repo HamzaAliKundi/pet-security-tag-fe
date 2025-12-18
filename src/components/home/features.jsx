@@ -8,58 +8,59 @@ const Features = () => {
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>
       ),
-      title: 'Complete peace of mind',
-      description: 'Know that if your pet is ever found, the right information is instantly available.'
+      title: 'Always-On Pet Identity',
+      description: 'Your pet carries their identity everywhere, making it easy to reunite them anytime they’re found.'
     },
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M3 10h11M9 21V3m12 14l-4-4m0 0l4-4m-4 4h7" />
         </svg>
       ),
-      title: 'Ready for the unexpected',
-      description: 'Most pets don\'t run away, until one door, gate, or moment is missed.'
+      title: 'Prepared for Every Moment',
+      description: 'Accidents happen fast. This ensures you’re ready before a small mistake turns into a big worry.'
     },
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5-3m-6 5H2v-2a3 3 0 015-3m4-9a4 4 0 11-8 0 4 4 0 018 0zm6 3a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       ),
-      title: 'Anyone can help',
-      description: 'No vet, no scanner, no app. Just a phone and a kind stranger.'
+      title: 'Help From Any Kind Stranger',
+      description: 'Anyone with a smartphone can scan and access the details needed to help your pet get home.'
     },
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M4 4h6v6H4zM14 14h6v6h-6zM14 4h6v6h-6zM4 14h6v6H4z" />
         </svg>
       ),
-      title: 'Simple QR scanning',
-      description: 'A quick scan opens your pet\'s profile with everything needed to bring them home.'
+      title: 'One Scan Closer to Home',
+      description: 'One quick QR scan opens your pet’s profile with all the information that matters.'
     },
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z" />
         </svg>
       ),
-      title: 'Universal compatibility',
-      description: 'No app or login required. Just point the camera and scan.'
+      title: 'No App, No Setup',
+      description: 'Works instantly on any phone without downloads, signups, or technical steps.'
     },
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.5-1.5A2 2 0 0118 14v-3a6 6 0 10-12 0v3a2 2 0 01-.5 1.5L4 17h5m6 0a3 3 0 01-6 0" />
         </svg>
       ),
-      title: 'Real-time alerts',
-      description: 'You\'re alerted the moment your pet\'s tag is scanned, with location details.'
+      title: 'Instant Scan Notifications',
+      description: 'Get alerted immediately with time and location details when your pet’s tag is scanned.'
     }
   ];
+  
 
   useEffect(() => {
     const observer = new IntersectionObserver(
