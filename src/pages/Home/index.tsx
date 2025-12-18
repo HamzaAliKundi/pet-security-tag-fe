@@ -11,6 +11,7 @@ import Reviews from '../../components/home/reviews';
 import Order from '../../components/common/order';
 import Faqs from '../../components/common/faqs';
 import GetStarted from '../../components/common/getStarted';
+import Partnership from '../../components/home/partnership';
 
 const HomePage = () => {
   return (
@@ -26,6 +27,8 @@ const HomePage = () => {
       <Reviews />
       <GetStarted />
       <Order />
+      {/* Partner Charities */}
+      <Partnership />
       <Faqs />
     </div>
   )
