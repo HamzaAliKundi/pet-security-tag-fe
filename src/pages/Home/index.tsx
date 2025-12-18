@@ -31,7 +31,7 @@ const HomePage = () => {
       <Order />
       {/* Partner Charities */}
       <Partnership />
-      <Faqs />
+      {/* <Faqs /> */}
     </div>
   )
 }
