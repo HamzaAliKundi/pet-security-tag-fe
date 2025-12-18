@@ -12,6 +12,7 @@ import Order from '../../components/common/order';
 import Faqs from '../../components/common/faqs';
 import GetStarted from '../../components/common/getStarted';
 import Partnership from '../../components/home/partnership';
+import Features from '../../components/home/features';
 
 const HomePage = () => {
   return (
@@ -20,6 +21,7 @@ const HomePage = () => {
       <Message />
       <Digital />
       {/* <Pricing /> */}
+      <Features />
       <Services />
       {/* <GetMoreInfo /> */}
       <ServicesInfo />
