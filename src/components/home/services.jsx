@@ -6,19 +6,25 @@ const Services = () => {
       icon: '⚡',
       image: '/home/alert.svg',
       title: '⚡ instant location alerts',
-      description: "Stay informed about your pet's whereabouts instantly. when someone scans your pet's Digitaltails, you'll receive an immediate notification with their location. never worry about losing track of your furry friend again."
+      description: "Your pet can't call you but their tag can. When someone scans your Digital Tails tag, you're immediately notified with their location via text message, helping reunite you with your furry family member faster."
     },
     {
       icon: '🌧️',
       image: '/home/alert.svg',
       title: '🌧️ durable design',
-      description: "Stay informed about your pet's whereabouts instantly. when someone scans your pet's Digitaltails, you'll receive an immediate notification with their location. never worry about losing track of your furry friend again."
+      description: "Built for every adventure, our smart pet tags are fully waterproof and made to last. Each tag is protected by a strong outer metal ring and sealed in epoxy, keeping it safe in all weather conditions. And for extra peace of mind, if your tag is ever lost or damaged, we'll replace it for free. Just message us."
     },
     {
       icon: '📱',
       image: '/home/alert.svg',
       title: '📱 simple setup',
-      description: "Stay informed about your pet's whereabouts instantly. when someone scans your pet's Digitaltails, you'll receive an immediate notification with their location. never worry about losing track of your furry friend again."
+      description: "Setting up your Digital Tails tag is quick and easy. Simply place your order, wait for your tag to arrive, then scan it with your phone. You'll be guided to our website to complete your signup, it only takes 1–2 minutes."
+    },
+    {
+      icon: '💰',
+      image: '/home/alert.svg',
+      title: '💰 Pricing',
+      description: "To keep your pet protected, we charge a small monthly fee. This helps us cover the cost of running our technology and software, so we can continue keeping your furry friend safe. If you'd like to save more, we also offer discounted yearly and one-off lifetime plans. We've genuinely made Digital Tails as affordable as possible and with one account, you can protect up to 5 pets at no extra cost."
     }
   ]
 
@@ -38,24 +44,27 @@ const Services = () => {
       </div> */}
 
       {/* Services Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12 md:mt-16 justify-items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-8 sm:mt-12 md:mt-16">
         {services.map((service, index) => (
           <div 
             key={index} 
-            className="w-full max-w-[350px] sm:max-w-[340px] md:max-w-[387px] bg-[#E6F7FF] rounded-[20px] flex flex-col items-center px-4 sm:px-6 md:px-8 py-8 sm:py-10 md:py-12"
+            className="w-full bg-[#E6F7FF] rounded-[20px] flex flex-col px-6 md:px-8 py-6 md:py-8 h-full"
           >
-            {/* Icon Circle */}
-            <div className="w-[60px] h-[60px] sm:w-[75px] sm:h-[75px] md:w-[90px] md:h-[90px] flex items-center justify-center mb-4 sm:mb-6">
+            {/* Icon and Title Row */}
+            <div className="flex items-center gap-4 md:gap-5 mb-4 md:mb-5">
+              {/* Icon Circle */}
+              <div className="w-[60px] h-[60px] md:w-[70px] md:h-[70px] flex items-center justify-center flex-shrink-0">
                 <img src={service.image} alt="image" className="w-full h-full object-contain" />
+              </div>
+
+              {/* Title */}
+              <h3 className="font-helvetica-neue font-bold text-[18px] md:text-[20px] lg:text-[22px] leading-tight flex-grow">
+                {service.title}
+              </h3>
             </div>
 
-            {/* Title */}
-            <h3 className="font-helvetica-neue font-bold text-[18px] sm:text-[20px] md:text-[22px] leading-[24px] sm:leading-[28px] md:leading-[30px] text-center capitalize mb-2 sm:mb-3 md:mb-4">
-              {service.title}
-            </h3>
-
             {/* Description */}
-            <p className="font-helvetica-neue font-normal text-[14px] sm:text-[15px] md:text-[16px] leading-[20px] sm:leading-[22px] md:leading-[25px] text-center capitalize">
+            <p className="font-helvetica-neue font-normal text-[14px] md:text-[15px] lg:text-[16px] leading-relaxed">
               {service.description}
             </p>
           </div>
