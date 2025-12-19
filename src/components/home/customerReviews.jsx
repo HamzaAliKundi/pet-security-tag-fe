@@ -1,9 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Star } from 'lucide-react';
 
 const CustomerReviews = () => {
   const [reviews, setReviews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const scrollContainerRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const animationFrameRef = useRef(null);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Helper function to truncate text
+  const truncateText = (text, maxLength) => {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
+  // Open modal with full review
+  const handleViewFull = (review) => {
+    setSelectedReview(review);
+    setIsModalOpen(true);
+    setIsPaused(true);
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedReview(null);
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 300);
+  };
 
   useEffect(() => {
     fetchReviews();
@@ -21,6 +52,100 @@ const CustomerReviews = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Auto-scroll functionality
+  useEffect(() => {
+    if (isDragging || isPaused || reviews.length === 0 || !scrollContainerRef.current) return;
+
+    // Calculate card width dynamically (use md breakpoint width as base)
+    const getCardWidth = () => {
+      const width = window.innerWidth;
+      if (width >= 768) return 400; // md:w-[400px]
+      if (width >= 640) return 380; // sm:w-[380px]
+      return 350; // w-[350px]
+    };
+
+    const cardWidth = getCardWidth();
+    const gap = 24; // gap-6 = 24px
+    const cardTotalWidth = cardWidth + gap;
+    const oneSetWidth = cardTotalWidth * reviews.length;
+    const scrollSpeed = 0.5; // pixels per frame
+
+    const animate = () => {
+      if (scrollContainerRef.current && !isDragging && !isPaused) {
+        const currentScroll = scrollContainerRef.current.scrollLeft;
+        let newScroll = currentScroll + scrollSpeed;
+
+        // Reset to beginning when we've scrolled through one set for seamless loop
+        if (newScroll >= oneSetWidth) {
+          newScroll = 0;
+        }
+
+        scrollContainerRef.current.scrollLeft = newScroll;
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isDragging, isPaused, reviews.length]);
+
+  // Handle mouse drag (for desktop)
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setIsPaused(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // Scroll speed
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 300);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 300);
+  };
+
+  // Handle touch drag (for mobile)
+  const handleTouchStart = (e) => {
+    setIsDragging(true);
+    setIsPaused(true);
+    setStartX(e.touches[0].pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    const x = e.touches[0].pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 300);
   };
 
   const renderStars = (rating) => {
@@ -66,47 +191,97 @@ const CustomerReviews = () => {
           </p>
         </div>
 
-        {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {reviews.map((review) => (
-            <div
-              key={review._id}
-              className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              {/* Rating */}
-              <div className="mb-4">
-                {renderStars(review.rating)}
-              </div>
+        {/* Reviews Scrollable Container */}
+        <div className="mt-8 overflow-hidden relative">
+          <style>{`
+            .reviews-scroll-container {
+              cursor: grab;
+              user-select: none;
+              -webkit-user-select: none;
+              -moz-user-select: none;
+              -ms-user-select: none;
+              scroll-behavior: auto;
+              -webkit-overflow-scrolling: touch;
+            }
+            .reviews-scroll-container.dragging {
+              cursor: grabbing;
+              scroll-behavior: auto;
+            }
+            .reviews-scroll-container:hover {
+              cursor: grab;
+            }
+            .reviews-scroll-container::-webkit-scrollbar {
+              display: none;
+            }
+            .reviews-scroll-container {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          `}</style>
+          
+          <div
+            ref={scrollContainerRef}
+            className={`reviews-scroll-container flex gap-6 overflow-x-auto pb-4 ${isDragging ? 'dragging' : ''}`}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            style={{ touchAction: 'pan-x' }}
+          >
+            {/* Duplicate reviews for seamless loop */}
+            {[...reviews, ...reviews].map((review, idx) => (
+              <div
+                key={`${review._id}-${idx}`}
+                className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0 w-[350px] sm:w-[380px] md:w-[400px] flex flex-col"
+              >
+                {/* Rating */}
+                <div className="mb-4">
+                  {renderStars(review.rating)}
+                </div>
 
-              {/* Title */}
-              <h3 className="font-helvetica-neue font-bold text-[18px] sm:text-[20px] leading-[1.3] text-[#0F2137] mb-3">
-                {review.title}
-              </h3>
+                {/* Title - max 15 characters */}
+                <h3 className="font-helvetica-neue font-bold text-[18px] sm:text-[20px] leading-[1.3] text-[#0F2137] mb-3">
+                  {truncateText(review.title, 15)}
+                </h3>
 
-              {/* Description */}
-              <p className="font-helvetica-neue font-normal text-[15px] sm:text-[16px] leading-[24px] text-[#343D48] mb-4 line-clamp-4">
-                {review.description}
-              </p>
-
-              {/* Reviewer Name & Date */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <div>
-                  <p className="font-helvetica-neue font-semibold text-[14px] text-[#0F2137]">
-                    {review.name}
+                {/* Description - fixed height, max 50 characters */}
+                <div className="mb-4 flex-grow flex flex-col">
+                  <p className="font-helvetica-neue font-normal text-[15px] sm:text-[16px] leading-[24px] text-[#343D48] min-h-[72px]">
+                    {truncateText(review.description, 50)}
                   </p>
-                  <p className="font-helvetica-neue text-[12px] text-gray-500">
-                    Verified Customer
+                  {(review.description && review.description.length > 50) && (
+                    <button
+                      onClick={() => handleViewFull(review)}
+                      className="mt-2 text-[#4CB2E2] font-helvetica-neue font-medium text-[14px] hover:underline self-start"
+                    >
+                      View Full
+                    </button>
+                  )}
+                </div>
+
+                {/* Reviewer Name & Date - Footer */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
+                  <div>
+                    <p className="font-helvetica-neue font-semibold text-[14px] text-[#0F2137]">
+                      {review.name}
+                    </p>
+                    <p className="font-helvetica-neue text-[12px] text-gray-500">
+                      Verified Customer
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    {new Date(review.createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      year: 'numeric'
+                    })}
                   </p>
                 </div>
-                <p className="text-xs text-gray-400">
-                  {new Date(review.createdAt).toLocaleDateString('en-US', {
-                    month: 'short',
-                    year: 'numeric'
-                  })}
-                </p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Bottom CTA */}
@@ -118,6 +293,63 @@ const CustomerReviews = () => {
           </div>
         )}
       </div>
+
+      {/* Full Review Modal */}
+      {isModalOpen && selectedReview && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={handleCloseModal}
+        >
+          <div 
+            className="bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={handleCloseModal}
+              className="float-right text-gray-400 hover:text-gray-600 text-2xl font-bold mb-4"
+            >
+              ×
+            </button>
+
+            {/* Modal Content */}
+            <div className="clear-both">
+              {/* Rating */}
+              <div className="mb-4">
+                {renderStars(selectedReview.rating)}
+              </div>
+
+              {/* Title */}
+              <h3 className="font-helvetica-neue font-bold text-[24px] md:text-[28px] leading-[1.3] text-[#0F2137] mb-4">
+                {selectedReview.title}
+              </h3>
+
+              {/* Description */}
+              <p className="font-helvetica-neue font-normal text-[16px] md:text-[18px] leading-[28px] text-[#343D48] mb-6">
+                {selectedReview.description}
+              </p>
+
+              {/* Reviewer Name & Date */}
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                <div>
+                  <p className="font-helvetica-neue font-semibold text-[16px] text-[#0F2137]">
+                    {selectedReview.name}
+                  </p>
+                  <p className="font-helvetica-neue text-[14px] text-gray-500">
+                    Verified Customer
+                  </p>
+                </div>
+                <p className="text-sm text-gray-400">
+                  {new Date(selectedReview.createdAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    year: 'numeric'
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
