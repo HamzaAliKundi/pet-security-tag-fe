@@ -13,6 +13,7 @@ import Faqs from '../../components/common/faqs';
 import GetStarted from '../../components/common/getStarted';
 import Partnership from '../../components/home/partnership';
 import Features from '../../components/home/features';
+import CustomerReviews from '../../components/home/customerReviews';
 
 const HomePage = () => {
   return (
@@ -27,6 +28,7 @@ const HomePage = () => {
       <ServicesInfo />
       {/* <Customers /> */}
       <Reviews />
+      <CustomerReviews />
       <GetStarted />
       <Order />
       {/* Partner Charities */}
