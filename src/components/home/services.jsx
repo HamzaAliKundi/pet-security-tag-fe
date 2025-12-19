@@ -5,19 +5,19 @@ const Services = () => {
     {
       icon: '⚡',
       image: '/home/alert.svg',
-      title: '⚡ instant location alerts',
+      title: '⚡ Instant Location Alerts',
       description: "Your pet can't call you but their tag can. When someone scans your Digital Tails tag, you're immediately notified with their location via text message, helping reunite you with your furry family member faster."
     },
     {
       icon: '🌧️',
       image: '/home/alert.svg',
-      title: '🌧️ durable design',
+      title: '🌧️ Durable Design',
       description: "Built for every adventure, our smart pet tags are fully waterproof and made to last. Each tag is protected by a strong outer metal ring and sealed in epoxy, keeping it safe in all weather conditions. And for extra peace of mind, if your tag is ever lost or damaged, we'll replace it for free. Just message us."
     },
     {
       icon: '📱',
       image: '/home/alert.svg',
-      title: '📱 simple setup',
+      title: '📱 Simple Setup',
       description: "Setting up your Digital Tails tag is quick and easy. Simply place your order, wait for your tag to arrive, then scan it with your phone. You'll be guided to our website to complete your signup, it only takes 1–2 minutes."
     },
     {
