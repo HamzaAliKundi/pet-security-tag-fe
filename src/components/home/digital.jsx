@@ -20,9 +20,14 @@ const Digital = () => {
             struggle to reach us
           </h2>
 
-          <p className="font-helvetica-neue font-normal text-base leading-9 text-center capitalize w-full md:w-[800px] lg:w-[1000px] xl:w-[1200px]">
-            our dedicated, UK-based customer service team is always here to help. Tired of companies that just send you in circles with endless FAQ pages? Not us. We offer real support through email, WhatsApp, and phone — so you can get the answers you need, fast!
-          </p>
+          <div className="font-helvetica-neue font-normal text-base leading-9 text-center w-full md:w-[800px] lg:w-[1000px] xl:w-[1200px]">
+            <p className="mb-4">
+              Need help? Our dedicated team is ready to assist you. We don't hide behind FAQ pages contact us by email, WhatsApp, or phone, and get fast, friendly support whenever you need it.
+            </p>
+            <p className="font-semibold">
+              Real people, real support. Simple!
+            </p>
+          </div>
         </div>
       </div>
     </div>
