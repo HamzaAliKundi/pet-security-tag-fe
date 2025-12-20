@@ -48,6 +48,13 @@ export const ordersApi = createApi({
         method: "GET",
       }),
     }),
+
+    getLatestOrders: builder.query({
+      query: (limit = 5) => ({
+        url: `/user/orders/latest?limit=${limit}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -58,4 +65,5 @@ export const {
   useUpdateOrderStatusMutation,
   useConfirmPaymentMutation,
   useCheckQRAvailabilityQuery,
+  useGetLatestOrdersQuery,
 } = ordersApi; 
