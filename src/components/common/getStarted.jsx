@@ -8,24 +8,22 @@ const GetStarted = () => {
     {
       number: '01',
       title: 'Order Your Tag',
-      description: 'Getting started with Digital Tails Pet Security Tag is as easy as can be! Simply place your order for our cutting-edge QR pet tag and cover the minimal postage cost.'
+      description: 'Get your Digital Tails smart pet tag for free, you just cover a small shipping fee. Each tag is uniquely coded, durable, and designed for everyday use. Once ordered, it’s shipped directly to you, ready to be activated for your pet.'
     },
     {
       number: '02',
-      title: 'Create Pet Profile',
-      description: "After receiving your tag, ensure your pet's safety by visiting our user friendly website to register. Input vital information about you and your companion with the assurance that your details will be securely protected for privacy."
+      title: ' Scan & Create Profile',
+      description: "Once you receive your smart tags, setting them up is easy. Simply scan the tag and you’ll be redirected to our website to complete the activation. If you’ve ordered multiple pet tags, please scan each tag individually to activate them."
     },
     {
       number: '03',
       title: 'Choose Subscription',
-      description: isLocalizing 
-        ? 'Loading subscription options...'
-        : `For continuous pet protection, choose between our ${subscriptionPrices.monthly.symbol}${subscriptionPrices.monthly.amount.toFixed(2)}/ month subscription or a convenient yearly plan set at ${subscriptionPrices.yearly.symbol}${subscriptionPrices.yearly.amount.toFixed(2)}. The yearly plan comes with a discount, ensuring constant protection for your furry friend at a reduced rate.`
+      description: `Select a subscription plan that works for you. We charge a small monthly fee to help cover the costs of our software and technology that keep your pet safe. For more flexibility, we also offer yearly plans for better savings, or a one time lifetime plan for long term protection without ongoing payments.`
     },
     {
       number: '04',
       title: 'Attach Tag to Your Pet',
-      description: "After registering and setting up your subscription, simply attach the Digital Tails Tag securely to your pet's collar. Now, you're good to go on your adventures, with the assurance that your pet's safety is well taken care of"
+      description: "After setting up and activating your pet’s tag, simply attach it to your pet’s collar. Now they’re ready for any adventure, knowing they are protected and can be easily found if they get lost or run off. Simple, effective, and peace of mind in one small tag!"
     }
   ]
 
