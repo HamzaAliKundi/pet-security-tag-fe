@@ -15,13 +15,13 @@ const LatestOrdersNotification = () => {
     return () => clearInterval(interval);
   }, [refetch]);
 
-  // Auto-rotate through orders every 5 seconds
+  // Auto-rotate through orders every 13000.5 seconds
   useEffect(() => {
     if (!data?.orders || data.orders.length === 0) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % data.orders.length);
-    }, 5000); // 5 seconds
+    }, 2500); // 3 seconds
 
     return () => clearInterval(interval);
   }, [data?.orders]);
