@@ -178,9 +178,14 @@ const LatestOrdersNotification = () => {
         {/* Notification Content */}
         <div className="px-4 py-3">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-1">
-              <p className="font-semibold text-[#0F2137] text-sm truncate">
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <p className="font-semibold text-[#0F2137] text-sm leading-tight truncate">
                 {currentOrder.name}
+                {getLocation() && (
+                  <span className="text-[11px] text-[#636363] ml-1">
+                    · {getLocation()}
+                  </span>
+                )}
               </p>
               <span className="inline-flex items-center gap-0.5 rounded-full bg-[#E6F7FF] px-1.5 py-[1px] text-[10px] text-[#15803D] flex-shrink-0">
                 <svg
@@ -200,31 +205,6 @@ const LatestOrdersNotification = () => {
                 Verified
               </span>
             </div>
-            {getLocation() && (
-              <p className="text-[#636363] text-xs mb-1 flex items-center gap-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-3 w-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                {getLocation()}
-              </p>
-            )}
             <p className="text-[#636363] text-[11px] flex items-center gap-1">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
