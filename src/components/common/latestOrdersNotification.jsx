@@ -176,59 +176,32 @@ const LatestOrdersNotification = () => {
         </div>
 
         {/* Notification Content */}
-        <div className="p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-[#E6F7FF] rounded-full flex items-center justify-center">
+        <div className="px-4 py-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 mb-1">
+              <p className="font-semibold text-[#0F2137] text-sm truncate">
+                {currentOrder.name}
+              </p>
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-[#E6F7FF] px-1.5 py-[1px] text-[10px] text-[#15803D] flex-shrink-0">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-[#4CB2E2]"
-                  fill="none"
+                  className="h-3 w-3"
                   viewBox="0 0 24 24"
+                  fill="none"
                   stroke="currentColor"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-              </div>
+                Verified
+              </span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-[#0F2137] text-sm mb-1 truncate">
-                {currentOrder.name}
-              </p>
-              <p className="text-[#343D48] text-sm mb-2">
-                Bought a smart pet tag
-              </p>
-              {getLocation() && (
-                <p className="text-[#636363] text-xs mb-1 flex items-center gap-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-3 w-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  {getLocation()}
-                </p>
-              )}
-              <p className="text-[#636363] text-xs flex items-center gap-1">
+            {getLocation() && (
+              <p className="text-[#636363] text-xs mb-1 flex items-center gap-1">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-3 w-3"
@@ -240,12 +213,37 @@ const LatestOrdersNotification = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                {getTimeAgo(currentOrder.createdAt)}
+                {getLocation()}
               </p>
-            </div>
+            )}
+            <p className="text-[#636363] text-[11px] flex items-center gap-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-3 w-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span className="truncate">
+                {getTimeAgo(currentOrder.createdAt)} · Bought a smart pet tag
+              </span>
+            </p>
           </div>
         </div>
 
