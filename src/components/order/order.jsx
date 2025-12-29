@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useCreateOrderMutation, useConfirmPaymentMutation, useCheckQRAvailabilityQuery } from '../../apis/orders'
+import { useCreateOrderMutation, useConfirmPaymentMutation, useCheckQRAvailabilityQuery, useValidateDiscountMutation } from '../../apis/orders'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useLocalization } from '../../context/LocalizationContext'
@@ -42,6 +42,7 @@ const OrderForm = () => {
 
     const [createOrder, { isLoading }] = useCreateOrderMutation()
     const [confirmPayment] = useConfirmPaymentMutation()
+    const [validateDiscount, { isLoading: isValidatingDiscount }] = useValidateDiscountMutation()
     const { data: qrAvailability, isLoading: isLoadingAvailability } = useCheckQRAvailabilityQuery()
     const stripe = useStripe()
     const elements = useElements()
@@ -49,6 +50,12 @@ const OrderForm = () => {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const referralCode = searchParams.get('ref') // Get referral code from URL
+    
+    // Discount state
+    const [discountCode, setDiscountCode] = useState('')
+    const [isDiscountValid, setIsDiscountValid] = useState(false)
+    const [discountError, setDiscountError] = useState('')
+    const [isDiscountApplied, setIsDiscountApplied] = useState(false)
     
     // Check if QR codes are available
     const isQRAvailable = qrAvailability?.isAvailable ?? true // Default to true if still loading
@@ -341,7 +348,8 @@ const OrderForm = () => {
                 shippingAddress: formData.shippingAddress,
                 totalCostEuro: totalCost,
                 paymentMethodId: paymentMethod.id,
-                termsAccepted: termsAccepted
+                termsAccepted: termsAccepted,
+                isDiscount: isDiscountApplied && isDiscountValid // Add discount flag
             }
 
             const result = await createOrder(orderData).unwrap()
@@ -393,6 +401,34 @@ const OrderForm = () => {
             toast.error(error?.data?.message || 'Failed to create order')
         } finally {
             setIsProcessing(false)
+        }
+    }
+
+    const handleApplyDiscount = async () => {
+        if (!discountCode.trim()) {
+            setDiscountError('Please enter a discount code')
+            return
+        }
+
+        try {
+            const result = await validateDiscount(discountCode.trim()).unwrap()
+            
+            if (result.valid) {
+                setIsDiscountValid(true)
+                setIsDiscountApplied(true)
+                setDiscountError('')
+                toast.success('Discount code applied successfully!')
+            } else {
+                setIsDiscountValid(false)
+                setIsDiscountApplied(false)
+                setDiscountError(result.message || 'Invalid discount code')
+            }
+        } catch (error) {
+            setIsDiscountValid(false)
+            setIsDiscountApplied(false)
+            const errorMessage = error?.data?.message || 'Failed to validate discount code'
+            setDiscountError(errorMessage)
+            toast.error(errorMessage)
         }
     }
 
@@ -699,6 +735,49 @@ const OrderForm = () => {
                         )}
                     </div>
 
+                    {/* Discount Code Input */}
+                    <div className="w-full mt-4 sm:mt-6 flex flex-col gap-2">
+                        <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                            Discount Code (Optional)
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={discountCode}
+                                onChange={(e) => {
+                                    setDiscountCode(e.target.value)
+                                    setDiscountError('')
+                                    setIsDiscountValid(false)
+                                    setIsDiscountApplied(false)
+                                }}
+                                placeholder="Enter discount code"
+                                className={`flex-1 h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
+                                         shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                           discountError ? 'border-red-500' : isDiscountValid ? 'border-green-500' : 'border-[#D8DDE3]'
+                                         }`}
+                                disabled={isValidatingDiscount}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleApplyDiscount}
+                                disabled={!discountCode.trim() || isValidatingDiscount || isDiscountApplied}
+                                className={`h-[48px] sm:h-[56px] px-6 rounded-[4px] font-helvetica-neue font-semibold text-sm sm:text-base transition-colors ${
+                                    !discountCode.trim() || isValidatingDiscount || isDiscountApplied
+                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        : 'bg-[#4CB2E2] text-white hover:bg-[#3da1d1]'
+                                }`}
+                            >
+                                {isValidatingDiscount ? 'Checking...' : isDiscountApplied ? 'Applied' : 'Apply'}
+                            </button>
+                        </div>
+                        {discountError && (
+                            <span className="text-red-500 text-sm">{discountError}</span>
+                        )}
+                        {isDiscountValid && isDiscountApplied && (
+                            <span className="text-green-600 text-sm">✓ Discount code applied successfully!</span>
+                        )}
+                    </div>
+
                     {/* Terms and Privacy Checkbox */}
                     <div className="w-full mt-4 sm:mt-6 flex items-start gap-3">
                         <input
@@ -860,8 +939,7 @@ const OrderForm = () => {
                                     <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
                                         Country*
                                     </label>
-                                    <input
-                                        type="text"
+                                    <select
                                         name="country"
                                         value={formData.shippingAddress.country}
                                         onChange={handleShippingAddressChange}
@@ -869,8 +947,12 @@ const OrderForm = () => {
                                                  shadow-[0px_0px_4px_0px_#17191C0D] ${
                                                    errors.country ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
-                                        placeholder="Enter country name (e.g., United Kingdom / Canada / United States)"
-                                    />
+                                    >
+                                        <option value="" disabled selected>Select Country</option>
+                                        <option value="United States">United States</option>
+                                        <option value="UK">UK</option>
+                                        <option value="Canada">Canada</option>
+                                    </select>
                                     {errors.country && (
                                         <span className="text-red-500 text-sm">{errors.country}</span>
                                     )}

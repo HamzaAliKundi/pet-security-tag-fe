@@ -55,6 +55,14 @@ export const ordersApi = createApi({
         method: "GET",
       }),
     }),
+
+    validateDiscount: builder.mutation({
+      query: (code) => ({
+        url: "/user/discounts/validate",
+        method: "POST",
+        body: { code },
+      }),
+    }),
   }),
 });
 
@@ -66,4 +74,5 @@ export const {
   useConfirmPaymentMutation,
   useCheckQRAvailabilityQuery,
   useGetLatestOrdersQuery,
+  useValidateDiscountMutation,
 } = ordersApi; 
