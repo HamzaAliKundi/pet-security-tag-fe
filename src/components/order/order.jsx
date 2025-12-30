@@ -128,13 +128,17 @@ const OrderForm = () => {
     // Calculate total cost (tag is free, just shipping)
     // Backend expects EUR, so we convert based on the shipping price
     // Note: The actual charge will be in the user's currency, but backend needs EUR for processing
-    const totalCost = shippingPrice.currency === 'GBP' 
+    // If discount is valid and applied, shipping is free (0)
+    const baseShippingCost = shippingPrice.currency === 'GBP' 
         ? shippingPrice.amount 
         : shippingPrice.currency === 'USD' 
-            ? 2.90 // Convert $9.19 USD to GBP equivalent (backend will handle actual charge)
+            ? 2.90 // Convert $10.49 USD to GBP equivalent (backend will handle actual charge)
             : shippingPrice.currency === 'CAD'
-                ? 2.90 // Convert CAD 15.09 to GBP equivalent (backend will handle actual charge)
+                ? 2.90 // Convert CAD 16.99 to GBP equivalent (backend will handle actual charge)
                 : 2.90 // Default GBP
+    
+    // Make shipping free if discount is valid and applied
+    const totalCost = (isDiscountApplied && isDiscountValid) ? 0 : baseShippingCost
 
     // Calculate total cost including shipping
     // Calculate total cost including shipping
@@ -287,9 +291,14 @@ const OrderForm = () => {
             return
         }
 
-        if (!stripe || !elements) {
-            toast.error('Stripe is not loaded')
-            return
+        // For free orders (discount applied), skip Stripe validation
+        const isFreeOrder = totalCost === 0
+        
+        if (!isFreeOrder) {
+            if (!stripe || !elements) {
+                toast.error('Stripe is not loaded')
+                return
+            }
         }
 
         setIsProcessing(true)
@@ -298,28 +307,35 @@ const OrderForm = () => {
             // Combine country code with phone number
             const fullPhoneNumber = `${countryCode}${formData.phone}`
 
-            // Get the payment method from Stripe Elements
-            const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
-                type: 'card',
-                card: elements.getElement(CardElement),
-                billing_details: {
-                    name: formData.name,
-                    email: formData.email,
-                    phone: fullPhoneNumber,
-                    address: {
-                        line1: formData.shippingAddress.street,
-                        city: formData.shippingAddress.city,
-                        state: formData.shippingAddress.state,
-                        postal_code: formData.shippingAddress.zipCode,
-                        country: getCountryCode(formData.shippingAddress.country),
+            let paymentMethod = null;
+            
+            // Only get payment method if order is not free
+            if (!isFreeOrder) {
+                // Get the payment method from Stripe Elements
+                const { error: paymentMethodError, paymentMethod: pm } = await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: elements.getElement(CardElement),
+                    billing_details: {
+                        name: formData.name,
+                        email: formData.email,
+                        phone: fullPhoneNumber,
+                        address: {
+                            line1: formData.shippingAddress.street,
+                            city: formData.shippingAddress.city,
+                            state: formData.shippingAddress.state,
+                            postal_code: formData.shippingAddress.zipCode,
+                            country: getCountryCode(formData.shippingAddress.country),
+                        },
                     },
-                },
-            })
+                })
 
-            if (paymentMethodError) {
-                toast.error(paymentMethodError.message || 'Payment method creation failed')
-                setIsProcessing(false)
-                return
+                if (paymentMethodError) {
+                    toast.error(paymentMethodError.message || 'Payment method creation failed')
+                    setIsProcessing(false)
+                    return
+                }
+                
+                paymentMethod = pm
             }
 
             // Ensure tagColors array matches quantity exactly (trim if longer, pad if shorter)
@@ -347,13 +363,26 @@ const OrderForm = () => {
                 phone: fullPhoneNumber,
                 shippingAddress: formData.shippingAddress,
                 totalCostEuro: totalCost,
-                paymentMethodId: paymentMethod.id,
+                paymentMethodId: paymentMethod?.id,
                 termsAccepted: termsAccepted,
                 isDiscount: isDiscountApplied && isDiscountValid // Add discount flag
             }
 
             const result = await createOrder(orderData).unwrap()
             
+            // Handle free orders (no payment required)
+            if (result.isFreeOrder) {
+                // Navigate to order summary page directly for free orders
+                navigate('/order-summary', {
+                    state: {
+                        orderData: result,
+                        confirmResult: result
+                    }
+                })
+                return
+            }
+            
+            // Handle paid orders with Stripe payment
             if (result.payment && result.payment.clientSecret) {
                 // Confirm the payment with Stripe
                 const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(result.payment.clientSecret, {
@@ -394,12 +423,12 @@ const OrderForm = () => {
                 }
             } else {
                 toast.error('Payment intent creation failed')
+                setIsProcessing(false)
             }
             
         } catch (error) {
             console.error('Error creating order:', error)
             toast.error(error?.data?.message || 'Failed to create order')
-        } finally {
             setIsProcessing(false)
         }
     }
@@ -655,9 +684,15 @@ const OrderForm = () => {
                             <div className="border-t pt-2">
                                 <div className="flex justify-between font-bold">
                                     <span className="font-helvetica-neue text-sm">Shipping Fee:</span>
-                                    <span className="font-helvetica-neue text-sm">
-                                        {shippingPrice.symbol}
-                                        {shippingPrice.amount.toFixed(2)} {shippingPrice.currency}
+                                    <span className={`font-helvetica-neue text-sm ${(isDiscountApplied && isDiscountValid) ? 'text-green-600' : ''}`}>
+                                        {(isDiscountApplied && isDiscountValid) ? (
+                                            <>Free</>
+                                        ) : (
+                                            <>
+                                                {shippingPrice.symbol}
+                                                {shippingPrice.amount.toFixed(2)} {shippingPrice.currency}
+                                            </>
+                                        )}
                                     </span>
                                 </div>
                             </div>
@@ -959,33 +994,44 @@ const OrderForm = () => {
                                 </div>
                             </div>
 
-                            {/* Stripe Card Element */}
-                            <div className="flex flex-col gap-2">
-                                <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
-                                    Card Details*
-                                </label>
-                                <div className="w-full h-[48px] sm:h-[56px] rounded-[4px] border border-[#D8DDE3] px-3 sm:px-4 py-2 sm:py-3 shadow-[0px_0px_4px_0px_#17191C0D]">
-                                    <CardElement
-                                        options={{
-                                            style: {
-                                                base: {
-                                                    fontSize: '16px',
-                                                    color: '#424770',
-                                                    '::placeholder': {
-                                                        color: '#aab7c4',
+                            {/* Stripe Card Element - Only show if order is not free (discount not applied) */}
+                            {!(isDiscountApplied && isDiscountValid) && (
+                                <div className="flex flex-col gap-2">
+                                    <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                                        Card Details*
+                                    </label>
+                                    <div className="w-full h-[48px] sm:h-[56px] rounded-[4px] border border-[#D8DDE3] px-3 sm:px-4 py-2 sm:py-3 shadow-[0px_0px_4px_0px_#17191C0D]">
+                                        <CardElement
+                                            options={{
+                                                style: {
+                                                    base: {
+                                                        fontSize: '16px',
+                                                        color: '#424770',
+                                                        '::placeholder': {
+                                                            color: '#aab7c4',
+                                                        },
+                                                    },
+                                                    invalid: {
+                                                        color: '#9e2146',
                                                     },
                                                 },
-                                                invalid: {
-                                                    color: '#9e2146',
-                                                },
-                                            },
-                                        }}
-                                    />
+                                            }}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500">
+                                        Your card details are securely processed by Stripe
+                                    </p>
                                 </div>
-                                <p className="text-xs text-gray-500">
-                                    Your card details are securely processed by Stripe
-                                </p>
-                            </div>
+                            )}
+                            
+                            {/* Free order message when discount is applied */}
+                            {(isDiscountApplied && isDiscountValid) && (
+                                <div className="flex flex-col gap-2 p-4 bg-green-50 border border-green-200 rounded-[4px]">
+                                    <p className="font-helvetica-neue font-semibold text-sm text-green-800">
+                                        ✓ Free Order - No payment required. Card information will be collected when you activate your subscription.
+                                    </p>
+                                </div>
+                            )}
                         </>
                     )}
 
