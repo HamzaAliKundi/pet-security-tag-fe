@@ -126,19 +126,9 @@ const OrderForm = () => {
     }
 
     // Calculate total cost (tag is free, just shipping)
-    // Backend expects EUR, so we convert based on the shipping price
-    // Note: The actual charge will be in the user's currency, but backend needs EUR for processing
+    // Use shipping price directly in user's currency (no conversion needed)
     // If discount is valid and applied, shipping is free (0)
-    const baseShippingCost = shippingPrice.currency === 'GBP' 
-        ? shippingPrice.amount 
-        : shippingPrice.currency === 'USD' 
-            ? 2.90 // Convert $10.49 USD to GBP equivalent (backend will handle actual charge)
-            : shippingPrice.currency === 'CAD'
-                ? 2.90 // Convert CAD 16.99 to GBP equivalent (backend will handle actual charge)
-                : 2.90 // Default GBP
-    
-    // Make shipping free if discount is valid and applied
-    const totalCost = (isDiscountApplied && isDiscountValid) ? 0 : baseShippingCost
+    const totalCost = (isDiscountApplied && isDiscountValid) ? 0 : shippingPrice.amount
 
     // Calculate total cost including shipping
     // Calculate total cost including shipping
@@ -362,7 +352,8 @@ const OrderForm = () => {
                 tagColors: finalTagColors, // Array of colors for each tag (exactly matching quantity)
                 phone: fullPhoneNumber,
                 shippingAddress: formData.shippingAddress,
-                totalCostEuro: totalCost,
+                totalCostEuro: totalCost, // Keep same field name for backward compatibility (but now contains amount in user's currency)
+                currency: shippingPrice.currency.toLowerCase(), // Send currency from LocalizationContext
                 paymentMethodId: paymentMethod?.id,
                 termsAccepted: termsAccepted,
                 isDiscount: isDiscountApplied && isDiscountValid // Add discount flag
