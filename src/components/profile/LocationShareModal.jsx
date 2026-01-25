@@ -426,6 +426,11 @@ const LocationShareModal = ({ isOpen, onClose, petId, petName }) => {
                   <strong>Note:</strong> Your location will be sent to the pet owner's registered phone number.
                 </p>
               </div>
+              <div className="mt-4 p-4 bg-green-50 rounded-lg">
+                <p className="text-sm text-green-800">
+                  You will not be charged for sending a message, we (Digital Tails) cover the cost. 😇
+                </p>
+              </div>
       </div>
     </div>
   );

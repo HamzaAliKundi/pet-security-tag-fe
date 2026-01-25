@@ -23,7 +23,8 @@ const OrderForm = () => {
     const [formData, setFormData] = useState({
         email: '',
         name: '',
-        petName: '',
+        petName: '', // Keep for backward compatibility
+        petNames: [''], // Array to store names for each pet
         phone: '',
         shippingAddress: {
             street: '',
@@ -102,6 +103,11 @@ const OrderForm = () => {
             const newQuantity = prev + 1
             // Add default color for new tag
             setTagColors(prevColors => [...prevColors, 'blue'])
+            // Add empty pet name for new tag
+            setFormData(prev => ({
+                ...prev,
+                petNames: [...prev.petNames, '']
+            }))
             return newQuantity
         })
     }
@@ -111,6 +117,11 @@ const OrderForm = () => {
                 const newQuantity = prev - 1
                 // Remove last color
                 setTagColors(prevColors => prevColors.slice(0, newQuantity))
+                // Remove last pet name
+                setFormData(prev => ({
+                    ...prev,
+                    petNames: prev.petNames.slice(0, newQuantity)
+                }))
                 return newQuantity
             }
             return prev
@@ -206,6 +217,27 @@ const OrderForm = () => {
         }
     }
 
+    const handlePetNameChange = (index, value) => {
+        setFormData(prev => {
+            const newPetNames = [...prev.petNames]
+            newPetNames[index] = value
+            return {
+                ...prev,
+                petNames: newPetNames,
+                petName: quantity === 1 ? value : prev.petName // Keep petName for backward compatibility
+            }
+        })
+        // Clear error when user starts typing
+        if (errors[`petName_${index}`] || errors.petName) {
+            setErrors(prev => {
+                const newErrors = { ...prev }
+                delete newErrors[`petName_${index}`]
+                delete newErrors.petName
+                return newErrors
+            })
+        }
+    }
+
     const handleShippingAddressChange = (e) => {
         const { name, value } = e.target
         setFormData(prev => ({
@@ -237,8 +269,19 @@ const OrderForm = () => {
             newErrors.name = 'Name is required'
         }
         
-        if (!formData.petName) {
-            newErrors.petName = 'Pet name is required'
+        // Validate pet names - check each pet name in the array up to quantity
+        if (quantity === 1) {
+            if (!formData.petNames[0] || !formData.petNames[0].trim()) {
+                newErrors.petName = 'Pet name is required'
+            }
+        } else {
+            // For multiple pets, validate each name up to the quantity
+            for (let index = 0; index < quantity; index++) {
+                const petName = formData.petNames[index] || ''
+                if (!petName || !petName.trim()) {
+                    newErrors[`petName_${index}`] = `Pet ${index + 1} name is required`
+                }
+            }
         }
 
         if (!termsAccepted) {
@@ -342,10 +385,16 @@ const OrderForm = () => {
                 }
             }
 
+            // Prepare pet names - use petNames array if available, otherwise fallback to petName
+            const petNamesArray = formData.petNames.filter(name => name && name.trim()).length > 0 
+                ? formData.petNames.map(name => name.trim()).filter(name => name)
+                : (formData.petName ? [formData.petName.trim()] : [''])
+
             const orderData = {
                 email: formData.email,
                 name: formData.name,
-                petName: formData.petName,
+                petName: quantity === 1 ? petNamesArray[0] : petNamesArray.join(', '), // Keep for backward compatibility
+                petNames: petNamesArray, // Array of pet names
                 quantity: quantity,
                 subscriptionType: selectedPlan,
                 tagColor: quantity === 1 ? selectedTagColor : undefined, // Keep for backward compatibility
@@ -453,8 +502,27 @@ const OrderForm = () => {
     }
 
     const handleGoToPayment = () => {
-        if (!formData.email || !formData.name || !formData.petName) {
-            toast.error('Please fill in all required fields first')
+        // Check if all pet names are filled up to the quantity
+        let allPetNamesFilled = true
+        for (let index = 0; index < quantity; index++) {
+            const petName = formData.petNames[index] || ''
+            if (!petName || !petName.trim()) {
+                allPetNamesFilled = false
+                // Set error for this specific pet name
+                setErrors(prev => ({
+                    ...prev,
+                    [`petName_${index}`]: `Pet ${index + 1} name is required`
+                }))
+                break
+            }
+        }
+        
+        if (!formData.email || !formData.name || !allPetNamesFilled) {
+            if (!allPetNamesFilled) {
+                toast.error(`Please enter names for all ${quantity} pet(s)`)
+            } else {
+                toast.error('Please fill in all required fields first')
+            }
             return
         }
         if (!termsAccepted) {
@@ -740,26 +808,53 @@ const OrderForm = () => {
                         )}
                     </div>
 
-                    {/* Pet Name Input */}
-                    <div className="flex flex-col gap-2">
-                        <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
-                            Your Pet Name*
-                        </label>
-                        <input
-                            type="text"
-                            name="petName"
-                            value={formData.petName}
-                            onChange={handleInputChange}
-                            className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                     shadow-[0px_0px_4px_0px_#17191C0D] ${
-                                       errors.petName ? 'border-red-500' : 'border-[#D8DDE3]'
-                                     }`}
-                            placeholder="Enter pet name"
-                        />
-                        {errors.petName && (
-                            <span className="text-red-500 text-sm">{errors.petName}</span>
-                        )}
-                    </div>
+                    {/* Pet Name Input(s) - Dynamic based on quantity */}
+                    {quantity === 1 ? (
+                        <div className="flex flex-col gap-2">
+                            <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                                Your Pet Name*
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.petNames[0] || ''}
+                                onChange={(e) => handlePetNameChange(0, e.target.value)}
+                                className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
+                                         shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                           errors.petName ? 'border-red-500' : 'border-[#D8DDE3]'
+                                         }`}
+                                placeholder="Enter pet name"
+                            />
+                            {errors.petName && (
+                                <span className="text-red-500 text-sm">{errors.petName}</span>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-4">
+                            <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                                Pet Names* ({quantity} pets)
+                            </label>
+                            {Array.from({ length: quantity }).map((_, index) => (
+                                <div key={index} className="flex flex-col gap-2">
+                                    <label className="font-helvetica-neue font-normal text-xs sm:text-sm leading-[100%] tracking-[-2%] text-[#666666]">
+                                        Pet {index + 1} Name*
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.petNames[index] || ''}
+                                        onChange={(e) => handlePetNameChange(index, e.target.value)}
+                                        className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
+                                                 shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                                   errors[`petName_${index}`] ? 'border-red-500' : 'border-[#D8DDE3]'
+                                                 }`}
+                                        placeholder={`Enter pet ${index + 1} name`}
+                                    />
+                                    {errors[`petName_${index}`] && (
+                                        <span className="text-red-500 text-sm">{errors[`petName_${index}`]}</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Discount Code Input */}
                     <div className="w-full mt-4 sm:mt-6 flex flex-col gap-2">
