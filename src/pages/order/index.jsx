@@ -8,7 +8,7 @@ const OrderPage = () => {
   return (
     <div>
         <Order />
-        <Customers />
+        {/* <Customers /> */}
         <GetStarted />
         <Search />
         <Faqs />
