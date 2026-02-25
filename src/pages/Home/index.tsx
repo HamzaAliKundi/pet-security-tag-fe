@@ -31,7 +31,7 @@ const HomePage = () => {
       {/* <Customers /> */}
       {/* <Reviews /> */}
       <CustomerReviews />
-      {/* <GetStarted /> */}
+      <GetStarted />
       <Order />
       {/* Partner Charities */}
       <Partnership />
