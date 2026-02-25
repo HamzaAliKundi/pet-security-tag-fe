@@ -13,12 +13,12 @@ const Delivery = () => {
       answer: 'For A Nominal Fee Of £1.49, Enjoy The Convenience Of Next-Day Delivery On Orders Placed Before 4pm On Weekdays.'
     },
     {
-      question: 'When Will My Pawtag Arrive?',
-      answer: 'Your Pawtag will typically arrive within 1-2 business days when ordered before 4pm on weekdays.'
+      question: 'When Will My Digital Tails Tag Arrive?',
+      answer: 'Your Digital Tails Tag will typically arrive within 1-2 business days when ordered before 4pm on weekdays.'
     },
     {
-      question: 'Where Do You Deliver Pawtags?',
-      answer: 'We deliver Pawtags across the entire United Kingdom, including mainland UK and Northern Ireland.'
+      question: 'Where Do You Deliver Digital Tails tags?',
+      answer: 'The tags work in the United States, Uk & Canada at the moment.'
     }
   ]
 

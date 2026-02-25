@@ -44,10 +44,6 @@ const Message = () => {
         >
           SHOP NOW
         </Link>
-
-        <button className="w-[355px] h-[74px] bg-black text-white font-bold rounded-[100px] px-[24px] hover:bg-gray-900 transition-colors text-sm md:text-base">
-          LEARN MORE
-        </button>
       </div>
     </div>
   )

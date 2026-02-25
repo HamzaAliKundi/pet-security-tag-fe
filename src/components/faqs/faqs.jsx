@@ -45,7 +45,7 @@ const Faqs = () => {
       answer: 'Absolutely! The tag is made from pet-safe materials and designed to be comfortable for your pet to wear.'
     },
     {
-      question: 'Which Pets Can Use A Pawtag?',
+      question: 'Which animals can use a Digital Tails Tag?',
       answer: 'Digital Tails Tags can be used for dogs, cats, and other pets that wear collars.'
     },
     {
@@ -55,11 +55,11 @@ const Faqs = () => {
   ]
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4 py-16">
-      <div className="flex justify-center items-center mb-12">
+      {/* <div className="flex justify-center items-center mb-12">
         <h1 className="font-helvetica-neue font-bold text-[28px] sm:text-[40px] leading-[1.2] text-[#0F2137] tracking-[-1.45px] text-center px-2">
           Digital Tails Tag Important Faqs
         </h1>
-      </div>
+      </div> */}
       <div className="flex flex-col lg:flex-row justify-between">
         {/* Left Section */}
         <div className="lg:w-1/3 px-2">
