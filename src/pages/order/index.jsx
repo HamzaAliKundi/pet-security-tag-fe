@@ -4,6 +4,7 @@ import Faqs from "../../components/common/faqs"
 // import Search from "../../components/common/search";
 import Order from "../../components/order/order";
 import ConditionalPricing from "../../components/common/ConditionalPricing";
+import HowItWorksPoster from "../../components/home/HowItWorksPoster";
 
 const OrderPage = () => {
   return (
@@ -12,7 +13,7 @@ const OrderPage = () => {
         {/* <Customers /> */}
         {/* <GetStarted /> */}
         {/* <Search /> */}
-        <ConditionalPricing />
+        <HowItWorksPoster />
         {/* <Faqs /> */}
     </div>
   )

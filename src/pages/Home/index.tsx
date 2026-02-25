@@ -15,13 +15,14 @@ import GetStarted from '../../components/common/getStarted';
 import Partnership from '../../components/home/partnership';
 import Features from '../../components/home/features';
 import CustomerReviews from '../../components/home/customerReviews';
+import ConditionalPricing from '../../components/common/ConditionalPricing';
 
 const HomePage = () => {
   return (
     <div>
       <Hero />
       <Message />
-      <HowItWorksPoster />
+      <ConditionalPricing />
       <Digital />
       {/* <Pricing /> */}
       <Features />
