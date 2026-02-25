@@ -15,7 +15,7 @@ const PetTagPage = () => {
       <Gps />
       {/* <Customers /> */}
       {/* <GetStarted /> */}
-      <Search />
+      {/* <Search /> */}
       <Faqs />
       <SmartTag />
     </div>
