@@ -42,7 +42,7 @@ const Message = () => {
              bg-[#FDD30F] hover:bg-[#FFE135] transition-all duration-200 text-sm md:text-base 
              flex items-center justify-center"
         >
-          SHOP NOW
+          Order Now
         </Link>
       </div>
     </div>

@@ -13,7 +13,7 @@ const OrderPage = () => {
         {/* <GetStarted /> */}
         {/* <Search /> */}
         <ConditionalPricing />
-        <Faqs />
+        {/* <Faqs /> */}
     </div>
   )
 }
