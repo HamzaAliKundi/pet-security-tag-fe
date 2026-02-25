@@ -7,11 +7,11 @@ const Search = () => {
       <div className="w-full max-w-[957px] mx-auto bg-[#FDD30F] rounded-[16px] sm:rounded-[24px] p-6 sm:p-8 md:p-[48px]">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
           {/* Heading */}
-          <h2 className="font-helvetica-neue font-bold text-[32px] sm:text-[40px] md:text-[48px] leading-[100%] tracking-[-4%] capitalize text-center md:text-left">
+          {/* <h2 className="font-helvetica-neue font-bold text-[32px] sm:text-[40px] md:text-[48px] leading-[100%] tracking-[-4%] capitalize text-center md:text-left">
             Find Your{' '}
             <br />
             <span className="text-[#4CB2E2] block md:inline">Digital Tails Tag</span>
-          </h2>
+          </h2> */}
 
           {/* Search Input Container */}
           <div className="relative w-full sm:w-[263px] h-[60px] sm:h-[70px] md:h-[80px] mt-4 md:mt-0">
