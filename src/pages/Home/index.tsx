@@ -3,6 +3,7 @@ import Hero from './../../components/home/hero';
 import GetMoreInfo from '../../components/home/getMoreOnfo';
 import Services from '../../components/home/services';
 import Digital from '../../components/home/digital';
+import HowWeCompare from '../../components/home/HowWeCompare';
 import HowItWorksPoster from '../../components/home/HowItWorksPoster';
 import Pricing from './../../components/home/pricing';
 import Message from './../../components/home/message';
@@ -24,6 +25,7 @@ const HomePage = () => {
       <Message />
       <ConditionalPricing />
       <Digital />
+      <HowWeCompare />
       {/* <Pricing /> */}
       <Features />
       <Services />
