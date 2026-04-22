@@ -17,6 +17,34 @@ const Profile = ({ id }) => {
   });
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
+  const getProfileErrorContent = (queryError) => {
+    const status = queryError?.status;
+    const message = queryError?.data?.message;
+    const details = queryError?.data?.error;
+
+    if (status === 403 || details === 'Subscription expired') {
+      return {
+        title: 'Profile Temporarily Unavailable',
+        description:
+          'This pet profile is currently paused because the subscription renewal payment did not go through.',
+      };
+    }
+
+    if (status === 404) {
+      return {
+        title: 'Pet Profile Not Found',
+        description:
+          message || 'This pet profile could not be found or is no longer available.',
+      };
+    }
+
+    return {
+      title: 'Profile Unavailable Right Now',
+      description:
+        'We could not load this pet profile at the moment. Please try again shortly.',
+    };
+  };
+
   const handleShareLocation = () => {
     setIsLocationModalOpen(true);
   };
@@ -217,13 +245,14 @@ const Profile = ({ id }) => {
   }
 
   if (error || !petData) {
+    const errorContent = getProfileErrorContent(error);
     return (
       <div className="max-w-[673px] mx-auto px-4 py-16">
         <div className="text-center">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Pet Not Found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{errorContent.title}</h1>
           <p className="text-gray-600">
-            This pet profile is not accessible or the subscription may have expired.
+            {errorContent.description}
           </p>
         </div>
       </div>
