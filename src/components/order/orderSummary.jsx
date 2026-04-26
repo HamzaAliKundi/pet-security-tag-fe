@@ -107,6 +107,13 @@ const OrderSummary = () => {
                     </p>
                 </div>
 
+                {/* Email Delivery Notice */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                    <p className="text-amber-900 text-sm font-medium">
+                        Important: If you do not see our confirmation email in your inbox, please check your spam/junk folder as well.
+                    </p>
+                </div>
+
                 {/* Order Details Card */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
