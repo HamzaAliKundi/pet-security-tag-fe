@@ -26,6 +26,7 @@ import SMSConsentStatement from "./components/SMSConsentStatement";
 import InvestPage from "./pages/invest";
 import PartnerCharitiesPage from "./pages/PartnerCharities";
 import LatestOrdersNotification from "./components/common/latestOrdersNotification";
+import ReferAFriendPage from "./pages/ReferAFriend";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -60,6 +61,7 @@ const AppRoutes = () => {
         <Route path="/partner-charities" element={<PartnerCharitiesPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/refer" element={<ReferAFriendPage />} />
       </Routes>
       {showFooter && <Footer />}
       {/* Latest Orders Notification Widget - Show on all pages except login/signup */}
