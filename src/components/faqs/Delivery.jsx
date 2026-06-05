@@ -10,7 +10,7 @@ const Delivery = () => {
     },
     {
       question: 'How Much Does Shipping Cost?',
-      answer: 'For A Nominal Fee Of £1.49, Enjoy The Convenience Of Next-Day Delivery On Orders Placed Before 4pm On Weekdays.'
+      answer: 'For A Nominal Fee Of £2.99, Enjoy The Convenience Of Next-Day Delivery On Orders Placed Before 4pm On Weekdays.'
     },
     {
       question: 'When Will My Digital Tails Tag Arrive?',
