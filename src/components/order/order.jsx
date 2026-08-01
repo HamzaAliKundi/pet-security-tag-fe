@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCreateOrderMutation, useConfirmPaymentMutation, useCheckQRAvailabilityQuery, useValidateDiscountMutation } from '../../apis/orders'
 import { loadStripe } from '@stripe/stripe-js'
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { Elements, CardElement, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useLocalization } from '../../context/LocalizationContext'
 
 // Initialize Stripe using environment variable
@@ -12,6 +12,170 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISH_KEY || '')
 // Check if Stripe key is configured
 if (!import.meta.env.VITE_STRIPE_PUBLISH_KEY) {
   console.warn('VITE_STRIPE_PUBLISH_KEY is not set in environment variables')
+}
+
+// Wallet checkout (Apple Pay) rendered inside its own Elements instance.
+//
+// This deliberately does NOT share the Elements provider used by CardElement below.
+// Wallets need Stripe's deferred-intent mode (mode/amount/currency known up front),
+// which the legacy CardElement does not support, so the two run side by side and the
+// existing card flow stays exactly as it was.
+const WalletCheckoutInner = ({
+    validateForm,
+    buildOrderData,
+    createOrder,
+    confirmPayment,
+    navigate,
+    referralCode,
+    isBusy,
+    isOrderDisabled,
+    setIsProcessing,
+    onAvailabilityChange,
+    onDebug,
+}) => {
+    const stripe = useStripe()
+    const elements = useElements()
+
+    // The wallet sheet only opens if we call resolve(), so validate the order form first.
+    const handleClick = ({ resolve }) => {
+        if (isOrderDisabled) {
+            toast.error('Orders are currently unavailable')
+            return
+        }
+        if (isBusy) return
+        if (!validateForm()) {
+            toast.error('Please fill in all required fields correctly')
+            return
+        }
+        // Shipping/contact details are already collected by our own form above.
+        resolve({
+            emailRequired: false,
+            phoneNumberRequired: false,
+            shippingAddressRequired: false,
+        })
+    }
+
+    const handleConfirm = async () => {
+        if (!stripe || !elements) {
+            toast.error('Stripe is not loaded')
+            return
+        }
+
+        setIsProcessing(true)
+
+        try {
+            const { error: submitError } = await elements.submit()
+            if (submitError) {
+                toast.error(submitError.message || 'Payment details could not be validated')
+                setIsProcessing(false)
+                return
+            }
+
+            // Same order payload as the card flow. paymentMethodId is omitted because the
+            // wallet credential is supplied at confirm time instead of before order creation.
+            const result = await createOrder(buildOrderData(undefined)).unwrap()
+
+            if (!result?.payment?.clientSecret) {
+                toast.error('Payment intent creation failed')
+                setIsProcessing(false)
+                return
+            }
+
+            const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+                elements,
+                clientSecret: result.payment.clientSecret,
+                confirmParams: {
+                    return_url: `${window.location.origin}/order-summary`,
+                },
+                redirect: 'if_required',
+            })
+
+            if (confirmError) {
+                toast.error(confirmError.message || 'Payment confirmation failed')
+                setIsProcessing(false)
+                return
+            }
+
+            if (paymentIntent && paymentIntent.status === 'succeeded') {
+                try {
+                    const confirmResult = await confirmPayment({
+                        orderId: result.order._id,
+                        paymentIntentId: paymentIntent.id,
+                        referralCode: referralCode || undefined
+                    }).unwrap()
+
+                    navigate('/order-summary', {
+                        state: {
+                            orderData: confirmResult,
+                            confirmResult: confirmResult
+                        }
+                    })
+                } catch (backendError) {
+                    console.error('Backend payment confirmation failed:', backendError)
+                    toast.error('Payment processed but account creation failed. Please contact support.')
+                    setIsProcessing(false)
+                }
+            } else {
+                toast.error('Payment not successful. Please try again.')
+                setIsProcessing(false)
+            }
+        } catch (error) {
+            console.error('Wallet payment failed:', error)
+            toast.error(error?.data?.message || 'Payment failed. Please try again.')
+            setIsProcessing(false)
+        }
+    }
+
+    return (
+        <ExpressCheckoutElement
+            options={{
+                // Apple Pay only for now — flip googlePay to 'auto' to add Google Pay.
+                paymentMethods: {
+                    applePay: 'auto',
+                    googlePay: 'never',
+                    link: 'never',
+                    paypal: 'never',
+                    amazonPay: 'never',
+                },
+                buttonType: { applePay: 'buy' },
+                buttonHeight: 48,
+            }}
+            onReady={({ availablePaymentMethods }) => {
+                onAvailabilityChange(Boolean(availablePaymentMethods))
+                onDebug(`onReady -> ${JSON.stringify(availablePaymentMethods ?? null)}`)
+            }}
+            onLoadError={(event) => {
+                onDebug(`loadError -> ${event?.error?.message || JSON.stringify(event)}`)
+            }}
+            onClick={handleClick}
+            onConfirm={handleConfirm}
+            onCancel={() => setIsProcessing(false)}
+        />
+    )
+}
+
+const WalletCheckout = ({ amount, currency, ...rest }) => {
+    // Stripe expects the smallest currency unit, matching the backend's Math.round(total * 100).
+    const amountInMinorUnits = Math.round((Number(amount) || 0) * 100)
+
+    if (amountInMinorUnits <= 0 || !currency) {
+        return null
+    }
+
+    return (
+        <Elements
+            stripe={stripePromise}
+            // Currency is not updatable in place, so remount when it changes.
+            key={currency}
+            options={{
+                mode: 'payment',
+                amount: amountInMinorUnits,
+                currency: currency,
+            }}
+        >
+            <WalletCheckoutInner {...rest} />
+        </Elements>
+    )
 }
 
 const OrderForm = () => {
@@ -39,6 +203,8 @@ const OrderForm = () => {
     const [isProcessing, setIsProcessing] = useState(false)
     const [termsAccepted, setTermsAccepted] = useState(false)
     const [activePreview, setActivePreview] = useState(null) // Track which color preview is active
+    const [walletAvailable, setWalletAvailable] = useState(false) // True once Apple Pay is usable on this device
+    const [walletDebug, setWalletDebug] = useState('waiting for Stripe...') // Shown only with ?debug=wallet
     const colorSelectorRef = useRef(null) // Ref for the color selector container
 
     const [createOrder, { isLoading }] = useCreateOrderMutation()
@@ -318,6 +484,49 @@ const OrderForm = () => {
         return Object.keys(newErrors).length === 0
     }
 
+    // Builds the create-order payload. Shared by the card and wallet flows so the two
+    // can never drift apart.
+    const buildOrderData = (paymentMethodId) => {
+        const fullPhoneNumber = `${countryCode}${formData.phone}`
+
+        // Ensure tagColors array matches quantity exactly (trim if longer, pad if shorter)
+        let finalTagColors;
+        if (quantity === 1) {
+            finalTagColors = [selectedTagColor];
+        } else {
+            // For multiple tags, ensure array matches quantity
+            if (tagColors.length >= quantity) {
+                finalTagColors = tagColors.slice(0, quantity);
+            } else {
+                // Pad with 'blue' if fewer colors than quantity
+                finalTagColors = [...tagColors, ...Array(quantity - tagColors.length).fill('blue')];
+            }
+        }
+
+        // Prepare pet names - use petNames array if available, otherwise fallback to petName
+        const petNamesArray = formData.petNames.filter(name => name && name.trim()).length > 0
+            ? formData.petNames.map(name => name.trim()).filter(name => name)
+            : (formData.petName ? [formData.petName.trim()] : [''])
+
+        return {
+            email: formData.email,
+            name: formData.name,
+            petName: quantity === 1 ? petNamesArray[0] : petNamesArray.join(', '), // Keep for backward compatibility
+            petNames: petNamesArray, // Array of pet names
+            quantity: quantity,
+            subscriptionType: selectedPlan,
+            tagColor: quantity === 1 ? selectedTagColor : undefined, // Keep for backward compatibility
+            tagColors: finalTagColors, // Array of colors for each tag (exactly matching quantity)
+            phone: fullPhoneNumber,
+            shippingAddress: formData.shippingAddress,
+            totalCostEuro: totalCost, // Keep same field name for backward compatibility (but now contains amount in user's currency)
+            currency: shippingPrice.currency.toLowerCase(), // Send currency from LocalizationContext
+            paymentMethodId: paymentMethodId,
+            termsAccepted: termsAccepted,
+            isDiscount: isDiscountApplied && isDiscountValid // Add discount flag
+        }
+    }
+
     const handleSubmit = async () => {
         if (!validateForm()) {
             toast.error('Please fill in all required fields correctly')
@@ -371,42 +580,7 @@ const OrderForm = () => {
                 paymentMethod = pm
             }
 
-            // Ensure tagColors array matches quantity exactly (trim if longer, pad if shorter)
-            let finalTagColors;
-            if (quantity === 1) {
-                finalTagColors = [selectedTagColor];
-            } else {
-                // For multiple tags, ensure array matches quantity
-                if (tagColors.length >= quantity) {
-                    finalTagColors = tagColors.slice(0, quantity);
-                } else {
-                    // Pad with 'blue' if fewer colors than quantity
-                    finalTagColors = [...tagColors, ...Array(quantity - tagColors.length).fill('blue')];
-                }
-            }
-
-            // Prepare pet names - use petNames array if available, otherwise fallback to petName
-            const petNamesArray = formData.petNames.filter(name => name && name.trim()).length > 0 
-                ? formData.petNames.map(name => name.trim()).filter(name => name)
-                : (formData.petName ? [formData.petName.trim()] : [''])
-
-            const orderData = {
-                email: formData.email,
-                name: formData.name,
-                petName: quantity === 1 ? petNamesArray[0] : petNamesArray.join(', '), // Keep for backward compatibility
-                petNames: petNamesArray, // Array of pet names
-                quantity: quantity,
-                subscriptionType: selectedPlan,
-                tagColor: quantity === 1 ? selectedTagColor : undefined, // Keep for backward compatibility
-                tagColors: finalTagColors, // Array of colors for each tag (exactly matching quantity)
-                phone: fullPhoneNumber,
-                shippingAddress: formData.shippingAddress,
-                totalCostEuro: totalCost, // Keep same field name for backward compatibility (but now contains amount in user's currency)
-                currency: shippingPrice.currency.toLowerCase(), // Send currency from LocalizationContext
-                paymentMethodId: paymentMethod?.id,
-                termsAccepted: termsAccepted,
-                isDiscount: isDiscountApplied && isDiscountValid // Add discount flag
-            }
+            const orderData = buildOrderData(paymentMethod?.id)
 
             const result = await createOrder(orderData).unwrap()
             
@@ -1079,6 +1253,55 @@ const OrderForm = () => {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Apple Pay - Only show if order is not free and the device supports it.
+                                Kept mounted (not unmounted) while unavailable so Stripe can report
+                                availability via onReady; hidden with CSS until then. */}
+                            {!(isDiscountApplied && isDiscountValid) && (
+                                // NOTE: never use `display: none` here. Stripe Elements cannot
+                                // initialise inside a display:none container, so onReady would never
+                                // fire and the section could never become visible. Clip it instead.
+                                <div className={walletAvailable
+                                    ? 'flex flex-col gap-3'
+                                    : 'flex flex-col gap-3 h-0 overflow-hidden opacity-0 pointer-events-none'}>
+                                    <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                                        Express Checkout
+                                    </label>
+                                    <WalletCheckout
+                                        amount={totalCost}
+                                        currency={shippingPrice.currency.toLowerCase()}
+                                        validateForm={validateForm}
+                                        buildOrderData={buildOrderData}
+                                        createOrder={createOrder}
+                                        confirmPayment={confirmPayment}
+                                        navigate={navigate}
+                                        referralCode={referralCode}
+                                        isBusy={isLoading || isProcessing}
+                                        isOrderDisabled={isOrderDisabled}
+                                        setIsProcessing={setIsProcessing}
+                                        onAvailabilityChange={setWalletAvailable}
+                                        onDebug={setWalletDebug}
+                                    />
+                                    <div className="flex items-center gap-3">
+                                        <span className="h-px flex-1 bg-[#D8DDE3]" />
+                                        <span className="font-helvetica-neue text-xs text-gray-500 uppercase tracking-wide">
+                                            Or pay with card
+                                        </span>
+                                        <span className="h-px flex-1 bg-[#D8DDE3]" />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Temporary wallet diagnostics - only with ?debug=wallet in the URL */}
+                            {searchParams.get('debug') === 'wallet' && (
+                                <div className="flex flex-col gap-1 p-3 bg-slate-900 text-slate-100 rounded-[4px] text-xs break-all font-mono">
+                                    <div>walletAvailable: {String(walletAvailable)}</div>
+                                    <div>amount(minor): {Math.round((Number(totalCost) || 0) * 100)}</div>
+                                    <div>currency: {shippingPrice.currency.toLowerCase()}</div>
+                                    <div>stripeKey: {(import.meta.env.VITE_STRIPE_PUBLISH_KEY || '').slice(0, 8)}</div>
+                                    <div>status: {walletDebug}</div>
+                                </div>
+                            )}
 
                             {/* Stripe Card Element - Only show if order is not free (discount not applied) */}
                             {!(isDiscountApplied && isDiscountValid) && (
