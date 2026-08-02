@@ -41,3 +41,15 @@
 .animate-slide-up {
     animation: slide-up 0.3s ease-out;
 }
+
+/* Order form selects: replace the native control with a consistent chevron so they
+   match the text inputs (iOS renders native selects as grey filled boxes). */
+.dt-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%236B7280' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 12px 8px;
+}
