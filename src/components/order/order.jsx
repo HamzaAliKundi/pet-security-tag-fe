@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCreateOrderMutation, useConfirmPaymentMutation, useCheckQRAvailabilityQuery, useValidateDiscountMutation } from '../../apis/orders'
 import { loadStripe } from '@stripe/stripe-js'
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { Elements, CardElement, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useLocalization } from '../../context/LocalizationContext'
 
 // Initialize Stripe using environment variable
@@ -12,6 +12,167 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISH_KEY || '')
 // Check if Stripe key is configured
 if (!import.meta.env.VITE_STRIPE_PUBLISH_KEY) {
   console.warn('VITE_STRIPE_PUBLISH_KEY is not set in environment variables')
+}
+
+// Wallet checkout (Apple Pay) rendered inside its own Elements instance.
+//
+// This deliberately does NOT share the Elements provider used by CardElement below.
+// Wallets need Stripe's deferred-intent mode (mode/amount/currency known up front),
+// which the legacy CardElement does not support, so the two run side by side and the
+// existing card flow stays exactly as it was.
+const WalletCheckoutInner = ({
+    validateForm,
+    buildOrderData,
+    createOrder,
+    confirmPayment,
+    navigate,
+    referralCode,
+    isBusy,
+    isOrderDisabled,
+    setIsProcessing,
+    onStatusChange,
+}) => {
+    const stripe = useStripe()
+    const elements = useElements()
+
+    // The wallet sheet only opens if we call resolve(), so validate the order form first.
+    const handleClick = ({ resolve }) => {
+        if (isOrderDisabled) {
+            toast.error('Orders are currently unavailable')
+            return
+        }
+        if (isBusy) return
+        if (!validateForm()) {
+            toast.error('Please fill in all required fields correctly')
+            return
+        }
+        // Shipping/contact details are already collected by our own form above.
+        resolve({
+            emailRequired: false,
+            phoneNumberRequired: false,
+            shippingAddressRequired: false,
+        })
+    }
+
+    const handleConfirm = async () => {
+        if (!stripe || !elements) {
+            toast.error('Stripe is not loaded')
+            return
+        }
+
+        setIsProcessing(true)
+
+        try {
+            const { error: submitError } = await elements.submit()
+            if (submitError) {
+                toast.error(submitError.message || 'Payment details could not be validated')
+                setIsProcessing(false)
+                return
+            }
+
+            // Same order payload as the card flow. paymentMethodId is omitted because the
+            // wallet credential is supplied at confirm time instead of before order creation.
+            const result = await createOrder(buildOrderData(undefined)).unwrap()
+
+            if (!result?.payment?.clientSecret) {
+                toast.error('Payment intent creation failed')
+                setIsProcessing(false)
+                return
+            }
+
+            const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+                elements,
+                clientSecret: result.payment.clientSecret,
+                confirmParams: {
+                    return_url: `${window.location.origin}/order-summary`,
+                },
+                redirect: 'if_required',
+            })
+
+            if (confirmError) {
+                toast.error(confirmError.message || 'Payment confirmation failed')
+                setIsProcessing(false)
+                return
+            }
+
+            if (paymentIntent && paymentIntent.status === 'succeeded') {
+                try {
+                    const confirmResult = await confirmPayment({
+                        orderId: result.order._id,
+                        paymentIntentId: paymentIntent.id,
+                        referralCode: referralCode || undefined
+                    }).unwrap()
+
+                    navigate('/order-summary', {
+                        state: {
+                            orderData: confirmResult,
+                            confirmResult: confirmResult
+                        }
+                    })
+                } catch (backendError) {
+                    console.error('Backend payment confirmation failed:', backendError)
+                    toast.error('Payment processed but account creation failed. Please contact support.')
+                    setIsProcessing(false)
+                }
+            } else {
+                toast.error('Payment not successful. Please try again.')
+                setIsProcessing(false)
+            }
+        } catch (error) {
+            console.error('Wallet payment failed:', error)
+            toast.error(error?.data?.message || 'Payment failed. Please try again.')
+            setIsProcessing(false)
+        }
+    }
+
+    return (
+        <ExpressCheckoutElement
+            options={{
+                // Apple Pay only for now — flip googlePay to 'auto' to add Google Pay.
+                paymentMethods: {
+                    applePay: 'auto',
+                    googlePay: 'never',
+                    klarna: 'never',
+                    link: 'never',
+                    paypal: 'never',
+                    amazonPay: 'never',
+                },
+                buttonType: { applePay: 'buy' },
+                buttonHeight: 44,
+            }}
+            onReady={({ availablePaymentMethods }) => {
+                onStatusChange(availablePaymentMethods ? 'ready' : 'unavailable')
+            }}
+            onLoadError={() => onStatusChange('unavailable')}
+            onClick={handleClick}
+            onConfirm={handleConfirm}
+            onCancel={() => setIsProcessing(false)}
+        />
+    )
+}
+
+const WalletCheckout = ({ amount, currency, ...rest }) => {
+    // Stripe expects the smallest currency unit, matching the backend's Math.round(total * 100).
+    const amountInMinorUnits = Math.round((Number(amount) || 0) * 100)
+
+    if (amountInMinorUnits <= 0 || !currency) {
+        return null
+    }
+
+    return (
+        <Elements
+            stripe={stripePromise}
+            // Currency is not updatable in place, so remount when it changes.
+            key={currency}
+            options={{
+                mode: 'payment',
+                amount: amountInMinorUnits,
+                currency: currency,
+            }}
+        >
+            <WalletCheckoutInner {...rest} />
+        </Elements>
+    )
 }
 
 const OrderForm = () => {
@@ -39,6 +200,9 @@ const OrderForm = () => {
     const [isProcessing, setIsProcessing] = useState(false)
     const [termsAccepted, setTermsAccepted] = useState(false)
     const [activePreview, setActivePreview] = useState(null) // Track which color preview is active
+    // 'loading' until Stripe reports back, then 'ready' (Apple Pay usable) or 'unavailable'
+    const [walletStatus, setWalletStatus] = useState('loading')
+    const [cardReady, setCardReady] = useState(false) // CardElement finished mounting
     const colorSelectorRef = useRef(null) // Ref for the color selector container
 
     const [createOrder, { isLoading }] = useCreateOrderMutation()
@@ -318,6 +482,49 @@ const OrderForm = () => {
         return Object.keys(newErrors).length === 0
     }
 
+    // Builds the create-order payload. Shared by the card and wallet flows so the two
+    // can never drift apart.
+    const buildOrderData = (paymentMethodId) => {
+        const fullPhoneNumber = `${countryCode}${formData.phone}`
+
+        // Ensure tagColors array matches quantity exactly (trim if longer, pad if shorter)
+        let finalTagColors;
+        if (quantity === 1) {
+            finalTagColors = [selectedTagColor];
+        } else {
+            // For multiple tags, ensure array matches quantity
+            if (tagColors.length >= quantity) {
+                finalTagColors = tagColors.slice(0, quantity);
+            } else {
+                // Pad with 'blue' if fewer colors than quantity
+                finalTagColors = [...tagColors, ...Array(quantity - tagColors.length).fill('blue')];
+            }
+        }
+
+        // Prepare pet names - use petNames array if available, otherwise fallback to petName
+        const petNamesArray = formData.petNames.filter(name => name && name.trim()).length > 0
+            ? formData.petNames.map(name => name.trim()).filter(name => name)
+            : (formData.petName ? [formData.petName.trim()] : [''])
+
+        return {
+            email: formData.email,
+            name: formData.name,
+            petName: quantity === 1 ? petNamesArray[0] : petNamesArray.join(', '), // Keep for backward compatibility
+            petNames: petNamesArray, // Array of pet names
+            quantity: quantity,
+            subscriptionType: selectedPlan,
+            tagColor: quantity === 1 ? selectedTagColor : undefined, // Keep for backward compatibility
+            tagColors: finalTagColors, // Array of colors for each tag (exactly matching quantity)
+            phone: fullPhoneNumber,
+            shippingAddress: formData.shippingAddress,
+            totalCostEuro: totalCost, // Keep same field name for backward compatibility (but now contains amount in user's currency)
+            currency: shippingPrice.currency.toLowerCase(), // Send currency from LocalizationContext
+            paymentMethodId: paymentMethodId,
+            termsAccepted: termsAccepted,
+            isDiscount: isDiscountApplied && isDiscountValid // Add discount flag
+        }
+    }
+
     const handleSubmit = async () => {
         if (!validateForm()) {
             toast.error('Please fill in all required fields correctly')
@@ -371,42 +578,7 @@ const OrderForm = () => {
                 paymentMethod = pm
             }
 
-            // Ensure tagColors array matches quantity exactly (trim if longer, pad if shorter)
-            let finalTagColors;
-            if (quantity === 1) {
-                finalTagColors = [selectedTagColor];
-            } else {
-                // For multiple tags, ensure array matches quantity
-                if (tagColors.length >= quantity) {
-                    finalTagColors = tagColors.slice(0, quantity);
-                } else {
-                    // Pad with 'blue' if fewer colors than quantity
-                    finalTagColors = [...tagColors, ...Array(quantity - tagColors.length).fill('blue')];
-                }
-            }
-
-            // Prepare pet names - use petNames array if available, otherwise fallback to petName
-            const petNamesArray = formData.petNames.filter(name => name && name.trim()).length > 0 
-                ? formData.petNames.map(name => name.trim()).filter(name => name)
-                : (formData.petName ? [formData.petName.trim()] : [''])
-
-            const orderData = {
-                email: formData.email,
-                name: formData.name,
-                petName: quantity === 1 ? petNamesArray[0] : petNamesArray.join(', '), // Keep for backward compatibility
-                petNames: petNamesArray, // Array of pet names
-                quantity: quantity,
-                subscriptionType: selectedPlan,
-                tagColor: quantity === 1 ? selectedTagColor : undefined, // Keep for backward compatibility
-                tagColors: finalTagColors, // Array of colors for each tag (exactly matching quantity)
-                phone: fullPhoneNumber,
-                shippingAddress: formData.shippingAddress,
-                totalCostEuro: totalCost, // Keep same field name for backward compatibility (but now contains amount in user's currency)
-                currency: shippingPrice.currency.toLowerCase(), // Send currency from LocalizationContext
-                paymentMethodId: paymentMethod?.id,
-                termsAccepted: termsAccepted,
-                isDiscount: isDiscountApplied && isDiscountValid // Add discount flag
-            }
+            const orderData = buildOrderData(paymentMethod?.id)
 
             const result = await createOrder(orderData).unwrap()
             
@@ -765,10 +937,12 @@ const OrderForm = () => {
                 </div>
 
                 {/* Right Section - Form */}
-                <div className="w-full lg:w-[600px] xl:w-[650px] flex flex-col gap-4 sm:gap-6">
+                <div className="w-full lg:w-[600px] xl:w-[650px] flex flex-col gap-3.5 sm:gap-4">
+                    {/* Email + Name - side by side from tablet up */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 items-start">
                     {/* Email Input */}
-                    <div className="flex flex-col gap-2">
-                        <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                             Your Email Address*
                         </label>
                         <input
@@ -776,20 +950,20 @@ const OrderForm = () => {
                             name="email"
                             value={formData.email}
                             onChange={handleInputChange}
-                            className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                     shadow-[0px_0px_4px_0px_#17191C0D] ${
+                            className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                     shadow-[0px_1px_2px_0px_#17191C0D] ${
                                        errors.email ? 'border-red-500' : 'border-[#D8DDE3]'
                                      }`}
                             placeholder="Enter email address"
                         />
                         {errors.email && (
-                            <span className="text-red-500 text-sm">{errors.email}</span>
+                            <span className="text-red-500 text-xs">{errors.email}</span>
                         )}
                     </div>
 
                     {/* Name Input */}
-                    <div className="flex flex-col gap-2">
-                        <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                             Your Name*
                         </label>
                         <input
@@ -797,44 +971,45 @@ const OrderForm = () => {
                             name="name"
                             value={formData.name}
                             onChange={handleInputChange}
-                            className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                     shadow-[0px_0px_4px_0px_#17191C0D] ${
+                            className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                     shadow-[0px_1px_2px_0px_#17191C0D] ${
                                        errors.name ? 'border-red-500' : 'border-[#D8DDE3]'
                                      }`}
                             placeholder="Enter your name"
                         />
                         {errors.name && (
-                            <span className="text-red-500 text-sm">{errors.name}</span>
+                            <span className="text-red-500 text-xs">{errors.name}</span>
                         )}
+                    </div>
                     </div>
 
                     {/* Pet Name Input(s) - Dynamic based on quantity */}
                     {quantity === 1 ? (
-                        <div className="flex flex-col gap-2">
-                            <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                                 Your Pet Name*
                             </label>
                             <input
                                 type="text"
                                 value={formData.petNames[0] || ''}
                                 onChange={(e) => handlePetNameChange(0, e.target.value)}
-                                className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                         shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                         shadow-[0px_1px_2px_0px_#17191C0D] ${
                                            errors.petName ? 'border-red-500' : 'border-[#D8DDE3]'
                                          }`}
                                 placeholder="Enter pet name"
                             />
                             {errors.petName && (
-                                <span className="text-red-500 text-sm">{errors.petName}</span>
+                                <span className="text-red-500 text-xs">{errors.petName}</span>
                             )}
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-4">
-                            <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                        <div className="flex flex-col gap-3">
+                            <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                                 Pet Names* ({quantity} pets)
                             </label>
                             {Array.from({ length: quantity }).map((_, index) => (
-                                <div key={index} className="flex flex-col gap-2">
+                                <div key={index} className="flex flex-col gap-1.5">
                                     <label className="font-helvetica-neue font-normal text-xs sm:text-sm leading-[100%] tracking-[-2%] text-[#666666]">
                                         Pet {index + 1} Name*
                                     </label>
@@ -842,14 +1017,14 @@ const OrderForm = () => {
                                         type="text"
                                         value={formData.petNames[index] || ''}
                                         onChange={(e) => handlePetNameChange(index, e.target.value)}
-                                        className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                                 shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
                                                    errors[`petName_${index}`] ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
                                         placeholder={`Enter pet ${index + 1} name`}
                                     />
                                     {errors[`petName_${index}`] && (
-                                        <span className="text-red-500 text-sm">{errors[`petName_${index}`]}</span>
+                                        <span className="text-red-500 text-xs">{errors[`petName_${index}`]}</span>
                                     )}
                                 </div>
                             ))}
@@ -858,7 +1033,7 @@ const OrderForm = () => {
 
                     {/* Discount Code Input */}
                     <div className="w-full mt-4 sm:mt-6 flex flex-col gap-2">
-                        <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                        <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                             Discount Code (Optional)
                         </label>
                         <div className="flex gap-2">
@@ -872,8 +1047,8 @@ const OrderForm = () => {
                                     setIsDiscountApplied(false)
                                 }}
                                 placeholder="Enter discount code"
-                                className={`flex-1 h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                         shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                className={`flex-1 h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                         shadow-[0px_1px_2px_0px_#17191C0D] ${
                                            discountError ? 'border-red-500' : isDiscountValid ? 'border-green-500' : 'border-[#D8DDE3]'
                                          }`}
                                 disabled={isValidatingDiscount}
@@ -882,7 +1057,7 @@ const OrderForm = () => {
                                 type="button"
                                 onClick={handleApplyDiscount}
                                 disabled={!discountCode.trim() || isValidatingDiscount || isDiscountApplied}
-                                className={`h-[48px] sm:h-[56px] px-6 rounded-[4px] font-helvetica-neue font-semibold text-sm sm:text-base transition-colors ${
+                                className={`h-[42px] sm:h-[44px] px-5 rounded-[8px] font-helvetica-neue font-semibold text-[14px] sm:text-[15px] transition-colors shrink-0 ${
                                     !discountCode.trim() || isValidatingDiscount || isDiscountApplied
                                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                         : 'bg-[#4CB2E2] text-white hover:bg-[#3da1d1]'
@@ -892,7 +1067,7 @@ const OrderForm = () => {
                             </button>
                         </div>
                         {discountError && (
-                            <span className="text-red-500 text-sm">{discountError}</span>
+                            <span className="text-red-500 text-xs">{discountError}</span>
                         )}
                         {isDiscountValid && isDiscountApplied && (
                             <span className="text-green-600 text-sm">✓ Discount code applied successfully!</span>
@@ -940,18 +1115,18 @@ const OrderForm = () => {
                     {showShippingForm && (
                         <>
                             {/* Phone Input */}
-                            <div className="flex flex-col gap-2">
-                                <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                                     Phone Number*
                                 </label>
                                 <div className="flex gap-2">
                                     <select
                                         value={countryCode}
                                         onChange={(e) => setCountryCode(e.target.value)}
-                                        className={`rounded-[4px] border px-3 py-2 sm:py-3 font-helvetica-neue text-sm sm:text-base shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                        className={`dt-select h-[42px] sm:h-[44px] rounded-[8px] border bg-white pl-3.5 pr-9 font-helvetica-neue text-[14px] sm:text-[15px] text-[#05131D] shadow-[0px_1px_2px_0px_#17191C0D] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25 ${
                                             errors.phone ? 'border-red-500' : 'border-[#D8DDE3]'
                                         }`}
-                                        style={{ width: '120px' }}
+                                        style={{ width: '104px' }}
                                     >
                                         <option value="+44">+44 (UK)</option>
                                         <option value="+1">+1 (USA)</option>
@@ -962,22 +1137,22 @@ const OrderForm = () => {
                                         name="phone"
                                         value={formData.phone}
                                         onChange={handleInputChange}
-                                        className={`flex-1 h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                                 shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                        className={`flex-1 h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
                                                    errors.phone ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
                                         placeholder="Enter phone number"
                                     />
                                 </div>
                                 {errors.phone && (
-                                    <span className="text-red-500 text-sm">{errors.phone}</span>
+                                    <span className="text-red-500 text-xs">{errors.phone}</span>
                                 )}
                             </div>
 
                             {/* Shipping Address */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                                <div className="flex flex-col gap-2">
-                                    <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 items-start">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                                         Street Address*
                                     </label>
                                     <input
@@ -985,19 +1160,19 @@ const OrderForm = () => {
                                         name="street"
                                         value={formData.shippingAddress.street}
                                         onChange={handleShippingAddressChange}
-                                        className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                                 shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
                                                    errors.street ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
                                         placeholder="Enter street address"
                                     />
                                     {errors.street && (
-                                        <span className="text-red-500 text-sm">{errors.street}</span>
+                                        <span className="text-red-500 text-xs">{errors.street}</span>
                                     )}
                                 </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                                         City*
                                     </label>
                                     <input
@@ -1005,19 +1180,19 @@ const OrderForm = () => {
                                         name="city"
                                         value={formData.shippingAddress.city}
                                         onChange={handleShippingAddressChange}
-                                        className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                                 shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
                                                    errors.city ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
                                         placeholder="Enter city"
                                     />
                                     {errors.city && (
-                                        <span className="text-red-500 text-sm">{errors.city}</span>
+                                        <span className="text-red-500 text-xs">{errors.city}</span>
                                     )}
                                 </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                                         State / County*
                                     </label>
                                     <input
@@ -1025,19 +1200,19 @@ const OrderForm = () => {
                                         name="state"
                                         value={formData.shippingAddress.state}
                                         onChange={handleShippingAddressChange}
-                                        className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                                 shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
                                                    errors.state ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
                                         placeholder="Enter state"
                                     />
                                     {errors.state && (
-                                        <span className="text-red-500 text-sm">{errors.state}</span>
+                                        <span className="text-red-500 text-xs">{errors.state}</span>
                                     )}
                                 </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                                         Zip Code / Post code*
                                     </label>
                                     <input
@@ -1045,27 +1220,27 @@ const OrderForm = () => {
                                         name="zipCode"
                                         value={formData.shippingAddress.zipCode}
                                         onChange={handleShippingAddressChange}
-                                        className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                                 shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
                                                    errors.zipCode ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
                                         placeholder="Enter zip code"
                                     />
                                     {errors.zipCode && (
-                                        <span className="text-red-500 text-sm">{errors.zipCode}</span>
+                                        <span className="text-red-500 text-xs">{errors.zipCode}</span>
                                     )}
                                 </div>
 
                                 <div className="flex flex-col gap-2 md:col-span-2">
-                                    <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                                         Country*
                                     </label>
                                     <select
                                         name="country"
                                         value={formData.shippingAddress.country}
                                         onChange={handleShippingAddressChange}
-                                        className={`w-full h-[48px] sm:h-[56px] rounded-[4px] border px-3 sm:px-4 py-2 sm:py-3
-                                                 shadow-[0px_0px_4px_0px_#17191C0D] ${
+                                        className={`dt-select w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white pl-3.5 pr-9 text-[14px] sm:text-[15px] text-[#05131D] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
                                                    errors.country ? 'border-red-500' : 'border-[#D8DDE3]'
                                                  }`}
                                     >
@@ -1075,24 +1250,85 @@ const OrderForm = () => {
                                         <option value="Canada">Canada</option>
                                     </select>
                                     {errors.country && (
-                                        <span className="text-red-500 text-sm">{errors.country}</span>
+                                        <span className="text-red-500 text-xs">{errors.country}</span>
                                     )}
                                 </div>
                             </div>
 
+                            {/* Apple Pay - Only show if order is not free and the device supports it.
+                                Kept mounted (not unmounted) while unavailable so Stripe can report
+                                availability via onReady; hidden with CSS until then. */}
+                            {!(isDiscountApplied && isDiscountValid) && (
+                                <>
+                                    {/* Placeholder while Stripe works out whether Apple Pay is usable.
+                                        Replaced by the real button, or removed if unavailable. */}
+                                    {walletStatus === 'loading' && Math.round((Number(totalCost) || 0) * 100) > 0 && (
+                                        <div className="flex flex-col gap-3">
+                                            <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
+                                                Express Checkout
+                                            </label>
+                                            <div className="w-full h-[44px] rounded-[8px] bg-gray-100 animate-pulse flex items-center justify-center gap-2">
+                                                <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                                                <span className="text-xs text-gray-500">Checking available payment methods...</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                {/* NOTE: never use `display: none` here. Stripe Elements cannot
+                                    initialise inside a display:none container, so onReady would never
+                                    fire and the section could never become visible. Clip it instead. */}
+                                <div className={walletStatus === 'ready'
+                                    ? 'flex flex-col gap-3'
+                                    : 'flex flex-col gap-3 h-0 overflow-hidden opacity-0 pointer-events-none'}>
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
+                                        Express Checkout
+                                    </label>
+                                    <WalletCheckout
+                                        amount={totalCost}
+                                        currency={shippingPrice.currency.toLowerCase()}
+                                        validateForm={validateForm}
+                                        buildOrderData={buildOrderData}
+                                        createOrder={createOrder}
+                                        confirmPayment={confirmPayment}
+                                        navigate={navigate}
+                                        referralCode={referralCode}
+                                        isBusy={isLoading || isProcessing}
+                                        isOrderDisabled={isOrderDisabled}
+                                        setIsProcessing={setIsProcessing}
+                                        onStatusChange={setWalletStatus}
+                                    />
+                                    <div className="flex items-center gap-3">
+                                        <span className="h-px flex-1 bg-[#D8DDE3]" />
+                                        <span className="font-helvetica-neue text-xs text-gray-500 uppercase tracking-wide">
+                                            Or pay with card
+                                        </span>
+                                        <span className="h-px flex-1 bg-[#D8DDE3]" />
+                                    </div>
+                                </div>
+                                </>
+                            )}
+
                             {/* Stripe Card Element - Only show if order is not free (discount not applied) */}
                             {!(isDiscountApplied && isDiscountValid) && (
-                                <div className="flex flex-col gap-2">
-                                    <label className="font-helvetica-neue font-normal text-sm sm:text-base leading-[100%] tracking-[-2%] text-[#05131D]">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                                         Card Details*
                                     </label>
-                                    <div className="w-full h-[48px] sm:h-[56px] rounded-[4px] border border-[#D8DDE3] px-3 sm:px-4 py-2 sm:py-3 shadow-[0px_0px_4px_0px_#17191C0D]">
+                                    <div className="relative w-full h-[42px] sm:h-[44px] rounded-[8px] border border-[#D8DDE3] bg-white px-3.5 flex flex-col justify-center shadow-[0px_1px_2px_0px_#17191C0D] transition duration-150 focus-within:border-[#FDD30F] focus-within:ring-[3px] focus-within:ring-[#FDD30F]/25">
+                                        {/* Overlay while Stripe.js loads; CardElement stays mounted underneath */}
+                                        {!cardReady && (
+                                            <div className="absolute inset-0 rounded-[8px] bg-gray-100 animate-pulse flex items-center gap-2 px-3.5">
+                                                <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                                                <span className="text-xs text-gray-500">Loading secure card field...</span>
+                                            </div>
+                                        )}
                                         <CardElement
+                                            onReady={() => setCardReady(true)}
                                             options={{
                                                 style: {
                                                     base: {
-                                                        fontSize: '16px',
-                                                        color: '#424770',
+                                                        fontSize: '15px',
+                                                        color: '#05131D',
                                                         '::placeholder': {
                                                             color: '#aab7c4',
                                                         },
@@ -1124,34 +1360,45 @@ const OrderForm = () => {
                     <div className="flex justify-center">
                         <div className="w-full max-w-md">
                             {/* Quantity Selector */}
-                            <div className="mt-6">
-                                <h3 className="font-helvetica-neue font-bold text-[16px] sm:text-[18px] leading-[100%] capitalize mb-4 text-center">
+                            <div className="mt-2">
+                                <h3 className="font-helvetica-neue font-semibold text-[15px] sm:text-[16px] leading-[100%] capitalize mb-3 text-center text-[#05131D]">
                                     How Many Tags Do You Want To Order?
                                 </h3>
-                                <div className="flex w-full items-center justify-center gap-4 mt-6 sm:mt-8">
-                                    <div className='flex items-center gap-4'>
-                                    <button
-                                        onClick={handleDecrement}
-                                        className="w-[48px] h-[48px] sm:w-[56px] sm:h-[56px] rounded-[8px] border border-[#8E96A4] bg-[#8E96A4] 
-                                         flex items-center justify-center text-xl sm:text-2xl text-white hover:bg-[#7A8290] transition-colors"
-                                    >
-                                        -
-                                    </button>
-                                    <span className="w-[48px] sm:w-[56px] text-center text-lg sm:text-xl font-bold">{quantity}</span>
-                                    <button
-                                        onClick={handleIncrement}
-                                        disabled={quantity >= 5}
-                                        className={`w-[48px] h-[48px] sm:w-[56px] sm:h-[56px] rounded-[8px] 
-                                         flex items-center justify-center text-xl sm:text-2xl transition-colors ${
-                                            quantity >= 5 
-                                                ? 'bg-gray-400 cursor-not-allowed opacity-50' 
-                                                : 'bg-[#FDD30F] hover:bg-[#E6BE0E]'
-                                         }`}
-                                    >
-                                        +
-                                    </button>
+                                <div className="flex w-full items-center justify-center">
+                                    {/* Single joined control rather than three separate blocks */}
+                                    <div className="inline-flex items-stretch rounded-[8px] border border-[#D8DDE3] bg-white overflow-hidden shadow-[0px_1px_2px_0px_#17191C0D]">
+                                        <button
+                                            type="button"
+                                            aria-label="Decrease quantity"
+                                            onClick={handleDecrement}
+                                            disabled={quantity <= 1}
+                                            className={`w-[42px] h-[42px] flex items-center justify-center text-xl leading-none transition-colors ${
+                                                quantity <= 1
+                                                    ? 'text-[#C4C9D1] cursor-not-allowed'
+                                                    : 'text-[#4B5563] hover:bg-gray-50 active:bg-gray-100'
+                                            }`}
+                                        >
+                                            &minus;
+                                        </button>
+                                        <span className="w-[56px] h-[42px] flex items-center justify-center border-x border-[#D8DDE3] text-[15px] font-semibold text-[#05131D] tabular-nums">
+                                            {quantity}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            aria-label="Increase quantity"
+                                            onClick={handleIncrement}
+                                            disabled={quantity >= 5}
+                                            className={`w-[42px] h-[42px] flex items-center justify-center text-xl leading-none transition-colors ${
+                                                quantity >= 5
+                                                    ? 'text-[#C4C9D1] cursor-not-allowed'
+                                                    : 'text-[#05131D] hover:bg-[#FDD30F]/20 active:bg-[#FDD30F]/30'
+                                            }`}
+                                        >
+                                            +
+                                        </button>
                                     </div>
                                 </div>
+                                <p className="mt-2 text-center text-xs text-[#9AA3AE]">Maximum 5 tags per order</p>
                             </div>
                         </div>
                     </div>
@@ -1169,10 +1416,11 @@ const OrderForm = () => {
                     <button 
                         onClick={showShippingForm ? handleSubmit : handleGoToPayment}
                         disabled={isLoading || isProcessing || !stripe || isOrderDisabled || !termsAccepted}
-                        className={`w-full h-[48px] sm:h-[56px] rounded-[8px] px-4 sm:px-6 py-2 sm:py-2.5 mt-6 sm:mt-8
+                        className={`w-full h-[46px] sm:h-[48px] rounded-[8px] px-5 mt-5 sm:mt-6
                                      bg-gradient-to-r from-[#FFD700] to-[#B89D0B]
-                                     font-helvetica-neue font-bold text-[16px] sm:text-[18px] leading-[100%] text-black
-                                     ${(isLoading || isProcessing || !stripe || isOrderDisabled || !termsAccepted) ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'} transition-all duration-200`}
+                                     font-helvetica-neue font-bold text-[15px] sm:text-[16px] leading-[100%] text-black
+                                     shadow-[0px_1px_2px_0px_#17191C0D]
+                                     ${(isLoading || isProcessing || !stripe || isOrderDisabled || !termsAccepted) ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 active:scale-[0.995]'} transition-all duration-200`}
                     >
                         {isLoading || isProcessing ? 'Processing...' : isOrderDisabled ? 'Out of Stock' : showShippingForm ? 'Place Order' : 'Go To Payment'}
                     </button>

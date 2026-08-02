@@ -1,10 +1,12 @@
 import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { CheckCircle, Package, User, MapPin, Phone, Mail, Calendar, Tag } from 'lucide-react'
+import { useLocalization } from '../../context/LocalizationContext'
 
 const OrderSummary = () => {
     const location = useLocation()
     const navigate = useNavigate()
+    const { shippingPrice } = useLocalization()
     const orderData = location.state?.orderData || location.state?.confirmResult
 
     // Scroll to top when page loads
@@ -44,9 +46,11 @@ const OrderSummary = () => {
         })
     }
 
-    // Format currency
+    // Format currency using the same region-detected symbol the order page charged in
+    // (£ for UK, $ for US/Canada). Falls back to £ if detection hasn't resolved.
     const formatCurrency = (amount) => {
-        return `£${parseFloat(amount || 0).toFixed(2)}`
+        const symbol = shippingPrice?.symbol || '£'
+        return `${symbol}${parseFloat(amount || 0).toFixed(2)}`
     }
 
     // Get tag color display name
