@@ -107,7 +107,7 @@ const Form = () => {
               rel="noopener noreferrer"
               className="text-[#4CB2E2] hover:underline"
             >
-              +44 7377 518902
+              +44 7572 797141
             </a>
           </p>
         </div>
