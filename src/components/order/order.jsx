@@ -5,6 +5,7 @@ import { useCreateOrderMutation, useConfirmPaymentMutation, useCheckQRAvailabili
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useLocalization } from '../../context/LocalizationContext'
+import { US_STATES, isUsCountry } from '../../constants/usStates'
 
 // Initialize Stripe using environment variable
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISH_KEY || '')
@@ -408,7 +409,10 @@ const OrderForm = () => {
             ...prev,
             shippingAddress: {
                 ...prev.shippingAddress,
-                [name]: value
+                [name]: value,
+                // Reset state whenever country changes so a stale value (e.g. a US
+                // state code left over from before switching to UK) can't slip through
+                ...(name === 'country' ? { state: '' } : {})
             }
         }))
         // Clear error when user starts typing
@@ -1151,86 +1155,6 @@ const OrderForm = () => {
 
                             {/* Shipping Address */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 items-start">
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
-                                        Street Address*
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="street"
-                                        value={formData.shippingAddress.street}
-                                        onChange={handleShippingAddressChange}
-                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
-                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
-                                                   errors.street ? 'border-red-500' : 'border-[#D8DDE3]'
-                                                 }`}
-                                        placeholder="Enter street address"
-                                    />
-                                    {errors.street && (
-                                        <span className="text-red-500 text-xs">{errors.street}</span>
-                                    )}
-                                </div>
-
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
-                                        City*
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="city"
-                                        value={formData.shippingAddress.city}
-                                        onChange={handleShippingAddressChange}
-                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
-                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
-                                                   errors.city ? 'border-red-500' : 'border-[#D8DDE3]'
-                                                 }`}
-                                        placeholder="Enter city"
-                                    />
-                                    {errors.city && (
-                                        <span className="text-red-500 text-xs">{errors.city}</span>
-                                    )}
-                                </div>
-
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
-                                        State / County*
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="state"
-                                        value={formData.shippingAddress.state}
-                                        onChange={handleShippingAddressChange}
-                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
-                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
-                                                   errors.state ? 'border-red-500' : 'border-[#D8DDE3]'
-                                                 }`}
-                                        placeholder="Enter state"
-                                    />
-                                    {errors.state && (
-                                        <span className="text-red-500 text-xs">{errors.state}</span>
-                                    )}
-                                </div>
-
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
-                                        Zip Code / Post code*
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="zipCode"
-                                        value={formData.shippingAddress.zipCode}
-                                        onChange={handleShippingAddressChange}
-                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
-                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
-                                                   errors.zipCode ? 'border-red-500' : 'border-[#D8DDE3]'
-                                                 }`}
-                                        placeholder="Enter zip code"
-                                    />
-                                    {errors.zipCode && (
-                                        <span className="text-red-500 text-xs">{errors.zipCode}</span>
-                                    )}
-                                </div>
-
                                 <div className="flex flex-col gap-2 md:col-span-2">
                                     <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
                                         Country*
@@ -1252,7 +1176,113 @@ const OrderForm = () => {
                                     {errors.country && (
                                         <span className="text-red-500 text-xs">{errors.country}</span>
                                     )}
+                                    {!formData.shippingAddress.country && (
+                                        <span className="text-[#9AA3AE] text-xs">Select a country first to enable the fields below</span>
+                                    )}
                                 </div>
+
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
+                                        Street Address*
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="street"
+                                        value={formData.shippingAddress.street}
+                                        onChange={handleShippingAddressChange}
+                                        disabled={!formData.shippingAddress.country}
+                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25 disabled:bg-[#F3F4F6] disabled:cursor-not-allowed
+                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
+                                                   errors.street ? 'border-red-500' : 'border-[#D8DDE3]'
+                                                 }`}
+                                        placeholder="Enter street address"
+                                    />
+                                    {errors.street && (
+                                        <span className="text-red-500 text-xs">{errors.street}</span>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
+                                        City*
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="city"
+                                        value={formData.shippingAddress.city}
+                                        onChange={handleShippingAddressChange}
+                                        disabled={!formData.shippingAddress.country}
+                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25 disabled:bg-[#F3F4F6] disabled:cursor-not-allowed
+                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
+                                                   errors.city ? 'border-red-500' : 'border-[#D8DDE3]'
+                                                 }`}
+                                        placeholder="Enter city"
+                                    />
+                                    {errors.city && (
+                                        <span className="text-red-500 text-xs">{errors.city}</span>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
+                                        State / County*
+                                    </label>
+                                    {isUsCountry(formData.shippingAddress.country) ? (
+                                        <select
+                                            name="state"
+                                            value={formData.shippingAddress.state}
+                                            onChange={handleShippingAddressChange}
+                                            disabled={!formData.shippingAddress.country}
+                                            className={`dt-select w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white pl-3.5 pr-9 text-[14px] sm:text-[15px] text-[#05131D] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25 disabled:bg-[#F3F4F6] disabled:cursor-not-allowed
+                                                     shadow-[0px_1px_2px_0px_#17191C0D] ${
+                                                       errors.state ? 'border-red-500' : 'border-[#D8DDE3]'
+                                                     }`}
+                                        >
+                                            <option value="" disabled>Select State</option>
+                                            {US_STATES.map(state => (
+                                                <option key={state.code} value={state.code}>{state.name}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            name="state"
+                                            value={formData.shippingAddress.state}
+                                            onChange={handleShippingAddressChange}
+                                            disabled={!formData.shippingAddress.country}
+                                            className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25 disabled:bg-[#F3F4F6] disabled:cursor-not-allowed
+                                                     shadow-[0px_1px_2px_0px_#17191C0D] ${
+                                                       errors.state ? 'border-red-500' : 'border-[#D8DDE3]'
+                                                     }`}
+                                            placeholder="Enter state"
+                                        />
+                                    )}
+                                    {errors.state && (
+                                        <span className="text-red-500 text-xs">{errors.state}</span>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
+                                        Zip Code / Post code*
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="zipCode"
+                                        value={formData.shippingAddress.zipCode}
+                                        onChange={handleShippingAddressChange}
+                                        disabled={!formData.shippingAddress.country}
+                                        className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25 disabled:bg-[#F3F4F6] disabled:cursor-not-allowed
+                                                 shadow-[0px_1px_2px_0px_#17191C0D] ${
+                                                   errors.zipCode ? 'border-red-500' : 'border-[#D8DDE3]'
+                                                 }`}
+                                        placeholder="Enter zip code"
+                                    />
+                                    {errors.zipCode && (
+                                        <span className="text-red-500 text-xs">{errors.zipCode}</span>
+                                    )}
+                                </div>
+
                             </div>
 
                             {/* Apple Pay - Only show if order is not free and the device supports it.
