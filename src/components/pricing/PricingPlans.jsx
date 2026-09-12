@@ -79,7 +79,7 @@ const plans = [
 ]
 
 const PricingPlans = () => {
-  const { subscriptionPrices, isLocalizing, message } = useLocalization()
+  const { subscriptionPrices, isLocalizing, message, userCountry } = useLocalization()
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-16">
@@ -107,6 +107,9 @@ const PricingPlans = () => {
         {plans.map((plan) => {
           const priceInfo = subscriptionPrices[plan.id]
           const noteText = `Price shown in ${priceInfo.currency}.`
+          // US yearly plan currently runs a limited-time discounted price
+          const isUsLimitedOffer = plan.id === 'yearly' && userCountry === 'US'
+          const badgeText = isUsLimitedOffer ? 'Popular · Limited Offer' : plan.badge
 
           return (
             <div
@@ -115,9 +118,9 @@ const PricingPlans = () => {
                 plan.badge ? 'bg-[#F8FAFF] border-[#4CB2E2]' : 'bg-white'
               }`}
             >
-              {plan.badge && (
+              {badgeText && (
                 <span className="self-start bg-[#4CB2E2]/10 text-[#1B6EA7] text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full">
-                  {plan.badge}
+                  {badgeText}
                 </span>
               )}
 
@@ -135,7 +138,7 @@ const PricingPlans = () => {
                   {isLocalizing ? '...' : `${priceInfo.symbol}${priceInfo.amount.toFixed(2)} ${priceInfo.currency}`}
                 </p>
                 <p className="font-helvetica-neue text-sm text-[#475467] capitalize">
-                  {plan.cadence} • {plan.highlight}
+                  {plan.cadence} • {isUsLimitedOffer ? 'Limited-time price for US customers' : plan.highlight}
                 </p>
               </div>
 

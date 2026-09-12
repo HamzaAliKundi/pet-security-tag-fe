@@ -65,7 +65,7 @@ const DEFAULT_TAG_PRICE = { amount: 2.99, currency: 'GBP', symbol: '£' }
 const SUBSCRIPTION_PRICES = {
   US: {
     monthly: { amount: 3.99, currency: 'USD', symbol: '$' },
-    yearly: { amount: 39.99, currency: 'USD', symbol: '$' },
+    yearly: { amount: 24.99, currency: 'USD', symbol: '$' },
     lifetime: { amount: 169.99, currency: 'USD', symbol: '$' }
   },
   CA: {
