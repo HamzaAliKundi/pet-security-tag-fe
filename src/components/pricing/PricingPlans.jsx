@@ -2,6 +2,9 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { useLocalization } from '../../context/LocalizationContext'
 
+// Display-only: the pre-discount US yearly price, shown struck through next to the current $24.99 offer.
+const US_YEARLY_ORIGINAL_PRICE = 39.99
+
 const commonFeatures = [
   {
     icon: '💧',
@@ -135,6 +138,11 @@ const PricingPlans = () => {
 
               <div>
                 <p className="font-helvetica-neue font-bold text-[40px] text-[#101828]">
+                  {isUsLimitedOffer && !isLocalizing && (
+                    <span className="text-[22px] text-[#98A2B3] line-through mr-2">
+                      {priceInfo.symbol}{US_YEARLY_ORIGINAL_PRICE.toFixed(2)}
+                    </span>
+                  )}
                   {isLocalizing ? '...' : `${priceInfo.symbol}${priceInfo.amount.toFixed(2)} ${priceInfo.currency}`}
                 </p>
                 <p className="font-helvetica-neue text-sm text-[#475467] capitalize">
