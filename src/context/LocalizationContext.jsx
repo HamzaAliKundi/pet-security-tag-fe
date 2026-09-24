@@ -13,7 +13,7 @@ const BASE_CURRENCIES = {
 
 // Shipping prices by country
 const SHIPPING_PRICES = {
-  US: { amount: 10.49, currency: 'USD', symbol: '$' },
+  US: { amount: 9.99, currency: 'USD', symbol: '$' },
   CA: { amount: 16.99, currency: 'CAD', symbol: '$' },
   // European countries
   GB: { amount: 2.99, currency: 'GBP', symbol: '£' },
