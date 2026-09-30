@@ -126,23 +126,16 @@ const CustomerReviews = () => {
     }, 300);
   };
 
-  // Handle touch drag (for mobile)
-  const handleTouchStart = (e) => {
-    setIsDragging(true);
+  // Touch (mobile) swiping is handled natively by the browser's own scroll
+  // (overflow-x-auto + touchAction: pan-x below) — it's smoother than manually
+  // driving scrollLeft from touchmove, which was fighting the native scroll
+  // and causing the jumpy/glitchy swipe. We only need to pause/resume the
+  // auto-scroll animation around a touch interaction.
+  const handleTouchStart = () => {
     setIsPaused(true);
-    setStartX(e.touches[0].pageX - scrollContainerRef.current.offsetLeft);
-    setScrollLeft(scrollContainerRef.current.scrollLeft);
-  };
-
-  const handleTouchMove = (e) => {
-    if (!isDragging) return;
-    const x = e.touches[0].pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 2;
-    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
   const handleTouchEnd = () => {
-    setIsDragging(false);
     setTimeout(() => {
       setIsPaused(false);
     }, 300);
@@ -227,7 +220,6 @@ const CustomerReviews = () => {
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseLeave}
             onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             style={{ touchAction: 'pan-x' }}
           >

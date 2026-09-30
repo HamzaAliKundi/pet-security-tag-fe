@@ -23,6 +23,7 @@ const HomePage = () => {
     <div>
       <Hero />
       <Message />
+      <CustomerReviews />
       <ConditionalPricing />
       <Digital />
       <HowWeCompare />
@@ -33,7 +34,6 @@ const HomePage = () => {
       <ServicesInfo />
       {/* <Customers /> */}
       {/* <Reviews /> */}
-      <CustomerReviews />
       <GetStarted />
       <Order />
       {/* Partner Charities */}
