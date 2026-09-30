@@ -13,7 +13,7 @@ const steps = [
   {
     number: 2,
     title: 'Login',
-    desc: 'Log in to your account',
+    desc: 'Log in to your account (login details are sent to you via email, please check)',
     color: '#7b5ea7',
     bg: '#f0ecff',
     textColor: '#5a3d8a',
