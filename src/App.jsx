@@ -25,6 +25,7 @@ import PricingPage from "./pages/pricing";
 import SMSConsentStatement from "./components/SMSConsentStatement";
 import InvestPage from "./pages/invest";
 import PartnerCharitiesPage from "./pages/PartnerCharities";
+import SetupGuidePage from "./pages/setupGuide";
 import LatestOrdersNotification from "./components/common/latestOrdersNotification";
 import ReferAFriendPage from "./pages/ReferAFriend";
 
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="/sms-consent-statement" element={<SMSConsentStatement />} />
         <Route path="/invest" element={<InvestPage />} />
         <Route path="/partner-charities" element={<PartnerCharitiesPage />} />
+        <Route path="/setup-guide" element={<SetupGuidePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/refer" element={<ReferAFriendPage />} />

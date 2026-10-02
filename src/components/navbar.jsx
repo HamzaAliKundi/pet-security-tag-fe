@@ -33,6 +33,7 @@ const Navbar = () => {
         <div className="hidden md:flex items-center space-x-8">
           <Link to="/" className={`${isActive('/') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>HOME</Link>
           <Link to="/faqs" className={`${isActive('/faqs') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>FAQS</Link>
+          <Link to="/setup-guide" className={`${isActive('/setup-guide') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>SETUP GUIDE</Link>
           <Link to="/pet-tag" className={`${isActive('/pet-tag') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>PET TAG</Link>
           <Link to="/contact" className={`${isActive('/contact') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>CONTACT US</Link>
           {/* <Link to="/blog" className={`${isActive('/blog') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>BLOG</Link> */}
@@ -61,6 +62,7 @@ const Navbar = () => {
         <div className="flex flex-col items-center py-4 space-y-4">
           <Link to="/" className={`${isActive('/') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>HOME</Link>
           <Link to="/faqs" className={`${isActive('/faqs') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>FAQS</Link>
+          <Link to="/setup-guide" className={`${isActive('/setup-guide') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>SETUP GUIDE</Link>
           <Link to="/pet-tag" className={`${isActive('/pet-tag') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>PET TAG</Link>
           <Link to="/contact" className={`${isActive('/contact') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>CONTACT US</Link>
           {/* <Link to="/blog" className={`${isActive('/blog') ? 'font-bold' : 'font-normal'} text-black`} onClick={handleLinkClick}>BLOG</Link> */}

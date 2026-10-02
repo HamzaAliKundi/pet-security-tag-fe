@@ -9,7 +9,8 @@ const Footer = () => {
         { name: 'Order Your Tag', path: '/order' },
         { name: 'Pricing', path: '/pricing' },
         // { name: 'Blog', path: '/blog' },
-        { name: 'Refer A Friend', path: '/refer' }
+        { name: 'Refer A Friend', path: '/refer' },
+        { name: 'Setup Guide', path: '/setup-guide' }
       ]
     },
     company: {
