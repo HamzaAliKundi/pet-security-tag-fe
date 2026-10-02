@@ -1,15 +1,19 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useLocalization } from '../../context/LocalizationContext'
 
 const Message = () => {
+  const { userCountry } = useLocalization()
+  const isUsOrCanada = userCountry === 'US' || userCountry === 'CA'
+
   return (
     <div className="min-h-screen bg-[#4CB2E2] relative mx-auto px-4 py-12 md:py-24">
       {/* Phone Image with Gradient Overlay */}
       <div className="relative z-0 flex justify-center items-center max-w-7xl mx-auto">
         <div className="relative">
-          <img 
-            src="/home/phone.svg" 
-            alt="Phone notification" 
+          <img
+            src={isUsOrCanada ? '/home/phone-us-can.svg' : '/home/phone.svg'}
+            alt="Phone notification"
             className="w-[280px] md:w-[384px] h-auto rounded-[20px]"
           />
           <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#4CB2E2] to-transparent"></div>
