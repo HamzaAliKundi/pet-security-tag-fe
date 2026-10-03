@@ -183,7 +183,9 @@ const OrderForm = () => {
     const [countryCode, setCountryCode] = useState('+44')
     const [formData, setFormData] = useState({
         email: '',
-        name: '',
+        name: '', // Combined "first last" sent to the backend — kept so the rest of the form/API contract is untouched
+        firstName: '',
+        lastName: '',
         petName: '', // Keep for backward compatibility
         petNames: [''], // Array to store names for each pet
         phone: '',
@@ -381,6 +383,27 @@ const OrderForm = () => {
         }
     }
 
+    // First/Last name are collected separately in the UI, then combined into
+    // the single `name` field the backend/API already expects.
+    const handleNameFieldChange = (field, value) => {
+        setFormData(prev => {
+            const firstName = field === 'firstName' ? value : prev.firstName
+            const lastName = field === 'lastName' ? value : prev.lastName
+            return {
+                ...prev,
+                firstName,
+                lastName,
+                name: `${firstName} ${lastName}`.trim()
+            }
+        })
+        if (field === 'firstName' && errors.name) {
+            setErrors(prev => ({ ...prev, name: '' }))
+        }
+        if (field === 'lastName' && errors.lastName) {
+            setErrors(prev => ({ ...prev, lastName: '' }))
+        }
+    }
+
     const handlePetNameChange = (index, value) => {
         setFormData(prev => {
             const newPetNames = [...prev.petNames]
@@ -429,8 +452,12 @@ const OrderForm = () => {
             newErrors.email = 'Please enter a valid email'
         }
         
-        if (!formData.name) {
-            newErrors.name = 'Name is required'
+        if (!formData.firstName) {
+            newErrors.name = 'First name is required'
+        }
+
+        if (!formData.lastName) {
+            newErrors.lastName = 'Last name is required'
         }
         
         // Validate pet names - check each pet name in the array up to quantity
@@ -689,9 +716,12 @@ const OrderForm = () => {
             }
         }
         
-        if (!formData.email || !formData.name || !allPetNamesFilled) {
+        if (!formData.email || !formData.firstName || !formData.lastName || !allPetNamesFilled) {
             if (!allPetNamesFilled) {
                 toast.error(`Please enter names for all ${quantity} pet(s)`)
+            } else if (!formData.firstName || !formData.lastName) {
+                validateForm()
+                toast.error('Please enter your first and last name')
             } else {
                 toast.error('Please fill in all required fields first')
             }
@@ -938,8 +968,6 @@ const OrderForm = () => {
 
                 {/* Right Section - Form */}
                 <div className="w-full lg:w-[600px] xl:w-[650px] flex flex-col gap-3.5 sm:gap-4">
-                    {/* Email + Name - side by side from tablet up */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 items-start">
                     {/* Email Input */}
                     <div className="flex flex-col gap-1.5">
                         <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
@@ -961,24 +989,47 @@ const OrderForm = () => {
                         )}
                     </div>
 
-                    {/* Name Input */}
+                    {/* First Name + Last Name - side by side from tablet up */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 items-start">
+                    {/* First Name Input */}
                     <div className="flex flex-col gap-1.5">
                         <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
-                            Your Name*
+                            First Name*
                         </label>
                         <input
                             type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleInputChange}
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={(e) => handleNameFieldChange('firstName', e.target.value)}
                             className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
                                      shadow-[0px_1px_2px_0px_#17191C0D] ${
                                        errors.name ? 'border-red-500' : 'border-[#D8DDE3]'
                                      }`}
-                            placeholder="Enter your name"
+                            placeholder="Enter first name"
                         />
                         {errors.name && (
                             <span className="text-red-500 text-xs">{errors.name}</span>
+                        )}
+                    </div>
+
+                    {/* Last Name Input */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="font-helvetica-neue font-medium text-[13px] sm:text-sm leading-[100%] tracking-[-1%] text-[#4B5563]">
+                            Last Name*
+                        </label>
+                        <input
+                            type="text"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={(e) => handleNameFieldChange('lastName', e.target.value)}
+                            className={`w-full h-[42px] sm:h-[44px] rounded-[8px] border bg-white px-3.5 text-[14px] sm:text-[15px] text-[#05131D] placeholder:text-[#9AA3AE] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25
+                                     shadow-[0px_1px_2px_0px_#17191C0D] ${
+                                       errors.lastName ? 'border-red-500' : 'border-[#D8DDE3]'
+                                     }`}
+                            placeholder="Enter last name"
+                        />
+                        {errors.lastName && (
+                            <span className="text-red-500 text-xs">{errors.lastName}</span>
                         )}
                     </div>
                     </div>
