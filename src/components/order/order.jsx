@@ -252,6 +252,16 @@ const OrderForm = () => {
         }
     }, [activePreview, isMobileDevice])
     
+    // Auto-select the phone country code based on IP-detected country, and lock
+    // it so the customer can't pick a mismatched code for their own country.
+    useEffect(() => {
+        if (userCountry === 'GB') {
+            setCountryCode('+44')
+        } else if (userCountry === 'US' || userCountry === 'CA') {
+            setCountryCode('+1')
+        }
+    }, [userCountry])
+
     // Determine color spelling based on region (UK/Europe = "Colour", Others = "Color")
     const colorSpelling = (userCountry === 'GB' || (userCountry && ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'CH', 'SE', 'NO', 'DK', 'FI', 'IE', 'PT', 'PL', 'GR', 'CZ', 'HU', 'RO', 'BG', 'HR', 'SK', 'SI', 'EE', 'LV', 'LT', 'LU', 'MT', 'CY'].includes(userCountry))) 
         ? 'Colour' 
@@ -1174,14 +1184,14 @@ const OrderForm = () => {
                                     <select
                                         value={countryCode}
                                         onChange={(e) => setCountryCode(e.target.value)}
-                                        className={`dt-select h-[42px] sm:h-[44px] rounded-[8px] border bg-white pl-3.5 pr-9 font-helvetica-neue text-[14px] sm:text-[15px] text-[#05131D] shadow-[0px_1px_2px_0px_#17191C0D] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25 ${
+                                        disabled={userCountry === 'GB' || userCountry === 'US' || userCountry === 'CA'}
+                                        className={`dt-select h-[42px] sm:h-[44px] rounded-[8px] border bg-white pl-3.5 pr-9 font-helvetica-neue text-[14px] sm:text-[15px] text-[#05131D] shadow-[0px_1px_2px_0px_#17191C0D] outline-none transition duration-150 focus:border-[#FDD30F] focus:ring-[3px] focus:ring-[#FDD30F]/25 disabled:bg-[#F3F4F6] disabled:cursor-not-allowed ${
                                             errors.phone ? 'border-red-500' : 'border-[#D8DDE3]'
                                         }`}
                                         style={{ width: '104px' }}
                                     >
                                         <option value="+44">+44 (UK)</option>
-                                        <option value="+1">+1 (USA)</option>
-                                        <option value="+1">+1 (Canada)</option>
+                                        <option value="+1">+1 (USA / Canada)</option>
                                     </select>
                                     <input
                                         type="tel"
