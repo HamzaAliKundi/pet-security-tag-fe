@@ -2,6 +2,7 @@ import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { CheckCircle, Package, User, MapPin, Phone, Mail, Calendar, Tag } from 'lucide-react'
 import { useLocalization } from '../../context/LocalizationContext'
+import { trackPurchase } from '../../utils/axonPixel'
 
 const OrderSummary = () => {
     const location = useLocation()
@@ -24,6 +25,36 @@ const OrderSummary = () => {
             navigate('/order')
         }
     }, [orderData, navigate])
+
+    // AppLovin Axon pixel: fire "purchase" once per order. Guarded with
+    // sessionStorage so refreshing this page, or React re-rendering, never
+    // double-counts the same conversion.
+    React.useEffect(() => {
+        if (!orderData) return
+        const order = orderData.order || orderData
+        const orderId = order?._id
+        if (!orderId) return
+
+        try {
+            const flagKey = `axon_purchase_tracked_${orderId}`
+            if (sessionStorage.getItem(flagKey)) return
+            sessionStorage.setItem(flagKey, '1')
+        } catch (storageError) {
+            // Private browsing / storage blocked — fall through and track anyway
+            // rather than silently skipping the conversion.
+        }
+
+        trackPurchase({
+            orderId,
+            email: order.email,
+            tagColors: order.tagColors && order.tagColors.length > 0 ? order.tagColors : [order.tagColor || 'blue'],
+            quantity: order.quantity || 1,
+            value: order.totalCostEuro,
+            currency: shippingPrice?.currency,
+            isNewCustomer: orderData.isNewUser || false,
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orderData])
 
     if (!orderData) {
         return null

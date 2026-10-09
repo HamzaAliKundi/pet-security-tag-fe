@@ -5,6 +5,7 @@ import { useCreateOrderMutation, useConfirmPaymentMutation, useCheckQRAvailabili
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useLocalization } from '../../context/LocalizationContext'
+import { trackViewItem, trackAddToCart, trackBeginCheckout } from '../../utils/axonPixel'
 
 // Initialize Stripe using environment variable
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISH_KEY || '')
@@ -317,6 +318,17 @@ const OrderForm = () => {
     // If discount is valid and applied, shipping is free (0)
     const totalCost = (isDiscountApplied && isDiscountValid) ? 0 : shippingPrice.amount
 
+    // AppLovin Axon pixel: fire once when the order page is viewed.
+    useEffect(() => {
+        trackViewItem({
+            tagColors: [selectedTagColor],
+            quantity: 1,
+            value: shippingPrice.amount,
+            currency: shippingPrice.currency,
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
     // Calculate total cost including shipping
     // Calculate total cost including shipping
     // const calculateTotalCost = () => {
@@ -543,6 +555,15 @@ const OrderForm = () => {
             ? formData.petNames.map(name => name.trim()).filter(name => name)
             : (formData.petName ? [formData.petName.trim()] : [''])
 
+        // buildOrderData runs right before order creation in both the card and wallet
+        // flows, so this is the single shared point to mark checkout as started.
+        trackBeginCheckout({
+            tagColors: finalTagColors,
+            quantity,
+            value: totalCost,
+            currency: shippingPrice.currency,
+        })
+
         return {
             email: formData.email,
             name: formData.name,
@@ -745,6 +766,12 @@ const OrderForm = () => {
             }))
             return
         }
+        trackAddToCart({
+            tagColors: quantity === 1 ? [selectedTagColor] : tagColors.slice(0, quantity),
+            quantity,
+            value: totalCost,
+            currency: shippingPrice.currency,
+        })
         setShowShippingForm(true)
     }
 
