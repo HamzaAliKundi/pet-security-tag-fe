@@ -3,12 +3,23 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { CheckCircle, Package, User, MapPin, Phone, Mail, Calendar, Tag } from 'lucide-react'
 import { useLocalization } from '../../context/LocalizationContext'
 import { trackPurchase } from '../../utils/axonPixel'
+import { useConfirmPaymentMutation } from '../../apis/orders'
 
 const OrderSummary = () => {
     const location = useLocation()
     const navigate = useNavigate()
     const { shippingPrice } = useLocalization()
-    const orderData = location.state?.orderData || location.state?.confirmResult
+    const [confirmPayment] = useConfirmPaymentMutation()
+
+    // Apple Pay/card confirm in-page and arrive here via navigate(..., { state }).
+    // PayPal redirects the customer away and back, landing here as a fresh page
+    // load with no state — only Stripe's own query params plus the orderId/
+    // referralCode we appended to return_url before redirecting.
+    const [redirectOrderData, setRedirectOrderData] = React.useState(null)
+    const [redirectError, setRedirectError] = React.useState(null)
+    const [isConfirmingRedirect, setIsConfirmingRedirect] = React.useState(false)
+
+    const orderData = location.state?.orderData || location.state?.confirmResult || redirectOrderData
 
     // Scroll to top when page loads
     React.useEffect(() => {
@@ -19,12 +30,41 @@ const OrderSummary = () => {
         })
     }, [])
 
-    // If no order data, redirect back to order page
+    // Handle returning from a PayPal redirect
     React.useEffect(() => {
-        if (!orderData) {
+        if (orderData) return
+
+        const params = new URLSearchParams(location.search)
+        const orderId = params.get('orderId')
+        const paymentIntentId = params.get('payment_intent')
+        const redirectStatus = params.get('redirect_status')
+        const referralCode = params.get('referralCode')
+
+        if (!orderId || !paymentIntentId || !redirectStatus) return
+
+        if (redirectStatus !== 'succeeded') {
+            setRedirectError('Payment was not completed. Please try again.')
+            return
+        }
+
+        setIsConfirmingRedirect(true)
+        confirmPayment({ orderId, paymentIntentId, referralCode: referralCode || undefined })
+            .unwrap()
+            .then((result) => setRedirectOrderData(result))
+            .catch((error) => {
+                console.error('Failed to confirm payment after redirect:', error)
+                setRedirectError(error?.data?.message || 'We could not confirm your payment. Please contact support.')
+            })
+            .finally(() => setIsConfirmingRedirect(false))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    // If no order data, and we're not waiting on a redirect confirmation, go back to order page
+    React.useEffect(() => {
+        if (!orderData && !isConfirmingRedirect && !redirectError) {
             navigate('/order')
         }
-    }, [orderData, navigate])
+    }, [orderData, isConfirmingRedirect, redirectError, navigate])
 
     // AppLovin Axon pixel: fire "purchase" once per order. Guarded with
     // sessionStorage so refreshing this page, or React re-rendering, never
@@ -55,6 +95,32 @@ const OrderSummary = () => {
         })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orderData])
+
+    if (isConfirmingRedirect) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+                <div className="bg-white rounded-lg shadow-md p-8 text-center max-w-md">
+                    <p className="text-gray-700 font-medium">Confirming your payment…</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (redirectError) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+                <div className="bg-white rounded-lg shadow-md p-8 text-center max-w-md">
+                    <p className="text-red-600 font-semibold mb-4">{redirectError}</p>
+                    <button
+                        onClick={() => navigate('/order')}
+                        className="px-6 py-2 bg-[#4CB2E2] text-white rounded-lg hover:bg-[#3da1d1] transition-colors"
+                    >
+                        Back to Order Page
+                    </button>
+                </div>
+            </div>
+        )
+    }
 
     if (!orderData) {
         return null

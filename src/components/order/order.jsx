@@ -81,11 +81,20 @@ const WalletCheckoutInner = ({
                 return
             }
 
+            // PayPal (unlike Apple Pay) redirects the customer away to approve the
+            // payment and back again, so the order id (and referral code, if any)
+            // need to survive that round trip via the URL rather than component state.
+            const returnUrl = new URL(`${window.location.origin}/order-summary`)
+            returnUrl.searchParams.set('orderId', result.order._id)
+            if (referralCode) {
+                returnUrl.searchParams.set('referralCode', referralCode)
+            }
+
             const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
                 elements,
                 clientSecret: result.payment.clientSecret,
                 confirmParams: {
-                    return_url: `${window.location.origin}/order-summary`,
+                    return_url: returnUrl.toString(),
                 },
                 redirect: 'if_required',
             })
@@ -129,16 +138,21 @@ const WalletCheckoutInner = ({
     return (
         <ExpressCheckoutElement
             options={{
-                // Apple Pay only for now — flip googlePay to 'auto' to add Google Pay.
+                // Stripe only offers the PayPal *button* (rather than a plain redirect)
+                // when we ask for neither of these, so state it up front as well as in
+                // the click handler's resolve(). We collect both in our own form anyway.
+                phoneNumberRequired: false,
+                shippingAddressRequired: false,
+                // Apple Pay + PayPal — flip googlePay to 'auto' to add Google Pay too.
                 paymentMethods: {
                     applePay: 'auto',
                     googlePay: 'never',
                     klarna: 'never',
                     link: 'never',
-                    paypal: 'never',
+                    paypal: 'auto',
                     amazonPay: 'never',
                 },
-                buttonType: { applePay: 'buy' },
+                buttonType: { applePay: 'buy', paypal: 'buynow' },
                 buttonHeight: 44,
             }}
             onReady={({ availablePaymentMethods }) => {
