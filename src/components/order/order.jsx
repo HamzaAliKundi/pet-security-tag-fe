@@ -143,13 +143,17 @@ const WalletCheckoutInner = ({
                 // the click handler's resolve(). We collect both in our own form anyway.
                 phoneNumberRequired: false,
                 shippingAddressRequired: false,
-                // Apple Pay + PayPal — flip googlePay to 'auto' to add Google Pay too.
+                // PayPal is off: the handoff to PayPal hangs on their "Taking you to
+                // PayPal" loading page and the customer can never complete the payment,
+                // which strands a paid-but-unconfirmed order. Everything else needed for
+                // PayPal (return_url round trip, redirect handling in orderSummary) is
+                // still in place, so re-enabling is a one-word change once that is fixed.
                 paymentMethods: {
                     applePay: 'auto',
                     googlePay: 'never',
                     klarna: 'never',
                     link: 'never',
-                    paypal: 'auto',
+                    paypal: 'never',
                     amazonPay: 'never',
                 },
                 buttonType: { applePay: 'buy', paypal: 'buynow' },
