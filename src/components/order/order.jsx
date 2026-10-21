@@ -47,12 +47,10 @@ const WalletCheckoutInner = ({
             toast.error('Please fill in all required fields correctly')
             return
         }
-        // Shipping/contact details are already collected by our own form above.
-        resolve({
-            emailRequired: false,
-            phoneNumberRequired: false,
-            shippingAddressRequired: false,
-        })
+        // Shipping/contact details are already collected by our own form above and
+        // declared once in the element's own `options` below - passing them again
+        // here throws (stripe.js now rejects these keys inside resolve()).
+        resolve()
     }
 
     const handleConfirm = async () => {
@@ -139,21 +137,16 @@ const WalletCheckoutInner = ({
         <ExpressCheckoutElement
             options={{
                 // Stripe only offers the PayPal *button* (rather than a plain redirect)
-                // when we ask for neither of these, so state it up front as well as in
-                // the click handler's resolve(). We collect both in our own form anyway.
+                // when we ask for none of these. We collect all of it in our own form anyway.
+                emailRequired: false,
                 phoneNumberRequired: false,
                 shippingAddressRequired: false,
-                // PayPal is off: the handoff to PayPal hangs on their "Taking you to
-                // PayPal" loading page and the customer can never complete the payment,
-                // which strands a paid-but-unconfirmed order. Everything else needed for
-                // PayPal (return_url round trip, redirect handling in orderSummary) is
-                // still in place, so re-enabling is a one-word change once that is fixed.
                 paymentMethods: {
                     applePay: 'auto',
                     googlePay: 'never',
                     klarna: 'never',
                     link: 'never',
-                    paypal: 'never',
+                    paypal: 'auto',
                     amazonPay: 'never',
                 },
                 buttonType: { applePay: 'buy', paypal: 'buynow' },
